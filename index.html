@@ -14,6 +14,7 @@
       --accent-1: #3b82f6;
       --accent-2: #10b981;
       --accent-3: #f59e0b;
+      --red: #ef4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
     body {
@@ -23,8 +24,34 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 24px;
+      padding: 20px;
+    }
+    .topbar {
+      width: 100%;
+      max-width: 1020px;
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 10px;
+    }
+    .admin-btn {
+      padding: 9px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(255,255,255,0.07);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .admin-btn.unlocked {
+      background: rgba(16,185,129,0.2);
+      border-color: var(--accent-2);
+      color: #34d399;
     }
     header { text-align: center; max-width: 680px; margin-bottom: 36px; }
     header h1 { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; margin-bottom: 10px; }
@@ -79,13 +106,62 @@
     .btn-1 { background: var(--accent-1); }
     .btn-2 { background: var(--accent-2); color: #052e16; }
     .btn-3 { background: var(--accent-3); color: #0f172a; }
+
+    /* Modal Passcode */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2,6,23,0.78);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 999;
+    }
+    .hidden { display: none !important; }
+    .modal-box {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 20px;
+      padding: 24px;
+      width: 100%;
+      max-width: 390px;
+      text-align: center;
+    }
+    .modal-box h3 { margin-bottom: 8px; font-size: 1.25rem; }
+    .modal-box p { color: var(--muted); font-size: 0.88rem; margin-bottom: 16px; }
+    .modal-box input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.15);
+      background: #0b1220;
+      color: #fff;
+      font-size: 1rem;
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .modal-actions { display: flex; gap: 8px; }
+    .modal-actions button {
+      flex: 1;
+      padding: 11px;
+      border: none;
+      border-radius: 11px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .err-msg { color: #fca5a5; font-size: 0.84rem; margin-bottom: 10px; }
     footer { margin-top: 40px; color: var(--muted); font-size: 0.85rem; text-align: center; }
   </style>
 </head>
 <body>
+  <div class="topbar">
+    <button id="btn-admin-toggle" class="admin-btn">🔒 Mode Peserta (Buka Akses Host)</button>
+  </div>
+
   <header>
     <h1>Arena Game Interaktif Kelas</h1>
-    <p>Pilih permainan di bawah ini. Host membuat PIN Room di layar utama, dan peserta bergabung dari HP masing-masing.</p>
+    <p>Pilih permainan di bawah ini. Peserta dapat langsung bergabung dengan PIN Room atau bermain Solo.</p>
   </header>
 
   <main class="grid">
@@ -96,7 +172,7 @@
         <h2>Balap Hitung Stickman</h2>
         <p>Adu cepat menjawab operasi penjumlahan dan pengurangan (-19 s/d 19) dalam lintasan maraton real-time.</p>
       </div>
-      <div class="btn btn-1">Mainkan Sekarang →</div>
+      <div class="btn btn-1">Buka Permainan →</div>
     </a>
 
     <a href="./tebak-angka/index.html" class="card">
@@ -106,7 +182,7 @@
         <h2>Tebak Angka Posisi Benar</h2>
         <p>Pecahkan kombinasi angka rahasia menggunakan petunjuk jumlah <strong>Posisi Benar</strong> dan <strong>Angka Benar</strong>.</p>
       </div>
-      <div class="btn btn-2">Mainkan Sekarang →</div>
+      <div class="btn btn-2">Buka Permainan →</div>
     </a>
 
     <a href="./angka-boom/index.html" class="card">
@@ -116,10 +192,99 @@
         <h2>Angka Boom</h2>
         <p>Persempit rentang tebakan secara bergantian dan hindari menjadi peserta yang memicu ledakan Angka Boom!</p>
       </div>
-      <div class="btn btn-3">Mainkan Sekarang →</div>
+      <div class="btn btn-3">Buka Permainan →</div>
     </a>
   </main>
 
-  <footer>Terhubung Real-Time via Firebase • Siap Multi-Perangkat</footer>
+  <!-- Modal Verifikasi Passcode Admin -->
+  <div id="admin-modal" class="modal-backdrop hidden">
+    <div class="modal-box">
+      <h3>🔐 Verifikasi Akses Host</h3>
+      <p>Masukkan kata kunci Admin untuk membuka fitur pembuatan Room di semua permainan.</p>
+      <input type="password" id="passcode-input" placeholder="Kata kunci Admin..." />
+      <div id="passcode-error" class="err-msg hidden">Kata kunci salah!</div>
+      <div class="modal-actions">
+        <button id="btn-cancel-modal" style="background:rgba(255,255,255,0.1);color:#fff;">Batal</button>
+        <button id="btn-verify-passcode" style="background:var(--accent-2);color:#052e16;">Verifikasi</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>Platform Game Edukasi &amp; Interaktif Kelas</footer>
+
+  <script>
+    (function () {
+      const DB_URL = "https://game-math-7361f-default-rtdb.asia-southeast1.firebasedatabase.app";
+      const STORAGE_KEY = "arena_host_verified";
+
+      function updateAdminBadge() {
+        const btn = document.getElementById("btn-admin-toggle");
+        const isAdmin = sessionStorage.getItem(STORAGE_KEY) === "true";
+        if (isAdmin) {
+          btn.textContent = "🔓 Akses Host Aktif (Klik untuk Kunci)";
+          btn.classList.add("unlocked");
+        } else {
+          btn.textContent = "🔒 Mode Peserta (Buka Akses Host)";
+          btn.classList.remove("unlocked");
+        }
+      }
+
+      async function verifyPasscode() {
+        const inputEl = document.getElementById("passcode-input");
+        const errEl = document.getElementById("passcode-error");
+        const verifyBtn = document.getElementById("btn-verify-passcode");
+        const entered = inputEl.value.trim();
+        if (!entered) return;
+
+        verifyBtn.textContent = "Mengecek...";
+        verifyBtn.disabled = true;
+        errEl.classList.add("hidden");
+
+        try {
+          const res = await fetch(`${DB_URL}/host_passcode.json`);
+          const serverKey = await res.json();
+          if (serverKey && String(entered) === String(serverKey)) {
+            sessionStorage.setItem(STORAGE_KEY, "true");
+            document.getElementById("admin-modal").classList.add("hidden");
+            inputEl.value = "";
+            updateAdminBadge();
+          } else {
+            errEl.textContent = "Kata kunci salah!";
+            errEl.classList.remove("hidden");
+          }
+        } catch (e) {
+          errEl.textContent = "Gagal terhubung ke server.";
+          errEl.classList.remove("hidden");
+        } finally {
+          verifyBtn.textContent = "Verifikasi";
+          verifyBtn.disabled = false;
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        updateAdminBadge();
+
+        document.getElementById("btn-admin-toggle").addEventListener("click", () => {
+          if (sessionStorage.getItem(STORAGE_KEY) === "true") {
+            sessionStorage.removeItem(STORAGE_KEY);
+            updateAdminBadge();
+          } else {
+            document.getElementById("passcode-error").classList.add("hidden");
+            document.getElementById("admin-modal").classList.remove("hidden");
+            document.getElementById("passcode-input").focus();
+          }
+        });
+
+        document.getElementById("btn-cancel-modal").addEventListener("click", () => {
+          document.getElementById("admin-modal").classList.add("hidden");
+        });
+
+        document.getElementById("btn-verify-passcode").addEventListener("click", verifyPasscode);
+        document.getElementById("passcode-input").addEventListener("keydown", (e) => {
+          if (e.key === "Enter") verifyPasscode();
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
