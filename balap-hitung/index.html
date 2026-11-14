@@ -343,21 +343,34 @@
 
       <!-- HOST -->
       <div id="tab-host" class="hidden">
-        <div class="form-row">
-          <div class="fg">
-            <label>Target Poin Pemenang</label>
-            <select id="host-target-sel">
-              <option value="50" selected>50 Poin</option>
-              <option value="100">100 Poin</option>
-              <option value="custom">Atur Manual...</option>
-            </select>
-          </div>
-          <div class="fg" id="host-custom-wrap" class="hidden">
-            <label>Target Manual (Poin)</label>
-            <input type="number" id="host-target-custom" value="75" min="10" max="500" />
-          </div>
+        <div id="host-locked-notice" style="background:rgba(239,68,68,0.14);border:1px solid rgba(239,68,68,0.4);border-radius:14px;padding:18px;text-align:center;">
+          <div style="font-size:1.8rem;margin-bottom:6px;">🔒</div>
+          <strong>Akses Host Terkunci</strong>
+          <p style="font-size:0.88rem;color:#94a3b8;margin:6px 0 14px;">
+            Pembuatan Room hanya dapat dilakukan oleh Admin/Host yang telah memasukkan kata kunci di Menu Utama.
+          </p>
+          <a href="../index.html" style="display:inline-block;padding:10px 18px;background:#3b82f6;color:#fff;text-decoration:none;border-radius:10px;font-weight:700;font-size:0.9rem;">
+            Ke Menu Utama untuk Login Admin →
+          </a>
         </div>
-        <button id="btn-create-room" class="btn btn-green">Buat Room Multiplayer</button>
+
+        <div id="host-unlocked-controls" class="hidden">
+          <div class="form-row">
+            <div class="fg">
+              <label>Target Poin Pemenang</label>
+              <select id="host-target-sel">
+                <option value="50" selected>50 Poin</option>
+                <option value="100">100 Poin</option>
+                <option value="custom">Atur Manual...</option>
+              </select>
+            </div>
+            <div class="fg hidden" id="host-custom-wrap">
+              <label>Target Manual (Poin)</label>
+              <input type="number" id="host-target-custom" value="75" min="10" max="500" />
+            </div>
+          </div>
+          <button id="btn-create-room" class="btn btn-green">Buat Room Multiplayer</button>
+        </div>
       </div>
 
       <!-- JOIN -->
@@ -450,12 +463,12 @@
       const COLORS = ['#3b82f6','#10b981','#f59e0b','#ec4899','#8b5cf6','#06b6d4','#f97316','#84cc16'];
 
       let st = {
-        mode: 'solo', // solo | host | player
+        mode: 'solo',
         pin: '',
         myId: 'u_' + Math.random().toString(36).slice(2, 9),
         myName: 'Anda',
         target: 50,
-        status: 'lobby', // lobby | playing | ended
+        status: 'lobby',
         players: {},
         winners: [],
         firstWinAt: null,
@@ -536,7 +549,6 @@
         track.querySelectorAll('.runner').forEach(el => el.remove());
 
         list.forEach((p, idx) => {
-          // Pada layar HP pemain, hanya tampilkan stickman pemain tersebut (atau semua di lintasan dengan label hanya di stickman pemain)
           const isMe = p.id === st.myId;
           if (st.mode === 'player' && !isMe) return;
 
@@ -555,7 +567,6 @@
           track.appendChild(div);
         });
 
-        // Top 5
         const sorted = [...list].sort((a, b) => (b.score || 0) - (a.score || 0));
         document.getElementById('top5-list').innerHTML = sorted.slice(0, 5).map((p, i) => `
           <div class="top5-item">
@@ -568,7 +579,6 @@
           document.getElementById('my-score').textContent = st.players[st.myId].score || 0;
         }
 
-        // Countdown 60s
         if (st.firstWinAt && st.status === 'playing') {
           const rem = Math.max(0, 60 - Math.floor((Date.now() - st.firstWinAt) / 1000));
           document.getElementById('countdown-60').textContent = `⏱️ Sisa waktu: ${rem} dtk`;
@@ -659,7 +669,7 @@
 
       function startPollingLoop() {
         const id = setInterval(async () => {
-          if (st.mode === 'player' && st.status === 'playing') {
+          if ((st.mode === 'player' || st.mode === 'solo') && st.status === 'playing') {
             document.getElementById('q-timer').textContent = ((Date.now() - st.q.start) / 1000).toFixed(1) + ' dtk';
           }
 
@@ -699,6 +709,14 @@
       }
 
       document.addEventListener('DOMContentLoaded', () => {
+        const isHostAllowed = sessionStorage.getItem("arena_host_verified") === "true";
+        const lockedEl = document.getElementById("host-locked-notice");
+        const unlockedEl = document.getElementById("host-unlocked-controls");
+        if (lockedEl && unlockedEl) {
+          lockedEl.classList.toggle("hidden", isHostAllowed);
+          unlockedEl.classList.toggle("hidden", !isHostAllowed);
+        }
+
         document.querySelectorAll('.tab-btn').forEach(b => {
           b.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
@@ -712,7 +730,6 @@
           document.getElementById('host-custom-wrap').classList.toggle('hidden', e.target.value !== 'custom');
         });
 
-        // SOLO
         document.getElementById('btn-start-solo').addEventListener('click', () => {
           st.mode = 'solo';
           st.status = 'playing';
@@ -755,8 +772,8 @@
           startPollingLoop();
         });
 
-        // HOST
         document.getElementById('btn-create-room').addEventListener('click', async () => {
+          if (sessionStorage.getItem("arena_host_verified") !== "true") return showToast("Akses Host terkunci!");
           st.mode = 'host';
           st.pin = String(Math.floor(100000 + Math.random() * 900000));
           const sel = document.getElementById('host-target-sel').value;
@@ -797,7 +814,6 @@
           document.getElementById('btn-host-end').classList.remove('hidden');
           await fbPatch(`balap_hitung/${st.pin}`, { status: 'playing' });
 
-          // Jalankan bot jika ada
           const bt = setInterval(() => {
             if (st.status !== 'playing') return;
             Object.values(st.players).forEach(p => {
@@ -813,7 +829,6 @@
 
         document.getElementById('btn-host-end').addEventListener('click', endRace);
 
-        // JOIN
         document.getElementById('btn-join-room').addEventListener('click', async () => {
           const name = document.getElementById('join-name').value.trim();
           const pin = document.getElementById('join-pin').value.trim();
@@ -846,7 +861,6 @@
           startPollingLoop();
         });
 
-        // KEYPAD
         document.querySelectorAll('.k-btn[data-k]').forEach(btn => {
           btn.addEventListener('click', () => {
             if (st.input.length < 4) {
