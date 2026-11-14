@@ -1,1557 +1,889 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Balap Hitung Stickman</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: radial-gradient(circle at top, #1e1b4b, #0f172a 65%, #020617);
-            min-height: 100vh;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .btn-3d {
-            transition: transform 0.08s ease, box-shadow 0.08s ease;
-            box-shadow: 0 4px 0 rgba(0, 0, 0, 0.45);
-        }
-        .btn-3d:active:not(:disabled) {
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.45);
-        }
-        .finish-checkers {
-            background-image: repeating-conic-gradient(#ffffff 0% 25%, #0f172a 0% 50%);
-            background-size: 12px 12px;
-        }
-        .runner-node {
-            transition: left 0.5s cubic-bezier(0.22, 1, 0.36, 1);
-        }
-        @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
-        @keyframes legF { 0%, 100% { transform: rotate(-36deg); } 50% { transform: rotate(40deg); } }
-        @keyframes legB { 0%, 100% { transform: rotate(40deg); } 50% { transform: rotate(-36deg); } }
-        @keyframes armF { 0%, 100% { transform: rotate(34deg); } 50% { transform: rotate(-38deg); } }
-        @keyframes armB { 0%, 100% { transform: rotate(-38deg); } 50% { transform: rotate(34deg); } }
-        @keyframes jumpWin { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        .is-running .torso { animation: bob 0.24s infinite; }
-        .is-running .leg-f { transform-origin: 20px 23px; animation: legF 0.24s infinite; }
-        .is-running .leg-b { transform-origin: 20px 23px; animation: legB 0.24s infinite; }
-        .is-running .arm-f { transform-origin: 20px 14px; animation: armF 0.24s infinite; }
-        .is-running .arm-b { transform-origin: 20px 14px; animation: armB 0.24s infinite; }
-        .is-winner { animation: jumpWin 0.55s infinite; }
-        @keyframes shakeBox {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-7px); }
-            75% { transform: translateX(7px); }
-        }
-        .shake-err { animation: shakeBox 0.28s ease; }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Balap Hitung Stickman</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-dark: #0b1220;
+      --border: rgba(255,255,255,0.1);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --blue: #3b82f6;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body {
+      background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 75%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .topbar {
+      width: 100%;
+      max-width: 1120px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      gap: 10px;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 13px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+    }
+    .conn-badge {
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(16,185,129,0.18);
+      color: #34d399;
+      font-weight: 700;
+    }
+    .card {
+      width: 100%;
+      max-width: 1120px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 22px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+    }
+    .hidden { display: none !important; }
+    h1 { font-size: clamp(1.35rem, 3vw, 1.9rem); margin-bottom: 4px; }
+    .sub { color: var(--muted); font-size: 0.92rem; margin-bottom: 16px; }
+    .rules {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.28);
+      border-radius: 14px;
+      padding: 12px 15px;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      background: var(--panel-dark);
+      padding: 6px;
+      border-radius: 14px;
+      margin-bottom: 18px;
+    }
+    .tab-btn {
+      padding: 11px 8px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .tab-btn.active { background: var(--blue); color: #fff; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+    .fg { margin-bottom: 12px; }
+    label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
+    input, select {
+      width: 100%;
+      padding: 11px 13px;
+      border-radius: 11px;
+      border: 1px solid var(--border);
+      background: var(--panel-dark);
+      color: #fff;
+      font-size: 0.98rem;
+    }
+    .btn {
+      width: 100%;
+      padding: 13px 16px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 0.98rem;
+      cursor: pointer;
+    }
+    .btn-blue { background: var(--blue); color: #fff; }
+    .btn-green { background: var(--green); color: #052e16; }
+    .btn-amber { background: var(--amber); color: #1c1917; }
+    .btn-red { background: var(--red); color: #fff; }
+
+    /* Marathon Track */
+    .race-layout {
+      display: grid;
+      grid-template-columns: 1fr 270px;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    @media (max-width: 860px) { .race-layout { grid-template-columns: 1fr; } }
+    .track-box {
+      background: linear-gradient(180deg, #1e3a5f 0%, #0f172a 58%, #334155 58%, #1e293b 100%);
+      border: 2px solid var(--border);
+      border-radius: 16px;
+      padding: 12px;
+      position: relative;
+      overflow: hidden;
+      min-height: 220px;
+    }
+    .track-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .track-canvas {
+      position: relative;
+      height: 168px;
+      border-bottom: 4px dashed rgba(255,255,255,0.35);
+    }
+    .finish-line {
+      position: absolute;
+      right: 26px;
+      top: 0;
+      bottom: 0;
+      width: 8px;
+      background: repeating-linear-gradient(0deg, #fff 0 8px, #000 8px 16px);
+      border-radius: 4px;
+    }
+    .runner {
+      position: absolute;
+      bottom: 4px;
+      left: 12px;
+      transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 56px;
+      pointer-events: none;
+    }
+    .runner-label {
+      background: rgba(15,23,42,0.88);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      white-space: nowrap;
+      margin-bottom: 2px;
+    }
+    .runner.me .runner-label {
+      background: var(--green);
+      color: #052e16;
+      border-color: #fff;
+    }
+    .stickman-svg { width: 34px; height: 48px; }
+    .running .leg-l { animation: swingL 0.25s infinite alternate; transform-origin: 17px 28px; }
+    .running .leg-r { animation: swingR 0.25s infinite alternate; transform-origin: 17px 28px; }
+    .running .arm-l { animation: swingR 0.25s infinite alternate; transform-origin: 17px 16px; }
+    .running .arm-r { animation: swingL 0.25s infinite alternate; transform-origin: 17px 16px; }
+    @keyframes swingL { from { transform: rotate(-28deg); } to { transform: rotate(28deg); } }
+    @keyframes swingR { from { transform: rotate(28deg); } to { transform: rotate(-28deg); } }
+
+    .top5-box {
+      background: var(--panel-dark);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+    }
+    .top5-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 9px;
+      background: var(--panel);
+      margin-top: 7px;
+      font-size: 0.86rem;
+    }
+    .question-panel {
+      background: var(--panel-dark);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+    }
+    .question-panel.wrong-shake {
+      animation: shake 0.32s ease;
+      border-color: var(--red);
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-8px); }
+      75% { transform: translateX(8px); }
+    }
+    .q-text { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 900; margin: 8px 0; }
+    .ans-display {
+      max-width: 260px;
+      margin: 0 auto 12px;
+      padding: 10px;
+      border-radius: 12px;
+      background: var(--panel);
+      border: 2px solid var(--blue);
+      font-size: 1.7rem;
+      font-weight: 900;
+      min-height: 52px;
+    }
+    .keypad {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      max-width: 320px;
+      margin: 0 auto;
+    }
+    .k-btn {
+      padding: 13px;
+      font-size: 1.2rem;
+      font-weight: 800;
+      border-radius: 11px;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: #fff;
+      cursor: pointer;
+    }
+    .k-btn.minus { background: rgba(245,158,11,0.2); color: #fbbf24; }
+    .k-btn.del { background: rgba(239,68,68,0.2); color: #fca5a5; }
+    .k-btn.sub { grid-column: span 3; background: var(--green); color: #052e16; }
+    .pin-box {
+      background: var(--panel-dark);
+      border: 2px dashed var(--blue);
+      border-radius: 16px;
+      padding: 14px;
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .pin-val { font-size: 2.3rem; font-weight: 900; letter-spacing: 6px; color: var(--blue); }
+    .toast {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      border: 1px solid var(--blue);
+      color: #fff;
+      padding: 9px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      z-index: 999;
+    }
+  </style>
 </head>
-<body class="text-white antialiased">
+<body>
+  <div class="topbar">
+    <a href="../index.html" class="back-btn">← Menu Utama</a>
+    <span class="conn-badge" id="fb-status">● Firebase Terhubung</span>
+  </div>
 
-    <!-- Notifikasi Melayang -->
-    <div id="toast-box" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 flex flex-col gap-2 pointer-events-none w-11/12 max-w-md"></div>
+  <div class="card">
+    <!-- HOME -->
+    <div id="view-home">
+      <h1>🏃‍♂️ Balap Hitung Stickman</h1>
+      <p class="sub">Adu cepat penjumlahan &amp; pengurangan (-19 s/d 19) di lintasan maraton!</p>
 
-    <!-- Header Utama -->
-    <header class="w-full px-4 py-3 bg-slate-950/80 backdrop-blur border-b border-white/10 sticky top-0 z-30 flex items-center justify-between">
-        <button type="button" id="btn-header-home" class="flex items-center gap-2.5 text-left cursor-pointer">
-            <div class="w-9 h-9 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-extrabold shadow">
-                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-                    <circle cx="14" cy="4" r="2"/><path d="M10 20l2-5 4 2 2 3M12 15l-2-5 5-2 3 3M6 12l4-2"/>
-                </svg>
-            </div>
-            <div>
-                <div class="font-extrabold text-base sm:text-lg leading-none">Balap Hitung Stickman</div>
-                <div class="text-[10px] font-bold text-amber-300 tracking-wider uppercase">Arena Maraton Matematika</div>
-            </div>
-        </button>
+      <div class="rules">
+        <strong>Aturan Skor &amp; Balapan:</strong><br>
+        • Jawab benar <strong>&lt; 2 detik = +3 poin</strong> | <strong>2 – 4 detik = +2 poin</strong> | <strong>&gt; 4 detik = +1 poin</strong>.<br>
+        • Salah menjawab: <strong>0 poin</strong>, soal otomatis berganti baru, dan <strong>2 kali salah berturut-turut = -1 poin</strong>.<br>
+        • Balapan selesai jika <strong>3 juara</strong> mencapai target poin, <strong>60 detik</strong> setelah Juara 1 finis, atau Host menekan <strong>Akhiri Permainan</strong>.
+      </div>
 
-        <div class="flex items-center gap-2">
-            <span id="hdr-pin-badge" class="hidden px-3 py-1 rounded-full bg-amber-400/20 border border-amber-400/50 text-amber-300 font-mono font-extrabold text-xs sm:text-sm">
-                PIN: <span id="hdr-pin-val">------</span>
-            </span>
-            <button type="button" id="btn-sound-toggle" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-xs font-bold cursor-pointer">
-                Suara: ON
-            </button>
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="solo">Main Lawan Bot</button>
+        <button class="tab-btn" data-tab="host">Buat Room (Host)</button>
+        <button class="tab-btn" data-tab="join">Gabung Room</button>
+      </div>
+
+      <!-- SOLO -->
+      <div id="tab-solo">
+        <div class="form-row">
+          <div class="fg">
+            <label>Jumlah Bot</label>
+            <select id="solo-bots">
+              <option value="2">2 Bot</option>
+              <option value="3" selected>3 Bot</option>
+              <option value="5">5 Bot</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Kecepatan Bot</label>
+            <select id="solo-diff">
+              <option value="easy">Santai</option>
+              <option value="medium" selected>Sedang</option>
+              <option value="hard">Cepat</option>
+            </select>
+          </div>
         </div>
-    </header>
+        <div class="fg">
+          <label>Target Poin Pemenang</label>
+          <select id="solo-target">
+            <option value="30">30 Poin</option>
+            <option value="50" selected>50 Poin</option>
+            <option value="100">100 Poin</option>
+          </select>
+        </div>
+        <button id="btn-start-solo" class="btn btn-blue">Mulai Balapan Solo</button>
+      </div>
 
-    <main class="max-w-5xl mx-auto px-4 py-5 space-y-5">
+      <!-- HOST -->
+      <div id="tab-host" class="hidden">
+        <div class="form-row">
+          <div class="fg">
+            <label>Target Poin Pemenang</label>
+            <select id="host-target-sel">
+              <option value="50" selected>50 Poin</option>
+              <option value="100">100 Poin</option>
+              <option value="custom">Atur Manual...</option>
+            </select>
+          </div>
+          <div class="fg" id="host-custom-wrap" class="hidden">
+            <label>Target Manual (Poin)</label>
+            <input type="number" id="host-target-custom" value="75" min="10" max="500" />
+          </div>
+        </div>
+        <button id="btn-create-room" class="btn btn-green">Buat Room Multiplayer</button>
+      </div>
 
-        <!-- VIEW 1: MENU UTAMA -->
-        <section id="view-home" class="flex flex-col items-center">
-            <div class="text-center max-w-xl mb-5">
-                <span class="inline-block px-3.5 py-1 rounded-full bg-indigo-500/25 border border-indigo-400/40 text-indigo-200 text-xs font-bold mb-2">
-                    Multiplayer &amp; Solo Bot
-                </span>
-                <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight mb-1.5">Balap Hitung Stickman</h1>
-                <p class="text-xs sm:text-sm text-slate-300">Adu cepat berhitung bilangan bulat dan pimpin lintasan maraton hingga garis finis!</p>
-            </div>
-
-            <!-- 3 Tab Navigasi -->
-            <div class="w-full max-w-lg bg-slate-950/80 p-1.5 rounded-2xl border border-white/15 grid grid-cols-3 gap-1.5 mb-4">
-                <button type="button" id="tab-solo" class="py-2.5 px-2 rounded-xl font-extrabold text-xs sm:text-sm bg-amber-400 text-slate-950 cursor-pointer">
-                    Main Lawan Bot
-                </button>
-                <button type="button" id="tab-host" class="py-2.5 px-2 rounded-xl font-bold text-xs sm:text-sm text-slate-300 hover:bg-white/10 cursor-pointer">
-                    Buat Room (Host)
-                </button>
-                <button type="button" id="tab-join" class="py-2.5 px-2 rounded-xl font-bold text-xs sm:text-sm text-slate-300 hover:bg-white/10 cursor-pointer">
-                    Gabung Room (Pemain)
-                </button>
-            </div>
-
-            <!-- Panel A: Main Lawan Bot (Solo) -->
-            <div id="panel-solo" class="w-full max-w-lg bg-slate-900/90 border border-white/15 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
-                <h2 class="text-lg font-extrabold text-amber-300">Mode Solo: Main Lawan Bot</h2>
-                <div>
-                    <label for="inp-solo-name" class="block text-xs font-bold text-slate-300 uppercase mb-1">Nama Pemain</label>
-                    <input id="inp-solo-name" type="text" maxlength="14" value="Pelari 1" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-white/20 font-bold focus:outline-none focus:border-amber-400">
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label for="sel-solo-bots" class="block text-xs font-bold text-slate-300 uppercase mb-1">Jumlah Bot (1-5)</label>
-                        <select id="sel-solo-bots" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-white/20 font-bold focus:outline-none">
-                            <option value="1">1 Bot</option>
-                            <option value="2">2 Bot</option>
-                            <option value="3" selected>3 Bot</option>
-                            <option value="4">4 Bot</option>
-                            <option value="5">5 Bot</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="sel-solo-diff" class="block text-xs font-bold text-slate-300 uppercase mb-1">Tingkat Kesulitan</label>
-                        <select id="sel-solo-diff" class="w-full px-3 py-2.5 rounded-xl bg-slate-950 border border-white/20 font-bold focus:outline-none">
-                            <option value="easy">Santai</option>
-                            <option value="medium" selected>Sedang</option>
-                            <option value="hard">Cepat</option>
-                        </select>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Target Poin Pemenang</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button type="button" id="btn-solo-t50" class="py-2 rounded-xl bg-amber-400 text-slate-950 font-extrabold text-sm cursor-pointer">50 Poin</button>
-                        <button type="button" id="btn-solo-t100" class="py-2 rounded-xl bg-slate-950 border border-white/20 font-bold text-sm cursor-pointer">100 Poin</button>
-                        <input id="inp-solo-target" type="number" min="10" max="9999" value="50" placeholder="Manual" class="px-3 py-2 rounded-xl bg-slate-950 border border-amber-400/60 text-amber-300 font-mono font-bold text-center text-sm focus:outline-none">
-                    </div>
-                </div>
-                <button type="button" id="btn-start-solo" class="btn-3d w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-extrabold text-base sm:text-lg cursor-pointer">
-                    Mulai Balapan vs Bot
-                </button>
-            </div>
-
-            <!-- Panel B: Buat Room (Host) -->
-            <div id="panel-host" class="hidden w-full max-w-lg bg-slate-900/90 border border-white/15 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
-                <h2 class="text-lg font-extrabold text-purple-300">Buat Room Multiplayer (Host)</h2>
-                <div>
-                    <label for="inp-host-name" class="block text-xs font-bold text-slate-300 uppercase mb-1">Nama Host</label>
-                    <input id="inp-host-name" type="text" maxlength="15" value="Host Arena" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-white/20 font-bold focus:outline-none focus:border-purple-400">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">Target Poin Pemenang</label>
-                    <div class="grid grid-cols-3 gap-2">
-                        <button type="button" id="btn-host-t50" class="py-2 rounded-xl bg-purple-500 text-white font-extrabold text-sm cursor-pointer">50 Poin</button>
-                        <button type="button" id="btn-host-t100" class="py-2 rounded-xl bg-slate-950 border border-white/20 font-bold text-sm cursor-pointer">100 Poin</button>
-                        <input id="inp-host-target" type="number" min="10" max="9999" value="50" placeholder="Manual" class="px-3 py-2 rounded-xl bg-slate-950 border border-purple-400/60 text-amber-300 font-mono font-bold text-center text-sm focus:outline-none">
-                    </div>
-                </div>
-                <button type="button" id="btn-create-room" class="btn-3d w-full py-3.5 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-extrabold text-base sm:text-lg cursor-pointer">
-                    Buat Room Baru
-                </button>
-            </div>
-
-            <!-- Panel C: Gabung Room (Pemain) -->
-            <div id="panel-join" class="hidden w-full max-w-lg bg-slate-900/90 border border-white/15 rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4">
-                <h2 class="text-lg font-extrabold text-emerald-300">Gabung Room (Pemain)</h2>
-                <div>
-                    <label for="inp-join-pin" class="block text-xs font-bold text-slate-300 uppercase mb-1">PIN Room (6 Digit)</label>
-                    <input id="inp-join-pin" type="tel" maxlength="6" placeholder="123456" class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-white/20 text-amber-300 font-mono text-2xl font-extrabold tracking-widest text-center focus:outline-none focus:border-emerald-400">
-                </div>
-                <div>
-                    <label for="inp-join-name" class="block text-xs font-bold text-slate-300 uppercase mb-1">Nama Pemain</label>
-                    <input id="inp-join-name" type="text" maxlength="14" placeholder="Ketik namamu..." class="w-full px-4 py-2.5 rounded-xl bg-slate-950 border border-white/20 font-bold focus:outline-none focus:border-emerald-400">
-                </div>
-                <button type="button" id="btn-join-lobby" class="btn-3d w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-extrabold text-base sm:text-lg cursor-pointer">
-                    Masuk ke Lobby
-                </button>
-            </div>
-
-            <!-- Kartu Informasi Aturan Skor -->
-            <div class="w-full max-w-lg mt-5 bg-slate-900/75 border border-white/10 rounded-3xl p-4 sm:p-5 text-xs sm:text-sm text-slate-200">
-                <div class="font-extrabold text-amber-300 uppercase tracking-wider text-xs mb-2.5">Aturan Permainan &amp; Skor</div>
-                <ul class="space-y-1.5 list-disc list-inside text-slate-300">
-                    <li>Soal penjumlahan &amp; pengurangan angka acak <strong class="text-white">-19 s/d 19</strong> (berbeda tiap pemain).</li>
-                    <li>Jawab benar <strong class="text-emerald-300">&lt; 2 detik = +3 poin</strong>.</li>
-                    <li>Jawab benar <strong class="text-sky-300">2 s/d 4 detik = +2 poin</strong>.</li>
-                    <li>Jawab benar <strong class="text-amber-300">&gt; 4 detik = +1 poin</strong>.</li>
-                    <li>Salah = <strong class="text-white">0 poin</strong> (soal otomatis berganti), dan <strong class="text-rose-400">2x salah berturut-turut = -1 poin</strong>.</li>
-                    <li>Selesai saat ada <strong class="text-white">3 juara</strong> mencapai target poin, atau <strong class="text-white">60 detik</strong> setelah Juara 1 finis, atau saat Host menekan <strong class="text-rose-300">Akhiri Permainan</strong>.</li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- VIEW 2: LOBBY MULTIPLAYER -->
-        <section id="view-lobby" class="hidden">
-            <div class="bg-slate-900/90 border border-white/15 rounded-3xl p-5 sm:p-6 text-center shadow-2xl">
-                <div class="text-xs font-bold uppercase tracking-widest text-slate-300 mb-1">Bagikan PIN Room Ini ke Pemain</div>
-                <div class="inline-flex items-center gap-3 bg-slate-950 border-2 border-amber-400/80 px-6 py-2.5 rounded-2xl mb-4">
-                    <span id="lobby-pin-text" class="text-4xl sm:text-5xl font-mono font-extrabold tracking-[0.2em] text-amber-300">------</span>
-                    <button type="button" id="btn-copy-pin" class="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-xs font-bold cursor-pointer">
-                        Salin
-                    </button>
-                </div>
-
-                <!-- Kontrol Khusus Host -->
-                <div id="lobby-host-controls" class="hidden max-w-md mx-auto mb-5 space-y-3">
-                    <div class="flex flex-wrap justify-center gap-2.5">
-                        <button type="button" id="btn-lobby-bot" class="btn-3d px-4 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 font-bold text-sm cursor-pointer">
-                            + Tambah Bot
-                        </button>
-                        <button type="button" id="btn-lobby-start" class="btn-3d px-6 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-extrabold text-base sm:text-lg cursor-pointer">
-                            Mulai Game (Main)
-                        </button>
-                        <button type="button" id="btn-lobby-leave-host" class="btn-3d px-4 py-3 rounded-2xl bg-rose-600 hover:bg-rose-500 font-bold text-sm cursor-pointer">
-                            Keluar
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Kontrol Khusus Pemain -->
-                <div id="lobby-player-controls" class="hidden mb-5 space-y-3">
-                    <div class="inline-block px-4 py-2.5 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 text-xs sm:text-sm font-bold">
-                        Berhasil masuk! Target: <span id="lobby-player-target" class="text-amber-300">50</span> Poin. Menunggu Host memulai game...
-                    </div>
-                    <div>
-                        <button type="button" id="btn-lobby-leave-player" class="btn-3d px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 font-bold text-xs sm:text-sm cursor-pointer">
-                            Keluar
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Daftar Peserta Lobby -->
-                <div class="border-t border-white/15 pt-4 text-left">
-                    <div class="flex justify-between items-center mb-3">
-                        <span class="font-bold text-sm">Peserta di Lobby (<span id="lobby-count">0</span>)</span>
-                        <span class="text-xs font-bold text-amber-300">Target Finis: <span id="lobby-target-val">50</span> Poin</span>
-                    </div>
-                    <div id="lobby-players-grid" class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 min-h-[84px]"></div>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW 3: ARENA BALAPAN -->
-        <section id="view-game" class="hidden space-y-4">
-
-            <!-- Banner Hitung Mundur 60 Detik Pasca Juara 1 -->
-            <div id="overtime-banner" class="hidden bg-gradient-to-r from-rose-600 to-amber-600 border border-amber-300 rounded-2xl p-3 flex items-center justify-between gap-3 shadow-lg">
-                <div>
-                    <div class="font-extrabold text-sm sm:text-base">JUARA 1 FINIS: <span id="first-winner-name">-</span>!</div>
-                    <div class="text-xs text-amber-100">60 detik terakhir untuk merebut Juara 2 &amp; 3 berdasarkan skor tertinggi!</div>
-                </div>
-                <div class="px-3.5 py-1 rounded-xl bg-slate-950 border border-amber-300 font-mono font-extrabold text-xl text-amber-300">
-                    <span id="overtime-seconds">60</span>d
-                </div>
-            </div>
-
-            <!-- Lintasan 1 Jalur Maraton + Panel Top 5 Pemain Teratas -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-                <!-- Lintasan Maraton Tunggal -->
-                <div class="lg:col-span-2 bg-slate-900/95 border border-white/15 rounded-3xl p-4 shadow-xl flex flex-col justify-between">
-                    <div class="flex items-center justify-between mb-2">
-                        <h3 class="font-extrabold text-base sm:text-lg">LINTASAN MARATON</h3>
-                        <span class="text-xs font-bold px-3 py-1 rounded-full bg-amber-400/20 text-amber-300">
-                            Target: <span id="arena-target-val">50</span> Poin
-                        </span>
-                    </div>
-
-                    <div class="relative w-full rounded-2xl overflow-hidden border border-slate-700 bg-slate-950">
-                        <div class="flex justify-between px-3 py-1 bg-slate-900 text-[10px] font-mono text-slate-400 border-b border-slate-800">
-                            <span>START (0)</span>
-                            <span id="mark-25">13</span>
-                            <span id="mark-50">25</span>
-                            <span id="mark-75">38</span>
-                            <span class="text-amber-400 font-bold">FINIS (<span id="mark-100">50</span>)</span>
-                        </div>
-                        <div class="relative w-full h-56 sm:h-64 overflow-hidden bg-gradient-to-b from-slate-800/70 to-slate-950">
-                            <div class="absolute inset-x-0 top-1/3 border-t border-dashed border-white/10"></div>
-                            <div class="absolute inset-x-0 top-2/3 border-t border-dashed border-white/10"></div>
-                            <div class="absolute top-0 bottom-0 left-5 w-0.5 bg-white/30"></div>
-                            <div class="absolute top-0 bottom-0 right-7 w-3 finish-checkers opacity-90"></div>
-                            <div id="marathon-stage" class="relative w-full h-full"></div>
-                        </div>
-                    </div>
-
-                    <div class="mt-2 flex flex-wrap justify-between items-center text-[11px] text-slate-300 gap-2">
-                        <span>&lt;2d: <strong class="text-emerald-300">+3</strong> | 2-4d: <strong class="text-sky-300">+2</strong> | &gt;4d: <strong class="text-amber-300">+1</strong> | 2x salah: <strong class="text-rose-400">-1 &amp; soal baru</strong></span>
-                        <button type="button" id="btn-player-quit" class="hidden px-3 py-1 rounded-lg bg-rose-600/80 hover:bg-rose-600 text-white font-bold cursor-pointer">
-                            Keluar
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Panel Top 5 Pemain Teratas -->
-                <div class="bg-slate-900/95 border border-white/15 rounded-3xl p-4 shadow-xl flex flex-col">
-                    <div class="flex items-center justify-between mb-2.5">
-                        <h3 class="font-extrabold text-base text-amber-300">Top 5 Pemain Teratas</h3>
-                        <span id="arena-total-runners" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-white/10 text-slate-200">0 Pelari</span>
-                    </div>
-                    <div id="top5-list" class="space-y-2 flex-1"></div>
-                </div>
-            </div>
-
-            <!-- Panel Host (Layar Utama Host) -->
-            <div id="arena-host-bar" class="hidden bg-slate-900/90 border border-white/15 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-3">
-                <div class="text-xs sm:text-sm text-slate-300">
-                    <strong class="text-white">Mode Host:</strong> Pantau jalannya balapan peserta secara real-time.
-                </div>
-                <button type="button" id="btn-host-end-game" class="btn-3d px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-sm cursor-pointer">
-                    Akhiri Permainan
-                </button>
-            </div>
-
-            <!-- Area Soal & Keypad (Pemain & Solo) -->
-            <div id="arena-quiz-panel" class="hidden bg-slate-900/95 border border-white/20 rounded-3xl p-4 sm:p-5 shadow-2xl">
-                <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
-                    <div class="flex items-center gap-2.5">
-                        <span class="text-xs sm:text-sm font-bold text-slate-300">
-                            Skor Kamu: <strong id="quiz-my-score" class="text-amber-300 text-lg">0</strong> / <span id="quiz-target-val">50</span>
-                        </span>
-                        <span id="quiz-streak-badge" class="hidden text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-500/30 text-rose-200">
-                            Salah: 0/2
-                        </span>
-                    </div>
-
-                    <!-- Indikator Timer Detik Berjalan Real-Time -->
-                    <div class="flex items-center gap-2">
-                        <span id="quiz-timer-badge" class="font-mono text-xs sm:text-sm font-extrabold px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/50 text-emerald-300">
-                            0.0 dtk (+3 poin)
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Kotak Soal & Jawaban -->
-                <div id="quiz-question-box" class="bg-slate-950 border-2 border-indigo-400/50 rounded-2xl p-4 mb-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-                    <div id="quiz-question-text" class="text-3xl sm:text-5xl font-extrabold text-white tracking-wide">0 + 0 = ?</div>
-                    <div class="w-full sm:w-48 h-14 rounded-xl bg-slate-900 border-2 border-amber-400 flex items-center justify-center px-3">
-                        <span id="quiz-answer-text" class="font-mono text-3xl font-extrabold text-amber-300"></span>
-                        <span class="w-0.5 h-6 bg-amber-400 animate-pulse ml-0.5"></span>
-                    </div>
-                </div>
-
-                <!-- Keypad Angka Layar -->
-                <div class="grid grid-cols-4 gap-2 max-w-md mx-auto">
-                    <button type="button" data-digit="7" class="key-digit btn-3d py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-xl cursor-pointer">7</button>
-                    <button type="button" data-digit="8" class="key-digit btn-3d py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-xl cursor-pointer">8</button>
-                    <button type="button" data-digit="9" class="key-digit btn-3d py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-xl cursor-pointer">9</button>
-                    <button type="button" id="key-backspace" class="btn-3d py-3 rounded-xl bg-rose-600 hover:bg-rose-500 font-bold text-sm sm:text-base cursor-pointer">Hapus</button>
-
-                    <button type="button" data-digit="4" class="key-digit btn-3d py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-xl cursor-pointer">4</button>
-                    <button type="button" data-digit="5" class="key-digit btn-3d py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-xl cursor-pointer">5</button>
-                    <button type="button" data-digit="6" class="key-digit btn-3d py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-xl cursor-pointer">6</button>
-                    <button type="button" id="key-clear" class="btn-3d py-3 rounded-xl bg-slate-700 hover:bg-slate-600 font-bold text-sm cursor-pointer">Reset</button>
-
-                    <button type="button" data-digit="1" class="key-digit btn-3d py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-xl cursor-pointer">1</button>
-                    <button type="button" data-digit="2" class="key-digit btn-3d py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-xl cursor-pointer">2</button>
-                    <button type="button" data-digit="3" class="key-digit btn-3d py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-xl cursor-pointer">3</button>
-                    <button type="button" id="key-minus" class="btn-3d py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-2xl cursor-pointer">-</button>
-
-                    <button type="button" data-digit="0" class="key-digit btn-3d col-span-2 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 font-bold text-xl cursor-pointer">0</button>
-                    <button type="button" id="key-submit" class="btn-3d col-span-2 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-lg sm:text-xl cursor-pointer">Kirim</button>
-                </div>
-            </div>
-        </section>
-
-        <!-- VIEW 4: LAYAR PODIUM AKHIR -->
-        <section id="view-podium" class="hidden">
-            <div class="bg-slate-900/95 border border-white/20 rounded-3xl p-5 sm:p-6 text-center shadow-2xl">
-                <span class="inline-block px-3.5 py-1 rounded-full bg-amber-400/20 text-amber-300 text-xs font-bold uppercase mb-2">Balapan Selesai</span>
-                <h2 class="text-3xl sm:text-4xl font-extrabold mb-6">Podium Juara</h2>
-
-                <!-- Podium Visual Juara 1, 2, 3 -->
-                <div id="podium-visual" class="flex items-end justify-center gap-3 sm:gap-5 max-w-lg mx-auto mb-6 pt-4"></div>
-
-                <!-- Klasemen Lengkap -->
-                <div class="max-w-lg mx-auto text-left bg-slate-950/80 rounded-2xl p-4 border border-white/10 mb-6">
-                    <div class="text-xs font-bold uppercase text-amber-300 mb-2.5">Klasemen Lengkap Seluruh Pemain</div>
-                    <div id="podium-standings" class="space-y-2 max-h-64 overflow-y-auto"></div>
-                </div>
-
-                <div class="flex flex-wrap justify-center gap-3">
-                    <button type="button" id="btn-podium-menu" class="btn-3d px-7 py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-orange-500 text-slate-950 font-extrabold text-base sm:text-lg cursor-pointer">
-                        Main Lagi / Kembali ke Menu
-                    </button>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Overlay Hitung Mundur Mulai -->
-    <div id="countdown-overlay" class="fixed inset-0 bg-slate-950/80 z-40 hidden items-center justify-center pointer-events-none">
-        <div id="countdown-text" class="font-extrabold text-8xl text-amber-400">3</div>
+      <!-- JOIN -->
+      <div id="tab-join" class="hidden">
+        <div class="fg">
+          <label>Nama Peserta</label>
+          <input type="text" id="join-name" placeholder="Nama Anda..." maxlength="16" />
+        </div>
+        <div class="fg">
+          <label>PIN Room (6 Digit)</label>
+          <input type="text" id="join-pin" placeholder="Contoh: 123456" maxlength="6" inputmode="numeric" />
+        </div>
+        <button id="btn-join-room" class="btn btn-blue">Gabung ke Lintasan</button>
+      </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            'use strict';
-
-            var RUNNER_COLORS = ['#38bdf8', '#fb7185', '#4ade80', '#facc15', '#c084fc', '#fb923c', '#2dd4bf', '#f472b6', '#a3e635', '#60a5fa'];
-            var BOT_NAMES = ['Budi', 'Siti', 'Rizky', 'Ayu', 'Dimas', 'Putri', 'Fajar', 'Nadia', 'Andi', 'Dewi'];
-            var BOT_SPEEDS = { easy: [3600, 6000], medium: [2100, 3800], hard: [1200, 2400] };
-            var MARATHON_LANES = [46, 26, 66, 36, 56, 20, 72, 31, 61, 41];
-
-            var myUid = 'p_' + Math.random().toString(36).slice(2, 9) + '_' + Date.now();
-            var channel = null;
-            try {
-                if ('BroadcastChannel' in window) {
-                    channel = new BroadcastChannel('balap_hitung_stickman_channel');
-                }
-            } catch (e) {}
-
-            var state = {
-                mode: 'solo',          // 'solo' | 'multiplayer'
-                role: 'player',        // 'host' | 'player'
-                pin: '',
-                target: 50,
-                status: 'home',        // 'home' | 'lobby' | 'playing' | 'finished'
-                players: {},
-                winners: [],
-                overtimeEnd: null,
-                overtimeInterval: null,
-                quizTimerInterval: null,
-                botTimeouts: {},
-                runTimeouts: {},
-                prevScores: {},
-                score: 0,
-                wrongStreak: 0,
-                question: null,
-                qStartTime: 0,
-                answerBuffer: '',
-                botDifficulty: 'medium',
-                soundOn: true
-            };
-
-            function el(id) {
-                return document.getElementById(id);
-            }
-
-            function escapeHtml(str) {
-                return String(str).replace(/[&<>"']/g, function (ch) {
-                    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
-                });
-            }
-
-            function showToast(msg, type) {
-                try {
-                    var box = el('toast-box');
-                    if (!box) return;
-                    var item = document.createElement('div');
-                    var bg = type === 'err' ? 'bg-rose-600 border-rose-300' : (type === 'ok' ? 'bg-emerald-600 border-emerald-300' : 'bg-indigo-600 border-indigo-300');
-                    item.className = bg + ' border text-white px-4 py-2.5 rounded-2xl shadow-xl text-xs sm:text-sm font-bold text-center';
-                    item.textContent = msg;
-                    box.appendChild(item);
-                    setTimeout(function () {
-                        if (item.parentNode) item.parentNode.removeChild(item);
-                    }, 2600);
-                } catch (e) {}
-            }
-
-            /* --- WEB AUDIO API (AMAN TANPA ERROR) --- */
-            var audioCtx = null;
-            function playBeep(freq, duration, wave) {
-                if (!state.soundOn) return;
-                try {
-                    var AudioContextClass = window.AudioContext || window.webkitAudioContext;
-                    if (!AudioContextClass) return;
-                    if (!audioCtx) audioCtx = new AudioContextClass();
-                    if (audioCtx.state === 'suspended') audioCtx.resume();
-                    var osc = audioCtx.createOscillator();
-                    var gain = audioCtx.createGain();
-                    osc.type = wave || 'sine';
-                    osc.frequency.value = freq;
-                    gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.start();
-                    osc.stop(audioCtx.currentTime + duration);
-                } catch (e) {}
-            }
-
-            /* --- SVG STICKMAN --- */
-            function createStickmanSVG(color, isRunning, sizeClass) {
-                return '<svg class="' + (sizeClass || 'w-9 h-9') + ' ' + (isRunning ? 'is-running' : '') + '" viewBox="0 0 40 40" fill="none">' +
-                    '<g class="torso">' +
-                    '<circle cx="20" cy="7" r="4.5" fill="' + color + '"/>' +
-                    '<line x1="20" y1="11.5" x2="20" y2="23" stroke="' + color + '" stroke-width="3" stroke-linecap="round"/>' +
-                    '<line class="arm-b" x1="20" y1="14" x2="13" y2="20" stroke="' + color + '" stroke-width="2.6" stroke-linecap="round"/>' +
-                    '<line class="arm-f" x1="20" y1="14" x2="27" y2="19" stroke="' + color + '" stroke-width="2.6" stroke-linecap="round"/>' +
-                    '<line class="leg-b" x1="20" y1="23" x2="14" y2="34" stroke="' + color + '" stroke-width="2.8" stroke-linecap="round"/>' +
-                    '<line class="leg-f" x1="20" y1="23" x2="26" y2="34" stroke="' + color + '" stroke-width="2.8" stroke-linecap="round"/>' +
-                    '</g></svg>';
-            }
-
-            /* --- NAVIGASI VIEW & TAB --- */
-            function switchView(viewName) {
-                var views = ['home', 'lobby', 'game', 'podium'];
-                for (var i = 0; i < views.length; i++) {
-                    var node = el('view-' + views[i]);
-                    if (node) {
-                        if (views[i] === viewName) node.classList.remove('hidden');
-                        else node.classList.add('hidden');
-                    }
-                }
-                var pinBadge = el('hdr-pin-badge');
-                if (pinBadge) {
-                    if (state.mode === 'multiplayer' && state.pin && viewName !== 'home') {
-                        pinBadge.classList.remove('hidden');
-                        el('hdr-pin-val').textContent = state.pin;
-                    } else {
-                        pinBadge.classList.add('hidden');
-                    }
-                }
-            }
-
-            function selectHomeTab(tabName) {
-                var tabs = ['solo', 'host', 'join'];
-                for (var i = 0; i < tabs.length; i++) {
-                    var t = tabs[i];
-                    var btn = el('tab-' + t);
-                    var pnl = el('panel-' + t);
-                    if (btn && pnl) {
-                        if (t === tabName) {
-                            btn.className = 'py-2.5 px-2 rounded-xl font-extrabold text-xs sm:text-sm bg-amber-400 text-slate-950 cursor-pointer';
-                            pnl.classList.remove('hidden');
-                        } else {
-                            btn.className = 'py-2.5 px-2 rounded-xl font-bold text-xs sm:text-sm text-slate-300 hover:bg-white/10 cursor-pointer';
-                            pnl.classList.add('hidden');
-                        }
-                    }
-                }
-            }
-
-            function sanitizeTarget(rawVal) {
-                var num = parseInt(rawVal, 10);
-                if (isNaN(num) || num < 10) return 10;
-                if (num > 9999) return 9999;
-                return num;
-            }
-
-            /* --- PEMBERSIHAN TIMER & RESET --- */
-            function clearAllTimers() {
-                if (state.overtimeInterval) {
-                    clearInterval(state.overtimeInterval);
-                    state.overtimeInterval = null;
-                }
-                if (state.quizTimerInterval) {
-                    clearInterval(state.quizTimerInterval);
-                    state.quizTimerInterval = null;
-                }
-                for (var bk in state.botTimeouts) {
-                    if (Object.prototype.hasOwnProperty.call(state.botTimeouts, bk)) {
-                        clearTimeout(state.botTimeouts[bk]);
-                    }
-                }
-                state.botTimeouts = {};
-                for (var rk in state.runTimeouts) {
-                    if (Object.prototype.hasOwnProperty.call(state.runTimeouts, rk)) {
-                        clearTimeout(state.runTimeouts[rk]);
-                    }
-                }
-                state.runTimeouts = {};
-            }
-
-            function resetToHome() {
-                clearAllTimers();
-                state.status = 'home';
-                state.pin = '';
-                state.players = {};
-                state.winners = [];
-                state.overtimeEnd = null;
-                state.prevScores = {};
-                switchView('home');
-            }
-
-            /* --- SINKRONISASI ANTAR-TAB (BROADCASTCHANNEL & LOCALSTORAGE) --- */
-            function broadcastPacket(pin, payload) {
-                if (!pin) return;
-                payload.pin = pin;
-                payload.sender = myUid;
-                payload.ts = Date.now();
-                if (channel) {
-                    try { channel.postMessage(payload); } catch (e) {}
-                }
-                try {
-                    localStorage.setItem('bhs_sync_pkt_' + pin, JSON.stringify(payload));
-                    if (payload.type === 'ROOM_STATE') {
-                        localStorage.setItem('bhs_sync_room_' + pin, JSON.stringify(payload.room));
-                    }
-                } catch (e) {}
-            }
-
-            function syncHostState() {
-                if (state.mode !== 'multiplayer' || state.role !== 'host' || !state.pin) return;
-                broadcastPacket(state.pin, {
-                    type: 'ROOM_STATE',
-                    room: {
-                        pin: state.pin,
-                        target: state.target,
-                        status: state.status,
-                        winners: state.winners,
-                        overtimeEnd: state.overtimeEnd,
-                        players: state.players
-                    }
-                });
-            }
-
-            function onSyncMessage(pkt) {
-                try {
-                    if (!pkt || pkt.sender === myUid) return;
-                    if (state.mode !== 'multiplayer' || pkt.pin !== state.pin) return;
-
-                    if (state.role === 'host') {
-                        if (pkt.type === 'PLAYER_JOIN' && pkt.player && state.status !== 'finished') {
-                            var p = pkt.player;
-                            if (!state.players[p.uid]) {
-                                var count = Object.keys(state.players).length;
-                                p.color = RUNNER_COLORS[count % RUNNER_COLORS.length];
-                                p.score = 0;
-                                p.rank = null;
-                                p.lane = MARATHON_LANES[count % MARATHON_LANES.length];
-                                state.players[p.uid] = p;
-                                state.prevScores[p.uid] = 0;
-                                showToast(p.name + ' bergabung ke room!', 'ok');
-                            }
-                            if (state.status === 'lobby') renderLobby();
-                            syncHostState();
-                        } else if (pkt.type === 'PLAYER_SCORE' && pkt.uid && state.status === 'playing') {
-                            var targetPlayer = state.players[pkt.uid];
-                            if (targetPlayer) {
-                                var prev = targetPlayer.score || 0;
-                                targetPlayer.score = Math.max(0, pkt.score);
-                                if (targetPlayer.score > prev) triggerStickmanRun(pkt.uid);
-                                evaluateWinner(pkt.uid);
-                                if (state.status === 'playing') {
-                                    renderArena();
-                                    syncHostState();
-                                }
-                            }
-                        } else if (pkt.type === 'PLAYER_LEAVE' && pkt.uid) {
-                            if (state.players[pkt.uid]) {
-                                var leftName = state.players[pkt.uid].name;
-                                delete state.players[pkt.uid];
-                                showToast(leftName + ' keluar dari room.', 'info');
-                                if (state.status === 'lobby') renderLobby();
-                                else if (state.status === 'playing') renderArena();
-                                syncHostState();
-                            }
-                        }
-                    } else if (state.role === 'player' && pkt.type === 'ROOM_STATE' && pkt.room) {
-                        applyRoomSnapshot(pkt.room);
-                    }
-                } catch (e) {}
-            }
-
-            if (channel) {
-                channel.onmessage = function (ev) {
-                    onSyncMessage(ev.data);
-                };
-            }
-            window.addEventListener('storage', function (ev) {
-                if (ev.key && ev.key.indexOf('bhs_sync_pkt_') === 0 && ev.newValue) {
-                    try {
-                        onSyncMessage(JSON.parse(ev.newValue));
-                    } catch (e) {}
-                }
-            });
-
-            function applyRoomSnapshot(room) {
-                var prevStatus = state.status;
-                state.status = room.status;
-                state.target = room.target || 50;
-                state.winners = room.winners || [];
-                state.overtimeEnd = room.overtimeEnd || null;
-
-                var pMap = room.players || {};
-                for (var uid in pMap) {
-                    if (Object.prototype.hasOwnProperty.call(pMap, uid)) {
-                        var pObj = pMap[uid];
-                        if (state.prevScores[uid] !== undefined && pObj.score > state.prevScores[uid]) {
-                            triggerStickmanRun(uid);
-                        }
-                        state.prevScores[uid] = pObj.score;
-                    }
-                }
-                state.players = pMap;
-
-                if (state.status === 'lobby') {
-                    renderLobby();
-                    switchView('lobby');
-                } else if (state.status === 'playing') {
-                    if (prevStatus !== 'playing') {
-                        el('marathon-stage').innerHTML = '';
-                        prepareArena();
-                        switchView('game');
-                        runCountdown(function () {
-                            state.qStartTime = Date.now();
-                            startQuizRealTimeTimer();
-                        });
-                    }
-                    if (state.overtimeEnd && !state.overtimeInterval) {
-                        startOvertimeCountdown();
-                    }
-                    updateOvertimeBanner();
-                    renderArena();
-                } else if (state.status === 'finished') {
-                    clearAllTimers();
-                    if (prevStatus !== 'finished') playBeep(660, 0.35, 'triangle');
-                    renderPodium();
-                    switchView('podium');
-                }
-            }
-
-            /* --- LOGIKA SKOR, PENALTI, JUARA & TIMER 60 DETIK --- */
-            function calculateSpeedPoints(elapsedMs) {
-                if (elapsedMs < 2000) return 3;
-                if (elapsedMs <= 4000) return 2;
-                return 1;
-            }
-
-            function evaluateWinner(uid) {
-                var p = state.players[uid];
-                if (!p || p.rank !== null) return;
-                if (p.score >= state.target) {
-                    p.rank = state.winners.length + 1;
-                    state.winners.push({ uid: p.uid, name: p.name, score: p.score, rank: p.rank });
-                    playBeep(780, 0.25, 'triangle');
-                    showToast('Juara ' + p.rank + ': ' + p.name + ' mencapai target!', 'ok');
-
-                    if (state.winners.length === 1 && !state.overtimeEnd) {
-                        state.overtimeEnd = Date.now() + 60000;
-                        startOvertimeCountdown();
-                    }
-                    if (state.winners.length >= 3) {
-                        finishRaceNow();
-                    }
-                }
-            }
-
-            function startOvertimeCountdown() {
-                if (state.overtimeInterval) clearInterval(state.overtimeInterval);
-                updateOvertimeBanner();
-                state.overtimeInterval = setInterval(function () {
-                    updateOvertimeBanner();
-                    if (state.overtimeEnd && Date.now() >= state.overtimeEnd) {
-                        finishRaceNow();
-                    }
-                }, 250);
-            }
-
-            function updateOvertimeBanner() {
-                var banner = el('overtime-banner');
-                if (!banner) return;
-                if (!state.overtimeEnd || state.winners.length === 0) {
-                    banner.classList.add('hidden');
-                    return;
-                }
-                banner.classList.remove('hidden');
-                el('first-winner-name').textContent = state.winners[0].name;
-                var rem = Math.max(0, Math.ceil((state.overtimeEnd - Date.now()) / 1000));
-                el('overtime-seconds').textContent = rem;
-            }
-
-            function finishRaceNow() {
-                if (state.status === 'finished') return;
-                clearAllTimers();
-                state.status = 'finished';
-
-                var list = getSortedPlayers();
-                var nextRank = state.winners.length + 1;
-                for (var i = 0; i < list.length; i++) {
-                    if (list[i].rank === null && nextRank <= 3) {
-                        list[i].rank = nextRank;
-                        state.winners.push({
-                            uid: list[i].uid,
-                            name: list[i].name,
-                            score: list[i].score,
-                            rank: nextRank
-                        });
-                        nextRank++;
-                    }
-                }
-
-                playBeep(880, 0.4, 'triangle');
-                if (state.mode === 'multiplayer' && state.role === 'host') {
-                    syncHostState();
-                }
-                renderPodium();
-                switchView('podium');
-            }
-
-            function getSortedPlayers() {
-                var arr = [];
-                for (var uid in state.players) {
-                    if (Object.prototype.hasOwnProperty.call(state.players, uid)) {
-                        arr.push(state.players[uid]);
-                    }
-                }
-                arr.sort(function (a, b) {
-                    if (a.rank !== null && b.rank !== null) return a.rank - b.rank;
-                    if (a.rank !== null) return -1;
-                    if (b.rank !== null) return 1;
-                    return (b.score || 0) - (a.score || 0);
-                });
-                return arr;
-            }
-
-            /* --- MODE SOLO BOT --- */
-            function startSoloRace() {
-                clearAllTimers();
-                var pName = (el('inp-solo-name').value || '').trim() || 'Pelari 1';
-                var botCount = parseInt(el('sel-solo-bots').value, 10) || 3;
-                state.botDifficulty = el('sel-solo-diff').value || 'medium';
-                state.target = sanitizeTarget(el('inp-solo-target').value);
-                state.mode = 'solo';
-                state.role = 'player';
-                state.pin = '';
-                state.status = 'playing';
-                state.score = 0;
-                state.wrongStreak = 0;
-                state.winners = [];
-                state.overtimeEnd = null;
-                state.players = {};
-                state.prevScores = {};
-
-                state.players[myUid] = {
-                    uid: myUid,
-                    name: pName,
-                    isBot: false,
-                    color: RUNNER_COLORS[0],
-                    score: 0,
-                    rank: null,
-                    lane: MARATHON_LANES[0]
-                };
-                state.prevScores[myUid] = 0;
-
-                for (var i = 0; i < botCount; i++) {
-                    var bId = 'bot_' + (i + 1);
-                    state.players[bId] = {
-                        uid: bId,
-                        name: BOT_NAMES[i % BOT_NAMES.length] + ' [BOT]',
-                        isBot: true,
-                        color: RUNNER_COLORS[(i + 1) % RUNNER_COLORS.length],
-                        score: 0,
-                        wrongStreak: 0,
-                        rank: null,
-                        lane: MARATHON_LANES[(i + 1) % MARATHON_LANES.length]
-                    };
-                    state.prevScores[bId] = 0;
-                }
-
-                el('marathon-stage').innerHTML = '';
-                prepareArena();
-                switchView('game');
-                runCountdown(function () {
-                    state.qStartTime = Date.now();
-                    startQuizRealTimeTimer();
-                    scheduleAllBots();
-                });
-            }
-
-            function scheduleAllBots() {
-                for (var uid in state.players) {
-                    if (Object.prototype.hasOwnProperty.call(state.players, uid)) {
-                        if (state.players[uid].isBot) {
-                            scheduleSingleBot(uid);
-                        }
-                    }
-                }
-            }
-
-            function scheduleSingleBot(botUid) {
-                if (state.status !== 'playing') return;
-                var range = BOT_SPEEDS[state.botDifficulty] || [2100, 3800];
-                var delay = Math.floor(Math.random() * (range[1] - range[0] + 1)) + range[0];
-                state.botTimeouts[botUid] = setTimeout(function () {
-                    if (state.status !== 'playing') return;
-                    var bot = state.players[botUid];
-                    if (!bot) return;
-                    var isCorrect = Math.random() < 0.85;
-                    if (isCorrect) {
-                        var gain = delay < 2000 ? 3 : (delay <= 4000 ? 2 : 1);
-                        bot.wrongStreak = 0;
-                        bot.score = (bot.score || 0) + gain;
-                        triggerStickmanRun(botUid);
-                        evaluateWinner(botUid);
-                    } else {
-                        bot.wrongStreak = (bot.wrongStreak || 0) + 1;
-                        if (bot.wrongStreak >= 2) {
-                            bot.score = Math.max(0, (bot.score || 0) - 1);
-                            bot.wrongStreak = 0;
-                        }
-                    }
-                    if (state.status === 'playing') {
-                        renderArena();
-                        if (state.mode === 'multiplayer' && state.role === 'host') {
-                            syncHostState();
-                        }
-                        scheduleSingleBot(botUid);
-                    }
-                }, delay);
-            }
-
-            /* --- MULTIPLAYER: HOST & GABUNG --- */
-            function createHostRoom() {
-                clearAllTimers();
-                var hostName = (el('inp-host-name').value || '').trim() || 'Host Arena';
-                state.target = sanitizeTarget(el('inp-host-target').value);
-                state.mode = 'multiplayer';
-                state.role = 'host';
-                state.pin = String(Math.floor(100000 + Math.random() * 900000));
-                state.status = 'lobby';
-                state.players = {};
-                state.winners = [];
-                state.overtimeEnd = null;
-                state.prevScores = {};
-
-                renderLobby();
-                switchView('lobby');
-                syncHostState();
-                showToast('Room berhasil dibuat! PIN: ' + state.pin, 'ok');
-            }
-
-            function addBotToLobby() {
-                if (state.mode !== 'multiplayer' || state.role !== 'host') return;
-                var keys = Object.keys(state.players);
-                if (keys.length >= 12) {
-                    showToast('Maksimal 12 peserta per room.', 'err');
-                    return;
-                }
-                var botIndex = 0;
-                for (var i = 0; i < keys.length; i++) {
-                    if (state.players[keys[i]].isBot) botIndex++;
-                }
-                var bId = 'bot_' + Date.now() + '_' + botIndex;
-                var idx = keys.length;
-                state.players[bId] = {
-                    uid: bId,
-                    name: BOT_NAMES[botIndex % BOT_NAMES.length] + ' [BOT]',
-                    isBot: true,
-                    color: RUNNER_COLORS[idx % RUNNER_COLORS.length],
-                    score: 0,
-                    wrongStreak: 0,
-                    rank: null,
-                    lane: MARATHON_LANES[idx % MARATHON_LANES.length]
-                };
-                state.prevScores[bId] = 0;
-                renderLobby();
-                syncHostState();
-                showToast('Bot ditambahkan ke lobby!', 'ok');
-            }
-
-            function startMultiplayerRace() {
-                if (state.mode !== 'multiplayer' || state.role !== 'host') return;
-                if (Object.keys(state.players).length === 0) {
-                    showToast('Belum ada peserta! Tambahkan bot atau tunggu pemain.', 'err');
-                    return;
-                }
-                state.status = 'playing';
-                state.winners = [];
-                state.overtimeEnd = null;
-
-                for (var uid in state.players) {
-                    if (Object.prototype.hasOwnProperty.call(state.players, uid)) {
-                        state.players[uid].score = 0;
-                        state.players[uid].wrongStreak = 0;
-                        state.players[uid].rank = null;
-                        state.prevScores[uid] = 0;
-                    }
-                }
-
-                el('marathon-stage').innerHTML = '';
-                prepareArena();
-                switchView('game');
-                syncHostState();
-                runCountdown(function () {
-                    scheduleAllBots();
-                });
-            }
-
-            function joinPlayerRoom() {
-                clearAllTimers();
-                var pinVal = (el('inp-join-pin').value || '').replace(/\D/g, '');
-                var playerName = (el('inp-join-name').value || '').trim() || 'Pemain';
-                if (pinVal.length !== 6) {
-                    showToast('Masukkan 6 digit PIN Room!', 'err');
-                    return;
-                }
-
-                state.mode = 'multiplayer';
-                state.role = 'player';
-                state.pin = pinVal;
-                state.status = 'lobby';
-                state.score = 0;
-                state.wrongStreak = 0;
-                state.players = {};
-                state.winners = [];
-                state.overtimeEnd = null;
-                state.prevScores = {};
-
-                // Cek snapshot room jika tersimpan di localStorage browser yang sama
-                try {
-                    var cachedRoom = localStorage.getItem('bhs_sync_room_' + pinVal);
-                    if (cachedRoom) {
-                        var parsed = JSON.parse(cachedRoom);
-                        if (parsed && parsed.players) {
-                            state.players = parsed.players;
-                            state.target = parsed.target || 50;
-                        }
-                    }
-                } catch (e) {}
-
-                var count = Object.keys(state.players).length;
-                state.players[myUid] = {
-                    uid: myUid,
-                    name: playerName,
-                    isBot: false,
-                    color: RUNNER_COLORS[count % RUNNER_COLORS.length],
-                    score: 0,
-                    rank: null,
-                    lane: MARATHON_LANES[count % MARATHON_LANES.length]
-                };
-                state.prevScores[myUid] = 0;
-
-                renderLobby();
-                switchView('lobby');
-                broadcastPacket(pinVal, {
-                    type: 'PLAYER_JOIN',
-                    player: state.players[myUid]
-                });
-                showToast('Terhubung ke Lobby PIN ' + pinVal, 'ok');
-            }
-
-            function renderLobby() {
-                el('lobby-pin-text').textContent = state.pin;
-                el('lobby-target-val').textContent = state.target;
-                el('lobby-player-target').textContent = state.target;
-
-                if (state.role === 'host') {
-                    el('lobby-host-controls').classList.remove('hidden');
-                    el('lobby-player-controls').classList.add('hidden');
-                } else {
-                    el('lobby-host-controls').classList.add('hidden');
-                    el('lobby-player-controls').classList.remove('hidden');
-                }
-
-                var grid = el('lobby-players-grid');
-                var keys = Object.keys(state.players);
-                el('lobby-count').textContent = keys.length;
-
-                if (keys.length === 0) {
-                    grid.innerHTML = '<div class="col-span-full text-center py-6 text-slate-400 text-xs">Menunggu pemain bergabung menggunakan PIN di atas...</div>';
-                    return;
-                }
-
-                var html = '';
-                for (var i = 0; i < keys.length; i++) {
-                    var p = state.players[keys[i]];
-                    html += '<div class="bg-slate-950/90 border border-white/10 rounded-2xl p-3 flex items-center gap-2.5">' +
-                        createStickmanSVG(p.color, true, 'w-8 h-8 shrink-0') +
-                        '<div class="truncate text-left">' +
-                        '<div class="font-bold text-xs sm:text-sm truncate">' + escapeHtml(p.name) + '</div>' +
-                        '<div class="text-[10px] font-bold text-slate-400">' + (p.isBot ? 'BOT AI' : 'PESERTA') + '</div>' +
-                        '</div></div>';
-                }
-                grid.innerHTML = html;
-            }
-
-            /* --- ARENA BALAPAN & LINTASAN 1 JALUR MARATON --- */
-            function prepareArena() {
-                var t = state.target;
-                el('arena-target-val').textContent = t;
-                el('quiz-target-val').textContent = t;
-                el('mark-25').textContent = Math.round(t * 0.25);
-                el('mark-50').textContent = Math.round(t * 0.5);
-                el('mark-75').textContent = Math.round(t * 0.75);
-                el('mark-100').textContent = t;
-
-                var isHostView = (state.mode === 'multiplayer' && state.role === 'host');
-                if (isHostView) {
-                    el('arena-host-bar').classList.remove('hidden');
-                    el('arena-quiz-panel').classList.add('hidden');
-                    el('btn-player-quit').classList.add('hidden');
-                } else {
-                    el('arena-host-bar').classList.add('hidden');
-                    el('arena-quiz-panel').classList.remove('hidden');
-                    el('btn-player-quit').classList.remove('hidden');
-                    state.score = 0;
-                    state.wrongStreak = 0;
-                    el('quiz-my-score').textContent = '0';
-                    el('quiz-streak-badge').classList.add('hidden');
-                    generateNewQuestion();
-                }
-
-                updateOvertimeBanner();
-                renderArena();
-            }
-
-            function triggerStickmanRun(uid) {
-                var node = document.getElementById('runner-node-' + uid);
-                if (node) {
-                    var svg = node.querySelector('svg');
-                    if (svg) svg.classList.add('is-running');
-                }
-                if (state.runTimeouts[uid]) clearTimeout(state.runTimeouts[uid]);
-                state.runTimeouts[uid] = setTimeout(function () {
-                    var n = document.getElementById('runner-node-' + uid);
-                    if (n) {
-                        var s = n.querySelector('svg');
-                        if (s) s.classList.remove('is-running');
-                    }
-                }, 700);
-            }
-
-            function renderArena() {
-                var stage = el('marathon-stage');
-                if (!stage) return;
-                var sorted = getSortedPlayers();
-                el('arena-total-runners').textContent = sorted.length + ' Pelari';
-
-                // Aturan label di atas stickman:
-                // Host & Solo -> Nama (Skor) pada setiap stickman
-                // HP Pemain Multiplayer -> HANYA Nama pada stickman milik pemain tersebut saja
-                var isHostOrSolo = (state.mode === 'solo' || state.role === 'host');
-
-                for (var i = 0; i < sorted.length; i++) {
-                    var p = sorted[i];
-                    var nodeId = 'runner-node-' + p.uid;
-                    var node = document.getElementById(nodeId);
-                    var pct = Math.min(100, Math.max(0, ((p.score || 0) / state.target) * 100));
-                    var leftPos = 3 + (pct * 0.87);
-
-                    var labelHtml = '';
-                    if (isHostOrSolo) {
-                        var rankTag = p.rank ? ('#' + p.rank + ' ') : '';
-                        labelHtml = '<span class="px-2 py-0.5 rounded-md bg-slate-950/95 border border-white/20 text-[10px] font-extrabold whitespace-nowrap shadow">' +
-                            escapeHtml(rankTag + p.name + ' (' + (p.score || 0) + ')') +
-                            '</span>';
-                    } else if (p.uid === myUid) {
-                        labelHtml = '<span class="px-2 py-0.5 rounded-md bg-amber-400 text-slate-950 text-[10px] font-extrabold whitespace-nowrap shadow">' +
-                            escapeHtml(p.name) +
-                            '</span>';
-                    }
-
-                    if (!node) {
-                        node = document.createElement('div');
-                        node.id = nodeId;
-                        node.className = 'runner-node absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center';
-                        node.style.top = (p.lane || 45) + '%';
-                        node.style.left = leftPos + '%';
-                        node.innerHTML = '<div class="runner-lbl mb-0.5">' + labelHtml + '</div>' +
-                            createStickmanSVG(p.color, false, 'w-9 h-9 sm:w-10 sm:h-10');
-                        stage.appendChild(node);
-                    } else {
-                        node.style.left = leftPos + '%';
-                        node.style.zIndex = (p.uid === myUid) ? '20' : String(10 - Math.min(9, i));
-                        var lblDiv = node.querySelector('.runner-lbl');
-                        if (lblDiv) lblDiv.innerHTML = labelHtml;
-                    }
-                }
-
-                // Render Top 5 Pemain Teratas
-                var top5Box = el('top5-list');
-                var top5 = sorted.slice(0, 5);
-                var topHtml = '';
-                for (var j = 0; j < top5.length; j++) {
-                    var tp = top5[j];
-                    var medal = j === 0 ? 'bg-amber-400 text-slate-950' : (j === 1 ? 'bg-slate-300 text-slate-950' : (j === 2 ? 'bg-orange-400 text-slate-950' : 'bg-slate-800 text-slate-300'));
-                    var highlight = (tp.uid === myUid) ? 'border-amber-400/70 bg-amber-400/10' : 'border-white/10 bg-slate-950/75';
-                    topHtml += '<div class="flex items-center justify-between px-3 py-2 rounded-xl border ' + highlight + '">' +
-                        '<div class="flex items-center gap-2 truncate">' +
-                        '<span class="w-5 h-5 rounded-full ' + medal + ' flex items-center justify-center text-[11px] font-extrabold shrink-0">' + (j + 1) + '</span>' +
-                        '<span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:' + tp.color + '"></span>' +
-                        '<span class="font-bold text-xs sm:text-sm truncate">' + escapeHtml(tp.name) + '</span>' +
-                        '</div>' +
-                        '<span class="font-mono font-extrabold text-xs sm:text-sm text-amber-300 ml-2">' + (tp.score || 0) + '</span>' +
-                        '</div>';
-                }
-                top5Box.innerHTML = topHtml;
-            }
-
-            /* --- SOAL ACAP (-19 s/d 19) & KEYPAD PEMAIN --- */
-            function randomInt(min, max) {
-                return Math.floor(Math.random() * (max - min + 1)) + min;
-            }
-
-            function generateNewQuestion() {
-                var prevText = state.question ? state.question.text : '';
-                var text = '';
-                var ans = 0;
-                var attempts = 0;
-
-                do {
-                    var a = randomInt(-19, 19);
-                    var b = randomInt(-19, 19);
-                    var isPlus = Math.random() < 0.5;
-                    ans = isPlus ? (a + b) : (a - b);
-                    var bText = b < 0 ? ('(' + b + ')') : String(b);
-                    text = a + (isPlus ? ' + ' : ' - ') + bText + ' = ?';
-                    attempts++;
-                } while (text === prevText && attempts < 10);
-
-                state.question = { text: text, ans: ans };
-                state.qStartTime = Date.now();
-                state.answerBuffer = '';
-
-                el('quiz-question-text').textContent = state.question.text;
-                el('quiz-answer-text').textContent = '';
-                updateQuizTimerBadge();
-            }
-
-            function startQuizRealTimeTimer() {
-                if (state.quizTimerInterval) clearInterval(state.quizTimerInterval);
-                state.quizTimerInterval = setInterval(function () {
-                    if (state.status === 'playing') {
-                        updateQuizTimerBadge();
-                    }
-                }, 100);
-            }
-
-            function updateQuizTimerBadge() {
-                var badge = el('quiz-timer-badge');
-                if (!badge || !state.qStartTime) return;
-                var sec = Math.max(0, (Date.now() - state.qStartTime) / 1000);
-                var secStr = sec.toFixed(1);
-                if (sec < 2.0) {
-                    badge.className = 'font-mono text-xs sm:text-sm font-extrabold px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/50 text-emerald-300';
-                    badge.textContent = secStr + ' dtk (+3 poin)';
-                } else if (sec <= 4.0) {
-                    badge.className = 'font-mono text-xs sm:text-sm font-extrabold px-3 py-1 rounded-full bg-sky-500/20 border border-sky-400/50 text-sky-300';
-                    badge.textContent = secStr + ' dtk (+2 poin)';
-                } else {
-                    badge.className = 'font-mono text-xs sm:text-sm font-extrabold px-3 py-1 rounded-full bg-amber-500/20 border border-amber-400/50 text-amber-300';
-                    badge.textContent = secStr + ' dtk (+1 poin)';
-                }
-            }
-
-            function pressDigit(d) {
-                if (state.status !== 'playing') return;
-                if (state.answerBuffer.length >= 4) return;
-                if (state.answerBuffer === '0') state.answerBuffer = d;
-                else if (state.answerBuffer === '-0') state.answerBuffer = '-' + d;
-                else state.answerBuffer += d;
-                el('quiz-answer-text').textContent = state.answerBuffer;
-            }
-
-            function toggleMinusSign() {
-                if (state.status !== 'playing') return;
-                if (state.answerBuffer.indexOf('-') === 0) {
-                    state.answerBuffer = state.answerBuffer.slice(1);
-                } else {
-                    state.answerBuffer = '-' + state.answerBuffer;
-                }
-                el('quiz-answer-text').textContent = state.answerBuffer;
-            }
-
-            function backspaceBuffer() {
-                if (state.status !== 'playing') return;
-                state.answerBuffer = state.answerBuffer.slice(0, -1);
-                el('quiz-answer-text').textContent = state.answerBuffer;
-            }
-
-            function clearBuffer() {
-                if (state.status !== 'playing') return;
-                state.answerBuffer = '';
-                el('quiz-answer-text').textContent = '';
-            }
-
-            function submitAnswer() {
-                if (state.status !== 'playing' || !state.question) return;
-                if (state.answerBuffer === '' || state.answerBuffer === '-') return;
-
-                var userAns = parseInt(state.answerBuffer, 10);
-                if (isNaN(userAns)) return;
-
-                var elapsed = Date.now() - state.qStartTime;
-                var qBox = el('quiz-question-box');
-
-                if (userAns === state.question.ans) {
-                    var pts = calculateSpeedPoints(elapsed);
-                    state.score += pts;
-                    state.wrongStreak = 0;
-
-                    el('quiz-my-score').textContent = state.score;
-                    el('quiz-streak-badge').classList.add('hidden');
-                    playBeep(560 + pts * 110, 0.14, 'sine');
-                    showToast('Benar (' + (elapsed / 1000).toFixed(1) + ' dtk)! +' + pts + ' poin', 'ok');
-
-                    if (state.players[myUid]) {
-                        state.players[myUid].score = state.score;
-                    }
-                    triggerStickmanRun(myUid);
-
-                    if (state.mode === 'solo') {
-                        evaluateWinner(myUid);
-                        if (state.status === 'playing') {
-                            renderArena();
-                            generateNewQuestion();
-                        }
-                    } else {
-                        renderArena();
-                        broadcastPacket(state.pin, {
-                            type: 'PLAYER_SCORE',
-                            uid: myUid,
-                            score: state.score
-                        });
-                        generateNewQuestion();
-                    }
-                } else {
-                    state.wrongStreak += 1;
-                    playBeep(190, 0.22, 'sawtooth');
-                    if (qBox) {
-                        qBox.classList.remove('shake-err', 'border-rose-500', 'bg-rose-950/60');
-                        qBox.classList.add('border-rose-500', 'bg-rose-950/60');
-                        void qBox.offsetWidth;
-                        qBox.classList.add('shake-err');
-                        setTimeout(function () {
-                            if (qBox) {
-                                qBox.classList.remove('border-rose-500', 'bg-rose-950/60');
-                            }
-                        }, 360);
-                    }
-
-                    if (state.wrongStreak >= 2) {
-                        state.score = Math.max(0, state.score - 1);
-                        state.wrongStreak = 0;
-                        el('quiz-my-score').textContent = state.score;
-                        el('quiz-streak-badge').classList.add('hidden');
-                        showToast('2x Salah berturut-turut! Poin -1 & Soal baru...', 'err');
-
-                        if (state.players[myUid]) {
-                            state.players[myUid].score = state.score;
-                        }
-                        if (state.mode === 'solo') {
-                            renderArena();
-                        } else {
-                            renderArena();
-                            broadcastPacket(state.pin, {
-                                type: 'PLAYER_SCORE',
-                                uid: myUid,
-                                score: state.score
-                            });
-                        }
-                    } else {
-                        var badge = el('quiz-streak-badge');
-                        badge.classList.remove('hidden');
-                        badge.textContent = 'Salah: ' + state.wrongStreak + '/2';
-                        showToast('Salah (' + state.wrongStreak + '/2)! Soal baru...', 'err');
-                    }
-
-                    generateNewQuestion();
-                }
-            }
-
-            /* --- HITUNG MUNDUR MULAI --- */
-            function runCountdown(onComplete) {
-                var overlay = el('countdown-overlay');
-                var text = el('countdown-text');
-                var step = 3;
-                overlay.classList.remove('hidden');
-                overlay.classList.add('flex');
-                text.textContent = String(step);
-                playBeep(440, 0.14, 'sine');
-
-                var iv = setInterval(function () {
-                    step -= 1;
-                    if (step > 0) {
-                        text.textContent = String(step);
-                        playBeep(440, 0.14, 'sine');
-                    } else if (step === 0) {
-                        text.textContent = 'LARI!';
-                        playBeep(880, 0.25, 'triangle');
-                    } else {
-                        clearInterval(iv);
-                        overlay.classList.add('hidden');
-                        overlay.classList.remove('flex');
-                        if (typeof onComplete === 'function') onComplete();
-                    }
-                }, 650);
-            }
-
-            /* --- LAYAR PODIUM AKHIR --- */
-            function renderPodium() {
-                var sorted = getSortedPlayers();
-                var visual = el('podium-visual');
-                var standings = el('podium-standings');
-
-                var p1 = sorted[0] || null;
-                var p2 = sorted[1] || null;
-                var p3 = sorted[2] || null;
-
-                function buildPillar(player, place, heightCls, bgCls) {
-                    if (!player) return '<div class="w-24 sm:w-32"></div>';
-                    return '<div class="w-24 sm:w-32 flex flex-col items-center">' +
-                        '<div class="' + (place === 1 ? 'is-winner' : '') + ' mb-1">' +
-                        createStickmanSVG(player.color, false, place === 1 ? 'w-12 h-12' : 'w-10 h-10') +
-                        '</div>' +
-                        '<div class="font-extrabold text-xs sm:text-sm truncate w-full px-1">' + escapeHtml(player.name) + '</div>' +
-                        '<div class="font-mono text-xs text-amber-300 font-bold mb-1.5">' + (player.score || 0) + ' poin</div>' +
-                        '<div class="w-full ' + heightCls + ' ' + bgCls + ' rounded-t-2xl flex items-center justify-center font-extrabold text-2xl sm:text-3xl shadow-lg">' +
-                        place +
-                        '</div></div>';
-                }
-
-                // Urutan visual: Juara 2 (kiri), Juara 1 (tengah), Juara 3 (kanan)
-                visual.innerHTML =
-                    buildPillar(p2, 2, 'h-24 sm:h-28', 'bg-slate-400 text-slate-950') +
-                    buildPillar(p1, 1, 'h-32 sm:h-40', 'bg-amber-400 text-slate-950') +
-                    buildPillar(p3, 3, 'h-20 sm:h-24', 'bg-orange-500 text-slate-950');
-
-                var listHtml = '';
-                for (var i = 0; i < sorted.length; i++) {
-                    var item = sorted[i];
-                    listHtml += '<div class="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-900 border border-white/10">' +
-                        '<div class="flex items-center gap-2.5 truncate">' +
-                        '<span class="font-mono font-extrabold text-xs text-amber-300 w-6">#' + (i + 1) + '</span>' +
-                        '<span class="w-2.5 h-2.5 rounded-full shrink-0" style="background:' + item.color + '"></span>' +
-                        '<span class="font-bold text-xs sm:text-sm truncate">' + escapeHtml(item.name) + '</span>' +
-                        '</div>' +
-                        '<span class="font-mono font-extrabold text-xs sm:text-sm text-emerald-300">' + (item.score || 0) + ' poin</span>' +
-                        '</div>';
-                }
-                standings.innerHTML = listHtml;
-            }
-
-            /* --- BINDING EVENT LISTENER AMAN --- */
-            function bindClick(id, handler) {
-                var node = el(id);
-                if (node) {
-                    node.addEventListener('click', function (ev) {
-                        try {
-                            handler(ev);
-                        } catch (err) {
-                            showToast('Terjadi kesalahan: ' + err.message, 'err');
-                        }
-                    });
-                }
-            }
-
-            // Header & Navigasi Tab
-            bindClick('btn-header-home', resetToHome);
-            bindClick('btn-sound-toggle', function () {
-                state.soundOn = !state.soundOn;
-                el('btn-sound-toggle').textContent = 'Suara: ' + (state.soundOn ? 'ON' : 'OFF');
-                if (state.soundOn) playBeep(520, 0.12, 'sine');
-            });
-
-            bindClick('tab-solo', function () { selectHomeTab('solo'); });
-            bindClick('tab-host', function () { selectHomeTab('host'); });
-            bindClick('tab-join', function () { selectHomeTab('join'); });
-
-            // Preset Target Poin Solo
-            bindClick('btn-solo-t50', function () {
-                el('inp-solo-target').value = '50';
-                el('btn-solo-t50').className = 'py-2 rounded-xl bg-amber-400 text-slate-950 font-extrabold text-sm cursor-pointer';
-                el('btn-solo-t100').className = 'py-2 rounded-xl bg-slate-950 border border-white/20 font-bold text-sm cursor-pointer';
-            });
-            bindClick('btn-solo-t100', function () {
-                el('inp-solo-target').value = '100';
-                el('btn-solo-t100').className = 'py-2 rounded-xl bg-amber-400 text-slate-950 font-extrabold text-sm cursor-pointer';
-                el('btn-solo-t50').className = 'py-2 rounded-xl bg-slate-950 border border-white/20 font-bold text-sm cursor-pointer';
-            });
-
-            // Preset Target Poin Host
-            bindClick('btn-host-t50', function () {
-                el('inp-host-target').value = '50';
-                el('btn-host-t50').className = 'py-2 rounded-xl bg-purple-500 text-white font-extrabold text-sm cursor-pointer';
-                el('btn-host-t100').className = 'py-2 rounded-xl bg-slate-950 border border-white/20 font-bold text-sm cursor-pointer';
-            });
-            bindClick('btn-host-t100', function () {
-                el('inp-host-target').value = '100';
-                el('btn-host-t100').className = 'py-2 rounded-xl bg-purple-500 text-white font-extrabold text-sm cursor-pointer';
-                el('btn-host-t50').className = 'py-2 rounded-xl bg-slate-950 border border-white/20 font-bold text-sm cursor-pointer';
-            });
-
-            // Tombol Aksi Menu Utama
-            bindClick('btn-start-solo', startSoloRace);
-            bindClick('btn-create-room', createHostRoom);
-            bindClick('btn-join-lobby', joinPlayerRoom);
-
-            // Tombol Lobby
-            bindClick('btn-copy-pin', function () {
-                if (!state.pin) return;
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    navigator.clipboard.writeText(state.pin).then(function () {
-                        showToast('PIN ' + state.pin + ' disalin!', 'ok');
-                    }).catch(function () {
-                        showToast('PIN Room: ' + state.pin, 'info');
-                    });
-                } else {
-                    showToast('PIN Room: ' + state.pin, 'info');
-                }
-            });
-            bindClick('btn-lobby-bot', addBotToLobby);
-            bindClick('btn-lobby-start', startMultiplayerRace);
-            bindClick('btn-lobby-leave-host', resetToHome);
-            bindClick('btn-lobby-leave-player', function () {
-                if (state.mode === 'multiplayer' && state.pin) {
-                    broadcastPacket(state.pin, { type: 'PLAYER_LEAVE', uid: myUid });
-                }
-                resetToHome();
-            });
-
-            // Tombol Arena & Host
-            bindClick('btn-host-end-game', finishRaceNow);
-            bindClick('btn-player-quit', function () {
-                if (state.mode === 'multiplayer' && state.pin) {
-                    broadcastPacket(state.pin, { type: 'PLAYER_LEAVE', uid: myUid });
-                }
-                resetToHome();
-            });
-
-            // Tombol Keypad Layar
-            var digitButtons = document.querySelectorAll('.key-digit');
-            for (var dIdx = 0; dIdx < digitButtons.length; dIdx++) {
-                (function (btn) {
-                    btn.addEventListener('click', function () {
-                        try {
-                            pressDigit(btn.getAttribute('data-digit'));
-                        } catch (e) {}
-                    });
-                })(digitButtons[dIdx]);
-            }
-            bindClick('key-backspace', backspaceBuffer);
-            bindClick('key-clear', clearBuffer);
-            bindClick('key-minus', toggleMinusSign);
-            bindClick('key-submit', submitAnswer);
-
-            // Tombol Podium Akhir
-            bindClick('btn-podium-menu', resetToHome);
-
-            // Dukungan Keyboard Fisik
-            document.addEventListener('keydown', function (ev) {
-                if (state.status !== 'playing') return;
-                if (state.mode === 'multiplayer' && state.role === 'host') return;
-                if (ev.key >= '0' && ev.key <= '9') {
-                    ev.preventDefault();
-                    pressDigit(ev.key);
-                } else if (ev.key === '-' || ev.key === '_') {
-                    ev.preventDefault();
-                    toggleMinusSign();
-                } else if (ev.key === 'Backspace') {
-                    ev.preventDefault();
-                    backspaceBuffer();
-                } else if (ev.key === 'Escape') {
-                    ev.preventDefault();
-                    clearBuffer();
-                } else if (ev.key === 'Enter') {
-                    ev.preventDefault();
-                    submitAnswer();
-                }
-            });
+    <!-- ARENA -->
+    <div id="view-arena" class="hidden">
+      <div id="host-bar" class="pin-box hidden">
+        <div style="font-size:0.8rem;color:var(--muted);">PIN ROOM PESERTA</div>
+        <div class="pin-val" id="display-pin">000000</div>
+        <div style="display:flex;gap:8px;max-width:560px;margin:10px auto 0;flex-wrap:wrap;">
+          <button id="btn-add-bot" class="btn btn-amber" style="flex:1;">+ Tambah Bot</button>
+          <button id="btn-host-start" class="btn btn-green" style="flex:1;">▶ Mulai Game</button>
+          <button id="btn-host-end" class="btn btn-red hidden" style="flex:1;">🛑 Akhiri Permainan</button>
+        </div>
+      </div>
+
+      <div id="player-wait" class="pin-box hidden">
+        <h3>⏳ Berhasil Masuk Lobby!</h3>
+        <p style="color:var(--muted);margin-top:6px;">Menunggu Host menekan tombol <strong>Mulai Game</strong>...</p>
+      </div>
+
+      <div class="race-layout">
+        <div class="track-box">
+          <div class="track-header">
+            <span>🏁 Lintasan Maraton (Target: <strong id="lbl-target">50</strong> Poin)</span>
+            <span id="countdown-60" style="color:var(--amber);"></span>
+          </div>
+          <div class="track-canvas" id="track-canvas">
+            <div class="finish-line"></div>
+          </div>
+        </div>
+
+        <div class="top5-box">
+          <h4>🏆 Top 5 Pemain Teratas</h4>
+          <div id="top5-list"></div>
+        </div>
+      </div>
+
+      <!-- PLAYER INPUT PANEL -->
+      <div id="question-panel" class="question-panel hidden">
+        <div style="display:flex;justify-content:space-between;font-size:0.86rem;color:var(--muted);">
+          <span>Skor Anda: <strong id="my-score" style="color:#34d399;">0</strong></span>
+          <span>Waktu Soal: <strong id="q-timer" style="color:#fbbf24;">0.0 dtk</strong></span>
+        </div>
+        <div class="q-text" id="q-text">5 + 3 = ?</div>
+        <div class="ans-display" id="ans-display"></div>
+        <div class="keypad">
+          <button class="k-btn" data-k="1">1</button>
+          <button class="k-btn" data-k="2">2</button>
+          <button class="k-btn" data-k="3">3</button>
+          <button class="k-btn" data-k="4">4</button>
+          <button class="k-btn" data-k="5">5</button>
+          <button class="k-btn" data-k="6">6</button>
+          <button class="k-btn" data-k="7">7</button>
+          <button class="k-btn" data-k="8">8</button>
+          <button class="k-btn" data-k="9">9</button>
+          <button class="k-btn minus" id="k-minus">± / -</button>
+          <button class="k-btn" data-k="0">0</button>
+          <button class="k-btn del" id="k-del">⌫</button>
+          <button class="k-btn sub" id="k-submit">JAWAB (ENTER)</button>
+        </div>
+      </div>
+
+      <!-- PODIUM -->
+      <div id="podium-box" class="pin-box hidden" style="border-color:var(--green);margin-top:14px;">
+        <h2>🏆 Hasil Akhir Balapan</h2>
+        <div id="podium-list" style="max-width:460px;margin:12px auto;"></div>
+        <button id="btn-reload" class="btn btn-blue" style="max-width:260px;margin-top:8px;">Kembali ke Awal</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script>
+    (function () {
+      const DB_URL = "https://game-math-7361f-default-rtdb.asia-southeast1.firebasedatabase.app";
+      const COLORS = ['#3b82f6','#10b981','#f59e0b','#ec4899','#8b5cf6','#06b6d4','#f97316','#84cc16'];
+
+      let st = {
+        mode: 'solo', // solo | host | player
+        pin: '',
+        myId: 'u_' + Math.random().toString(36).slice(2, 9),
+        myName: 'Anda',
+        target: 50,
+        status: 'lobby', // lobby | playing | ended
+        players: {},
+        winners: [],
+        firstWinAt: null,
+        q: { text: '', ans: 0, start: 0 },
+        input: '',
+        wrongStreak: 0,
+        timers: []
+      };
+
+      function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.remove('hidden');
+        clearTimeout(t._id);
+        t._id = setTimeout(() => t.classList.add('hidden'), 2400);
+      }
+
+      async function fbPut(path, data) {
+        try {
+          await fetch(`${DB_URL}/${path}.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        } catch (e) {}
+      }
+
+      async function fbPatch(path, data) {
+        try {
+          await fetch(`${DB_URL}/${path}.json`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        } catch (e) {}
+      }
+
+      async function fbGet(path) {
+        try {
+          const r = await fetch(`${DB_URL}/${path}.json`);
+          if (!r.ok) return null;
+          return await r.json();
+        } catch (e) { return null; }
+      }
+
+      function makeQuestion(prevText) {
+        let a, b, op, text, ans;
+        do {
+          a = Math.floor(Math.random() * 39) - 19;
+          b = Math.floor(Math.random() * 39) - 19;
+          op = Math.random() < 0.5 ? '+' : '-';
+          ans = op === '+' ? a + b : a - b;
+          const bStr = b < 0 ? `(${b})` : `${b}`;
+          text = `${a} ${op} ${bStr}`;
+        } while (text === prevText);
+        st.q = { text, ans, start: Date.now() };
+        st.input = '';
+        document.getElementById('q-text').textContent = text + ' = ?';
+        document.getElementById('ans-display').textContent = '';
+      }
+
+      function stickmanSVG(color) {
+        return `<svg class="stickman-svg" viewBox="0 0 34 48">
+          <circle cx="17" cy="7" r="5" fill="${color}" />
+          <line x1="17" y1="12" x2="17" y2="28" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+          <line class="arm-l" x1="17" y1="16" x2="9" y2="24" stroke="${color}" stroke-width="2.6" stroke-linecap="round"/>
+          <line class="arm-r" x1="17" y1="16" x2="25" y2="24" stroke="${color}" stroke-width="2.6" stroke-linecap="round"/>
+          <line class="leg-l" x1="17" y1="28" x2="10" y2="43" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+          <line class="leg-r" x1="17" y1="28" x2="24" y2="43" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
+        </svg>`;
+      }
+
+      function renderRace() {
+        const list = Object.values(st.players || {});
+        const track = document.getElementById('track-canvas');
+        const maxW = Math.max(160, track.clientWidth - 88);
+
+        track.querySelectorAll('.runner').forEach(el => el.remove());
+
+        list.forEach((p, idx) => {
+          // Pada layar HP pemain, hanya tampilkan stickman pemain tersebut (atau semua di lintasan dengan label hanya di stickman pemain)
+          const isMe = p.id === st.myId;
+          if (st.mode === 'player' && !isMe) return;
+
+          const ratio = Math.min(1, Math.max(0, (p.score || 0) / st.target));
+          const leftPx = 10 + ratio * maxW;
+          const div = document.createElement('div');
+          div.className = 'runner running' + (isMe ? ' me' : '');
+          div.style.left = leftPx + 'px';
+          div.style.bottom = (4 + (idx % 4) * 14) + 'px';
+
+          const labelTxt = (st.mode === 'player')
+            ? p.name
+            : `${p.name} (${p.score || 0})`;
+
+          div.innerHTML = `<div class="runner-label">${labelTxt}</div>${stickmanSVG(p.color || COLORS[idx % COLORS.length])}`;
+          track.appendChild(div);
         });
-    </script>
+
+        // Top 5
+        const sorted = [...list].sort((a, b) => (b.score || 0) - (a.score || 0));
+        document.getElementById('top5-list').innerHTML = sorted.slice(0, 5).map((p, i) => `
+          <div class="top5-item">
+            <span><strong>#${i + 1}</strong> ${p.name}</span>
+            <strong style="color:#34d399;">${p.score || 0} poin</strong>
+          </div>
+        `).join('');
+
+        if (st.players[st.myId]) {
+          document.getElementById('my-score').textContent = st.players[st.myId].score || 0;
+        }
+
+        // Countdown 60s
+        if (st.firstWinAt && st.status === 'playing') {
+          const rem = Math.max(0, 60 - Math.floor((Date.now() - st.firstWinAt) / 1000));
+          document.getElementById('countdown-60').textContent = `⏱️ Sisa waktu: ${rem} dtk`;
+          if (rem === 0 && (st.mode === 'host' || st.mode === 'solo')) {
+            endRace();
+          }
+        }
+      }
+
+      function endRace() {
+        if (st.status === 'ended') return;
+        st.status = 'ended';
+        if (st.mode === 'host') {
+          fbPatch(`balap_hitung/${st.pin}`, { status: 'ended' });
+        }
+        document.getElementById('question-panel').classList.add('hidden');
+        document.getElementById('podium-box').classList.remove('hidden');
+
+        const sorted = Object.values(st.players || {}).sort((a, b) => (b.score || 0) - (a.score || 0));
+        const medals = ['🥇 Juara 1', '🥈 Juara 2', '🥉 Juara 3'];
+        document.getElementById('podium-list').innerHTML = sorted.slice(0, 3).map((p, i) => `
+          <div class="top5-item" style="font-size:1rem;padding:12px;">
+            <span><strong>${medals[i]}</strong> — ${p.name}</span>
+            <strong style="color:#fbbf24;">${p.score || 0} poin</strong>
+          </div>
+        `).join('');
+      }
+
+      function checkWinners() {
+        const list = Object.values(st.players || {});
+        list.forEach(p => {
+          if ((p.score || 0) >= st.target && !st.winners.includes(p.id)) {
+            st.winners.push(p.id);
+            if (!st.firstWinAt) {
+              st.firstWinAt = Date.now();
+              if (st.mode === 'host') {
+                fbPatch(`balap_hitung/${st.pin}`, { firstWinAt: st.firstWinAt, winners: st.winners });
+              }
+            }
+          }
+        });
+        if (st.winners.length >= 3) {
+          endRace();
+        }
+      }
+
+      function handleAnswerSubmit() {
+        if (st.status !== 'playing' || st.mode === 'host') return;
+        const val = parseInt(st.input, 10);
+        if (isNaN(val)) return;
+
+        const me = st.players[st.myId];
+        if (!me) return;
+
+        if (val === st.q.ans) {
+          st.wrongStreak = 0;
+          const elapsed = (Date.now() - st.q.start) / 1000;
+          let pts = 1;
+          if (elapsed < 2) pts = 3;
+          else if (elapsed <= 4) pts = 2;
+
+          me.score = (me.score || 0) + pts;
+          showToast(`Benar (${elapsed.toFixed(1)} dtk)! +${pts} poin`);
+          makeQuestion(st.q.text);
+        } else {
+          st.wrongStreak++;
+          const panel = document.getElementById('question-panel');
+          panel.classList.remove('wrong-shake');
+          void panel.offsetWidth;
+          panel.classList.add('wrong-shake');
+
+          if (st.wrongStreak >= 2) {
+            st.wrongStreak = 0;
+            me.score = Math.max(0, (me.score || 0) - 1);
+            showToast('2x Salah berturut-turut! Poin -1 & Soal baru');
+          } else {
+            showToast('Salah (1/2)! Soal baru...');
+          }
+          makeQuestion(st.q.text);
+        }
+
+        if (st.mode === 'player') {
+          fbPatch(`balap_hitung/${st.pin}/players/${st.myId}`, { score: me.score });
+        }
+        checkWinners();
+        renderRace();
+      }
+
+      function startPollingLoop() {
+        const id = setInterval(async () => {
+          if (st.mode === 'player' && st.status === 'playing') {
+            document.getElementById('q-timer').textContent = ((Date.now() - st.q.start) / 1000).toFixed(1) + ' dtk';
+          }
+
+          if (st.mode === 'host' && st.pin) {
+            const room = await fbGet(`balap_hitung/${st.pin}`);
+            if (room && room.players) {
+              Object.keys(room.players).forEach(k => {
+                st.players[k] = room.players[k];
+              });
+              checkWinners();
+              renderRace();
+            }
+          } else if (st.mode === 'player' && st.pin) {
+            const room = await fbGet(`balap_hitung/${st.pin}`);
+            if (room) {
+              st.target = room.target || st.target;
+              document.getElementById('lbl-target').textContent = st.target;
+              if (room.players) {
+                const myScore = st.players[st.myId] ? st.players[st.myId].score : 0;
+                st.players = room.players;
+                if (st.players[st.myId]) st.players[st.myId].score = Math.max(myScore, st.players[st.myId].score || 0);
+              }
+              if (room.firstWinAt) st.firstWinAt = room.firstWinAt;
+              if (room.status === 'playing' && st.status === 'lobby') {
+                st.status = 'playing';
+                document.getElementById('player-wait').classList.add('hidden');
+                document.getElementById('question-panel').classList.remove('hidden');
+                makeQuestion('');
+              } else if (room.status === 'ended' && st.status !== 'ended') {
+                endRace();
+              }
+              renderRace();
+            }
+          }
+        }, 900);
+        st.timers.push(id);
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
+            const tab = b.getAttribute('data-tab');
+            ['solo', 'host', 'join'].forEach(t => document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab));
+          });
+        });
+
+        document.getElementById('host-target-sel').addEventListener('change', (e) => {
+          document.getElementById('host-custom-wrap').classList.toggle('hidden', e.target.value !== 'custom');
+        });
+
+        // SOLO
+        document.getElementById('btn-start-solo').addEventListener('click', () => {
+          st.mode = 'solo';
+          st.status = 'playing';
+          st.target = parseInt(document.getElementById('solo-target').value, 10);
+          const botCount = parseInt(document.getElementById('solo-bots').value, 10);
+          const diff = document.getElementById('solo-diff').value;
+
+          st.players = {};
+          st.players[st.myId] = { id: st.myId, name: 'Anda', score: 0, color: COLORS[0] };
+          const botNames = ['Budi [BOT]', 'Siti [BOT]', 'Andi [BOT]', 'Rina [BOT]', 'Dimas [BOT]'];
+          for (let i = 0; i < botCount; i++) {
+            const bid = 'bot_' + i;
+            st.players[bid] = { id: bid, name: botNames[i], score: 0, color: COLORS[i + 1], isBot: true, streak: 0 };
+          }
+
+          document.getElementById('lbl-target').textContent = st.target;
+          document.getElementById('view-home').classList.add('hidden');
+          document.getElementById('view-arena').classList.remove('hidden');
+          document.getElementById('question-panel').classList.remove('hidden');
+          makeQuestion('');
+          renderRace();
+
+          const delay = diff === 'easy' ? 3600 : diff === 'medium' ? 2400 : 1500;
+          const botTimer = setInterval(() => {
+            if (st.status !== 'playing') return;
+            Object.values(st.players).forEach(p => {
+              if (!p.isBot) return;
+              if (Math.random() < 0.78) {
+                p.streak = 0;
+                p.score += diff === 'hard' ? 2 : 1;
+              } else {
+                p.streak = (p.streak || 0) + 1;
+                if (p.streak >= 2) { p.streak = 0; p.score = Math.max(0, p.score - 1); }
+              }
+            });
+            checkWinners();
+            renderRace();
+          }, delay);
+          st.timers.push(botTimer);
+          startPollingLoop();
+        });
+
+        // HOST
+        document.getElementById('btn-create-room').addEventListener('click', async () => {
+          st.mode = 'host';
+          st.pin = String(Math.floor(100000 + Math.random() * 900000));
+          const sel = document.getElementById('host-target-sel').value;
+          st.target = sel === 'custom'
+            ? Math.max(10, parseInt(document.getElementById('host-target-custom').value, 10) || 50)
+            : parseInt(sel, 10);
+          st.status = 'lobby';
+          st.players = {};
+
+          await fbPut(`balap_hitung/${st.pin}`, {
+            pin: st.pin,
+            target: st.target,
+            status: 'lobby',
+            players: {}
+          });
+
+          document.getElementById('display-pin').textContent = st.pin;
+          document.getElementById('lbl-target').textContent = st.target;
+          document.getElementById('view-home').classList.add('hidden');
+          document.getElementById('view-arena').classList.remove('hidden');
+          document.getElementById('host-bar').classList.remove('hidden');
+          startPollingLoop();
+        });
+
+        document.getElementById('btn-add-bot').addEventListener('click', async () => {
+          const count = Object.keys(st.players).length;
+          const bid = 'bot_' + Date.now();
+          const botObj = { id: bid, name: 'Bot #' + (count + 1), score: 0, color: COLORS[count % COLORS.length], isBot: true };
+          st.players[bid] = botObj;
+          await fbPut(`balap_hitung/${st.pin}/players/${bid}`, botObj);
+          renderRace();
+        });
+
+        document.getElementById('btn-host-start').addEventListener('click', async () => {
+          st.status = 'playing';
+          document.getElementById('btn-host-start').classList.add('hidden');
+          document.getElementById('btn-add-bot').classList.add('hidden');
+          document.getElementById('btn-host-end').classList.remove('hidden');
+          await fbPatch(`balap_hitung/${st.pin}`, { status: 'playing' });
+
+          // Jalankan bot jika ada
+          const bt = setInterval(() => {
+            if (st.status !== 'playing') return;
+            Object.values(st.players).forEach(p => {
+              if (!p.isBot) return;
+              p.score += Math.random() < 0.7 ? 2 : 0;
+              fbPatch(`balap_hitung/${st.pin}/players/${p.id}`, { score: p.score });
+            });
+            checkWinners();
+            renderRace();
+          }, 2300);
+          st.timers.push(bt);
+        });
+
+        document.getElementById('btn-host-end').addEventListener('click', endRace);
+
+        // JOIN
+        document.getElementById('btn-join-room').addEventListener('click', async () => {
+          const name = document.getElementById('join-name').value.trim();
+          const pin = document.getElementById('join-pin').value.trim();
+          if (!name) return showToast('Masukkan nama Anda!');
+          if (pin.length !== 6) return showToast('PIN harus 6 digit!');
+
+          const room = await fbGet(`balap_hitung/${pin}`);
+          if (!room) return showToast('Room PIN tidak ditemukan!');
+
+          st.mode = 'player';
+          st.pin = pin;
+          st.myName = name;
+          st.target = room.target || 50;
+          st.status = room.status || 'lobby';
+
+          const meObj = { id: st.myId, name: st.myName, score: 0, color: COLORS[Math.floor(Math.random() * COLORS.length)] };
+          st.players[st.myId] = meObj;
+          await fbPut(`balap_hitung/${st.pin}/players/${st.myId}`, meObj);
+
+          document.getElementById('lbl-target').textContent = st.target;
+          document.getElementById('view-home').classList.add('hidden');
+          document.getElementById('view-arena').classList.remove('hidden');
+
+          if (st.status === 'playing') {
+            document.getElementById('question-panel').classList.remove('hidden');
+            makeQuestion('');
+          } else {
+            document.getElementById('player-wait').classList.remove('hidden');
+          }
+          startPollingLoop();
+        });
+
+        // KEYPAD
+        document.querySelectorAll('.k-btn[data-k]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (st.input.length < 4) {
+              st.input += btn.getAttribute('data-k');
+              document.getElementById('ans-display').textContent = st.input;
+            }
+          });
+        });
+        document.getElementById('k-minus').addEventListener('click', () => {
+          st.input = st.input.startsWith('-') ? st.input.slice(1) : '-' + st.input;
+          document.getElementById('ans-display').textContent = st.input;
+        });
+        document.getElementById('k-del').addEventListener('click', () => {
+          st.input = st.input.slice(0, -1);
+          document.getElementById('ans-display').textContent = st.input;
+        });
+        document.getElementById('k-submit').addEventListener('click', handleAnswerSubmit);
+
+        document.addEventListener('keydown', (e) => {
+          if (document.getElementById('question-panel').classList.contains('hidden')) return;
+          if (e.key >= '0' && e.key <= '9' && st.input.length < 4) {
+            st.input += e.key;
+            document.getElementById('ans-display').textContent = st.input;
+          } else if (e.key === '-') {
+            st.input = st.input.startsWith('-') ? st.input.slice(1) : '-' + st.input;
+            document.getElementById('ans-display').textContent = st.input;
+          } else if (e.key === 'Backspace') {
+            st.input = st.input.slice(0, -1);
+            document.getElementById('ans-display').textContent = st.input;
+          } else if (e.key === 'Enter') {
+            handleAnswerSubmit();
+          }
+        });
+
+        document.getElementById('btn-reload').addEventListener('click', () => location.reload());
+      });
+    })();
+  </script>
 </body>
 </html>
