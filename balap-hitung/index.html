@@ -596,6 +596,7 @@
     (function () {
       const DB_URL = "https://game-math-7361f-default-rtdb.asia-southeast1.firebasedatabase.app";
       const COLORS = ['#3b82f6','#10b981','#f59e0b','#ec4899','#8b5cf6','#06b6d4','#f97316','#84cc16'];
+      const ONE_HOUR_MS = 3600000;
 
       let st = {
         mode: 'solo',
@@ -613,6 +614,7 @@
         hasFinished: false,
         celebrated: false,
         confettiRunning: false,
+        roomCleaned: false,
         timers: []
       };
 
@@ -727,6 +729,34 @@
         } catch (e) { return null; }
       }
 
+      async function fbDelete(path, keepalive) {
+        try {
+          await fetch(`${DB_URL}/${path}.json`, {
+            method: 'DELETE',
+            keepalive: !!keepalive
+          });
+        } catch (e) {}
+      }
+
+      function cleanupHostRoom(keepalive) {
+        if (st.mode !== 'host' || !st.pin || st.roomCleaned) return;
+        st.roomCleaned = true;
+        fbDelete(`balap_hitung/${st.pin}`, keepalive);
+      }
+
+      // Bersihkan room lama yang sudah berakhir lebih dari 1 jam saat Host membuat room baru
+      async function purgeExpiredRooms() {
+        const all = await fbGet('balap_hitung');
+        if (!all || typeof all !== 'object') return;
+        const now = Date.now();
+        Object.keys(all).forEach(pinKey => {
+          const r = all[pinKey];
+          if (r && r.status === 'ended' && r.endedAt && (now - r.endedAt >= ONE_HOUR_MS)) {
+            fbDelete(`balap_hitung/${pinKey}`, false);
+          }
+        });
+      }
+
       function makeQuestion(prevText) {
         if (st.hasFinished) return;
         let a, b, op, text, ans;
@@ -793,8 +823,6 @@
           div.style.left = leftPx + 'px';
           div.style.bottom = (4 + (idx % 5) * 12) + 'px';
 
-          // Layar HP Pemain: tampilkan semua stickman lawan tanpa label nama, namun stickman milik pemain tersebut tetap berlabel namanya
-          // Layar Host & Solo: tampilkan Nama (Skor) di atas setiap stickman
           let labelHTML = '';
           if (st.mode === 'player') {
             if (isMe) {
@@ -833,10 +861,8 @@
         if (st.hasFinished) return;
         st.hasFinished = true;
 
-        // Sembunyikan panel soal agar tidak muncul lagi di layar peserta yang sudah finis
         document.getElementById('question-panel').classList.add('hidden');
 
-        // Hitung peringkat saat finis
         const ranked = getRankedPlayers();
         const myRank = ranked.findIndex(p => p.id === st.myId) + 1;
 
@@ -860,11 +886,14 @@
         }
       }
 
-      function endRace() {
+      async function endRace() {
         if (st.status === 'ended') return;
         st.status = 'ended';
+
         if (st.mode === 'host') {
-          fbPatch(`balap_hitung/${st.pin}`, { status: 'ended' });
+          await fbPatch(`balap_hitung/${st.pin}`, { status: 'ended', endedAt: Date.now() });
+          // Jadwalkan penghapusan otomatis 1 jam setelah endRace
+          setTimeout(() => { cleanupHostRoom(false); }, ONE_HOUR_MS);
         }
 
         document.getElementById('question-panel').classList.add('hidden');
@@ -874,7 +903,6 @@
         const sorted = getRankedPlayers();
         const top3 = sorted.slice(0, 3);
 
-        // Cek apakah pemain di HP ini masuk Juara 1, 2, atau 3 untuk memicu selebrasi meriah
         if ((st.mode === 'player' || st.mode === 'solo') && top3.some(p => p.id === st.myId)) {
           if (!st.celebrated) {
             st.celebrated = true;
@@ -886,7 +914,6 @@
           launchConfetti(6500);
         }
 
-        // Susun urutan tampilan podium: Juara 2 (kiri), Juara 1 (tengah tertinggi), Juara 3 (kanan)
         const order = [
           { rank: 2, player: top3[1], medal: '🥈' },
           { rank: 1, player: top3[0], medal: '👑🥇' },
@@ -996,7 +1023,7 @@
             document.getElementById('q-timer').textContent = ((Date.now() - st.q.start) / 1000).toFixed(1) + ' dtk';
           }
 
-          if (st.mode === 'host' && st.pin) {
+          if (st.mode === 'host' && st.pin && st.status !== 'ended') {
             const room = await fbGet(`balap_hitung/${st.pin}`);
             if (room && room.players) {
               Object.keys(room.players).forEach(k => {
@@ -1005,7 +1032,7 @@
               checkWinners();
               renderRace();
             }
-          } else if (st.mode === 'player' && st.pin) {
+          } else if (st.mode === 'player' && st.pin && st.status !== 'ended') {
             const room = await fbGet(`balap_hitung/${st.pin}`);
             if (room) {
               st.target = room.target || st.target;
@@ -1040,6 +1067,13 @@
         }, 850);
         st.timers.push(id);
       }
+
+      // Hapus PIN otomatis saat Host menutup tab/browser
+      window.addEventListener('beforeunload', () => {
+        if (st.mode === 'host' && st.pin && !st.roomCleaned) {
+          cleanupHostRoom(true);
+        }
+      });
 
       document.addEventListener('DOMContentLoaded', () => {
         const isHostAllowed = sessionStorage.getItem("arena_host_verified") === "true";
@@ -1112,8 +1146,10 @@
         // HOST
         document.getElementById('btn-create-room').addEventListener('click', async () => {
           if (sessionStorage.getItem("arena_host_verified") !== "true") return showToast("Akses Host terkunci!");
+          purgeExpiredRooms();
           st.mode = 'host';
           st.pin = String(Math.floor(100000 + Math.random() * 900000));
+          st.roomCleaned = false;
           const sel = document.getElementById('host-target-sel').value;
           st.target = sel === 'custom'
             ? Math.max(10, parseInt(document.getElementById('host-target-custom').value, 10) || 50)
@@ -1180,6 +1216,7 @@
 
           const room = await fbGet(`balap_hitung/${pin}`);
           if (!room) return showToast('Room PIN tidak ditemukan!');
+          if (room.status === 'ended') return showToast('Permainan untuk PIN ini sudah berakhir!');
 
           st.mode = 'player';
           st.pin = pin;
@@ -1243,7 +1280,11 @@
           }
         });
 
-        document.getElementById('btn-reload').addEventListener('click', () => location.reload());
+        // Saat menekan "Kembali ke Awal", PIN tetap ada di database (tidak langsung dihapus)
+        document.getElementById('btn-reload').addEventListener('click', () => {
+          st.pin = '';
+          location.reload();
+        });
       });
     })();
   </script>
