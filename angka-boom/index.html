@@ -28,16 +28,14 @@
       align-items: center;
       transition: background 0.3s ease;
     }
-    body.boom-flash {
-      background: radial-gradient(circle at center, #7f1d1d 0%, #0f172a 80%);
-    }
+    body.boom-flash { background: radial-gradient(circle at center, #7f1d1d 0%, #0f172a 80%); }
     .topbar {
       width: 100%;
       max-width: 1040px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
     }
     .back-btn {
       display: inline-flex;
@@ -52,6 +50,14 @@
       font-weight: 600;
       border: 1px solid var(--border);
     }
+    .conn-badge {
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(16,185,129,0.18);
+      color: #34d399;
+      font-weight: 700;
+    }
     .container {
       width: 100%;
       max-width: 1040px;
@@ -62,7 +68,7 @@
       box-shadow: 0 20px 40px rgba(0,0,0,0.35);
     }
     h1 { font-size: clamp(1.4rem, 3vw, 2rem); margin-bottom: 6px; }
-    .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 20px; }
+    .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 18px; }
     .tabs {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -70,7 +76,7 @@
       background: var(--panel-2);
       padding: 6px;
       border-radius: 14px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
     .tab-btn {
       padding: 11px 8px;
@@ -81,10 +87,7 @@
       font-weight: 700;
       cursor: pointer;
     }
-    .tab-btn.active {
-      background: var(--amber);
-      color: #1c1917;
-    }
+    .tab-btn.active { background: var(--amber); color: #1c1917; }
     .hidden { display: none !important; }
     .form-group { margin-bottom: 14px; }
     label { display: block; font-size: 0.88rem; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
@@ -109,7 +112,6 @@
     .btn-amber { background: var(--amber); color: #1c1917; }
     .btn-blue { background: var(--blue); color: #fff; }
     .btn-green { background: var(--green); color: #052e16; }
-    .btn-red { background: var(--red); color: #fff; }
     .rules-box {
       background: rgba(245,158,11,0.1);
       border: 1px solid rgba(245,158,11,0.28);
@@ -123,36 +125,15 @@
       background: var(--panel-2);
       border: 2px solid var(--amber);
       border-radius: 18px;
-      padding: 22px 16px;
+      padding: 20px 16px;
       text-align: center;
       margin-bottom: 18px;
     }
-    .range-numbers {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 18px;
-      margin: 10px 0;
-    }
-    .bound-num {
-      font-size: clamp(2.2rem, 5vw, 3.4rem);
-      font-weight: 900;
-      color: var(--amber);
-    }
-    .bomb-icon {
-      font-size: 2.8rem;
-      display: inline-block;
-      animation: pulse 1.2s infinite;
-    }
-    @keyframes pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.14); }
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 20px;
-    }
+    .range-numbers { display: flex; align-items: center; justify-content: center; gap: 18px; margin: 10px 0; }
+    .bound-num { font-size: clamp(2.2rem, 5vw, 3.4rem); font-weight: 900; color: var(--amber); }
+    .bomb-icon { font-size: 2.8rem; display: inline-block; animation: pulse 1.2s infinite; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.14); } }
+    .grid-2 { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; }
     @media (max-width: 780px) { .grid-2 { grid-template-columns: 1fr; } }
     .box {
       background: var(--panel-2);
@@ -192,16 +173,8 @@
       margin-bottom: 8px;
       border-left: 4px solid var(--green);
     }
-    .leader-row.eliminated {
-      border-left-color: var(--red);
-      opacity: 0.65;
-    }
-    .pin-code {
-      font-size: 2.3rem;
-      font-weight: 900;
-      letter-spacing: 6px;
-      color: var(--amber);
-    }
+    .leader-row.eliminated { border-left-color: var(--red); opacity: 0.65; }
+    .pin-code { font-size: 2.3rem; font-weight: 900; letter-spacing: 6px; color: var(--amber); }
     .toast {
       position: fixed;
       bottom: 20px;
@@ -220,7 +193,7 @@
 <body>
   <div class="topbar">
     <a href="../index.html" class="back-btn">← Menu Utama</a>
-    <span style="font-size:0.85rem;color:var(--muted);font-weight:600;">Angka Boom</span>
+    <span class="conn-badge">● Firebase Terhubung</span>
   </div>
 
   <div class="container">
@@ -242,7 +215,6 @@
         <button class="tab-btn" data-tab="join">Gabung Room</button>
       </div>
 
-      <!-- SOLO -->
       <div id="tab-solo">
         <div class="form-group">
           <label>Batas Atas Angka</label>
@@ -263,7 +235,6 @@
         <button id="btn-start-solo" class="btn btn-amber">Mulai Main Lawan Bot</button>
       </div>
 
-      <!-- HOST -->
       <div id="tab-host" class="hidden">
         <div class="form-group">
           <label>Rentang Awal Permainan</label>
@@ -276,7 +247,6 @@
         <button id="btn-create-room" class="btn btn-blue">Buat Room Angka Boom</button>
       </div>
 
-      <!-- JOIN -->
       <div id="tab-join" class="hidden">
         <div class="form-group">
           <label>Nama Peserta</label>
@@ -290,7 +260,7 @@
       </div>
     </div>
 
-    <!-- ARENA HOST & SOLO -->
+    <!-- ARENA -->
     <div id="view-arena" class="hidden">
       <div id="host-pin-box" class="box hidden" style="text-align:center;margin-bottom:16px;">
         <div style="font-size:0.82rem;color:var(--muted);">PIN ROOM PESERTA</div>
@@ -318,7 +288,7 @@
       <div class="grid-2">
         <div class="box">
           <div id="input-section">
-            <label id="input-label">Masukkan Tebakan Anda</label>
+            <label>Masukkan Tebakan Anda</label>
             <div style="display:flex;gap:10px;">
               <input type="number" id="guess-input" placeholder="Ketik angka..." />
               <button id="btn-submit-guess" class="btn btn-amber" style="width:auto;padding:0 24px;">KIRIM</button>
@@ -347,11 +317,10 @@
 
   <script>
     (function () {
-      const CHANNEL_NAME = 'arena_angka_boom_v1';
-      const bc = ('BroadcastChannel' in window) ? new BroadcastChannel(CHANNEL_NAME) : null;
+      const DB_URL = "https://game-math-7361f-default-rtdb.asia-southeast1.firebasedatabase.app";
 
       let state = {
-        mode: 'solo', // solo | host | player
+        mode: 'solo',
         pin: '',
         playerId: 'p_' + Math.random().toString(36).slice(2, 9),
         playerName: 'Anda',
@@ -359,10 +328,11 @@
         high: 100,
         maxInit: 100,
         boomNumber: 50,
-        participants: [], // { id, name, alive, safeCount, isBot }
+        participants: [],
         turnIndex: 0,
-        status: 'lobby', // lobby | playing | ended
-        logs: []
+        status: 'lobby',
+        logs: [],
+        lastActionTs: 0
       };
 
       function showToast(msg) {
@@ -373,14 +343,36 @@
         el._t = setTimeout(() => el.classList.add('hidden'), 2600);
       }
 
-      function randomBoom(low, high) {
-        return Math.floor(Math.random() * (high - low - 1)) + low + 1;
+      async function fbPut(path, data) {
+        try {
+          await fetch(`${DB_URL}/${path}.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        } catch (e) {}
       }
 
-      function broadcast(type, payload) {
-        const msg = { type, pin: state.pin, payload, ts: Date.now() };
-        if (bc) bc.postMessage(msg);
-        try { localStorage.setItem(CHANNEL_NAME + '_evt', JSON.stringify(msg)); } catch (e) {}
+      async function fbPatch(path, data) {
+        try {
+          await fetch(`${DB_URL}/${path}.json`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        } catch (e) {}
+      }
+
+      async function fbGet(path) {
+        try {
+          const r = await fetch(`${DB_URL}/${path}.json`);
+          if (!r.ok) return null;
+          return await r.json();
+        } catch (e) { return null; }
+      }
+
+      function randomBoom(low, high) {
+        return Math.floor(Math.random() * (high - low - 1)) + low + 1;
       }
 
       function renderUI() {
@@ -391,10 +383,6 @@
         document.getElementById('range-hint').innerHTML = minSafe <= maxSafe
           ? `Pilih angka di antara <strong>${minSafe}</strong> sampai <strong>${maxSafe}</strong>`
           : 'Hanya tersisa 1 angka!';
-
-        const guessInput = document.getElementById('guess-input');
-        guessInput.min = minSafe;
-        guessInput.max = maxSafe;
 
         const activePlayer = state.participants[state.turnIndex];
         const turnEl = document.getElementById('turn-indicator');
@@ -420,7 +408,6 @@
           inputSection.classList.toggle('hidden', !isMyTurn);
         }
 
-        // Render Top 10 Participants
         const sorted = [...state.participants].sort((a, b) => {
           if (a.alive !== b.alive) return a.alive ? -1 : 1;
           return (b.safeCount || 0) - (a.safeCount || 0);
@@ -429,14 +416,11 @@
         document.getElementById('participants-list').innerHTML = sorted.map((p, i) => `
           <div class="leader-row ${p.alive ? '' : 'eliminated'}">
             <div><strong>#${i + 1} ${p.name}</strong></div>
-            <div style="font-size:0.85rem;">
-              ${p.alive ? `🛡️ Aman ${p.safeCount || 0}x` : '💥 Kena Boom'}
-            </div>
+            <div style="font-size:0.85rem;">${p.alive ? `🛡️ Aman ${p.safeCount || 0}x` : '💥 Kena Boom'}</div>
           </div>
         `).join('');
 
-        // Render Logs
-        document.getElementById('log-list').innerHTML = state.logs.map(l => `
+        document.getElementById('log-list').innerHTML = (state.logs || []).map(l => `
           <div class="log-item ${l.isBoom ? 'boom' : ''}">
             <span><strong>${l.name}</strong> menebak <strong>${l.val}</strong></span>
             <span>${l.isBoom ? '💥 BOOM!' : `Rentang: ${l.range}`}</span>
@@ -449,9 +433,7 @@
         if (aliveList.length <= 1) {
           state.status = 'ended';
           const winner = aliveList[0];
-          document.getElementById('boom-title').textContent = winner
-            ? `🏆 Pemenang: ${winner.name}!`
-            : '💥 Angka Boom Terpicu!';
+          document.getElementById('boom-title').textContent = winner ? `🏆 Pemenang: ${winner.name}!` : '💥 Angka Boom Terpicu!';
           document.getElementById('boom-desc').textContent = `Angka Boom adalah ${state.boomNumber}.`;
           return;
         }
@@ -464,7 +446,7 @@
         }
       }
 
-      function processGuess(playerId, val) {
+      async function processGuess(playerId, val) {
         if (state.status !== 'playing') return;
         const p = state.participants.find(x => x.id === playerId);
         if (!p || !p.alive) return;
@@ -485,9 +467,7 @@
             state.status = 'ended';
             const survivor = state.participants.find(x => x.alive);
             document.getElementById('boom-title').textContent = `💥 ${p.name} Kena Angka Boom (${val})!`;
-            document.getElementById('boom-desc').textContent = survivor
-              ? `Selamat! ${survivor.name} bertahan paling akhir.`
-              : 'Permainan berakhir.';
+            document.getElementById('boom-desc').textContent = survivor ? `Selamat! ${survivor.name} bertahan paling akhir.` : 'Permainan berakhir.';
           } else {
             nextTurn();
           }
@@ -495,20 +475,14 @@
           p.safeCount = (p.safeCount || 0) + 1;
           if (val < state.boomNumber) state.low = val;
           else state.high = val;
-          state.logs.unshift({
-            name: p.name,
-            val,
-            isBoom: false,
-            range: `${state.low} – ${state.high}`
-          });
+          state.logs.unshift({ name: p.name, val, isBoom: false, range: `${state.low} – ${state.high}` });
           nextTurn();
         }
 
         if (state.mode === 'host') {
-          broadcast('STATE_UPDATE', {
+          await fbPatch(`angka_boom/${state.pin}`, {
             low: state.low,
             high: state.high,
-            boomNumber: state.boomNumber,
             participants: state.participants,
             turnIndex: state.turnIndex,
             status: state.status,
@@ -546,17 +520,9 @@
         state.turnIndex = 0;
         document.getElementById('bomb-emoji').textContent = '💣';
 
-        state.participants = [
-          { id: state.playerId, name: 'Anda', alive: true, safeCount: 0, isBot: false }
-        ];
+        state.participants = [{ id: state.playerId, name: 'Anda', alive: true, safeCount: 0, isBot: false }];
         for (let i = 1; i <= botCount; i++) {
-          state.participants.push({
-            id: 'bot_' + i,
-            name: 'Bot ' + i,
-            alive: true,
-            safeCount: 0,
-            isBot: true
-          });
+          state.participants.push({ id: 'bot_' + i, name: 'Bot ' + i, alive: true, safeCount: 0, isBot: true });
         }
 
         document.getElementById('view-home').classList.add('hidden');
@@ -565,47 +531,40 @@
         renderUI();
       }
 
-      function handleMessage(msg) {
-        if (!msg || msg.pin !== state.pin) return;
-        if (state.mode === 'host') {
-          if (msg.type === 'JOIN') {
-            if (!state.participants.some(p => p.id === msg.payload.id)) {
-              state.participants.push({
-                id: msg.payload.id,
-                name: msg.payload.name,
-                alive: true,
-                safeCount: 0,
-                isBot: false
+      function startFirebaseSync() {
+        setInterval(async () => {
+          if (!state.pin) return;
+          const room = await fbGet(`angka_boom/${state.pin}`);
+          if (!room) return;
+
+          if (state.mode === 'host') {
+            // Cek peserta baru di node playersMap
+            if (room.playersMap) {
+              Object.values(room.playersMap).forEach(pl => {
+                if (!state.participants.some(x => x.id === pl.id)) {
+                  state.participants.push({ id: pl.id, name: pl.name, alive: true, safeCount: 0, isBot: false });
+                  fbPatch(`angka_boom/${state.pin}`, { participants: state.participants });
+                }
               });
             }
+            // Cek tebakan masuk dari HP peserta
+            if (room.lastGuess && room.lastGuess.ts > state.lastActionTs) {
+              state.lastActionTs = room.lastGuess.ts;
+              await processGuess(room.lastGuess.id, room.lastGuess.val);
+            }
             renderUI();
-            broadcast('STATE_UPDATE', {
-              low: state.low,
-              high: state.high,
-              boomNumber: state.boomNumber,
-              participants: state.participants,
-              turnIndex: state.turnIndex,
-              status: state.status,
-              logs: state.logs
-            });
-          } else if (msg.type === 'PLAYER_GUESS') {
-            processGuess(msg.payload.id, msg.payload.val);
-          }
-        } else if (state.mode === 'player') {
-          if (msg.type === 'STATE_UPDATE') {
-            Object.assign(state, msg.payload);
+          } else if (state.mode === 'player') {
+            state.low = room.low;
+            state.high = room.high;
+            state.participants = room.participants || [];
+            state.turnIndex = room.turnIndex || 0;
+            state.status = room.status || 'lobby';
+            state.logs = room.logs || [];
             document.getElementById('bomb-emoji').textContent = state.status === 'ended' ? '💥' : '💣';
             renderUI();
           }
-        }
+        }, 950);
       }
-
-      if (bc) bc.onmessage = (e) => handleMessage(e.data);
-      window.addEventListener('storage', (e) => {
-        if (e.key === CHANNEL_NAME + '_evt' && e.newValue) {
-          try { handleMessage(JSON.parse(e.newValue)); } catch (err) {}
-        }
-      });
 
       document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -613,16 +572,14 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             const tab = btn.getAttribute('data-tab');
-            ['solo', 'host', 'join'].forEach(t => {
-              document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
-            });
+            ['solo', 'host', 'join'].forEach(t => document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab));
           });
         });
 
         document.getElementById('btn-start-solo').addEventListener('click', initSoloGame);
         document.getElementById('btn-solo-restart').addEventListener('click', initSoloGame);
 
-        document.getElementById('btn-create-room').addEventListener('click', () => {
+        document.getElementById('btn-create-room').addEventListener('click', async () => {
           const maxVal = parseInt(document.getElementById('host-max').value, 10);
           state.mode = 'host';
           state.pin = String(Math.floor(100000 + Math.random() * 900000));
@@ -635,32 +592,36 @@
           state.status = 'lobby';
           state.turnIndex = 0;
 
+          await fbPut(`angka_boom/${state.pin}`, {
+            pin: state.pin,
+            low: state.low,
+            high: state.high,
+            boomNumber: state.boomNumber,
+            participants: [],
+            turnIndex: 0,
+            status: 'lobby',
+            logs: []
+          });
+
           document.getElementById('arena-pin').textContent = state.pin;
           document.getElementById('view-home').classList.add('hidden');
           document.getElementById('view-arena').classList.remove('hidden');
           document.getElementById('host-pin-box').classList.remove('hidden');
           renderUI();
+          startFirebaseSync();
         });
 
-        document.getElementById('btn-host-start').addEventListener('click', () => {
+        document.getElementById('btn-host-start').addEventListener('click', async () => {
           if (state.participants.length === 0) return showToast('Tunggu minimal 1 peserta bergabung!');
           state.status = 'playing';
           state.turnIndex = 0;
           document.getElementById('btn-host-start').classList.add('hidden');
           document.getElementById('btn-host-reset').classList.remove('hidden');
           renderUI();
-          broadcast('STATE_UPDATE', {
-            low: state.low,
-            high: state.high,
-            boomNumber: state.boomNumber,
-            participants: state.participants,
-            turnIndex: state.turnIndex,
-            status: state.status,
-            logs: state.logs
-          });
+          await fbPatch(`angka_boom/${state.pin}`, { status: 'playing', turnIndex: 0, participants: state.participants });
         });
 
-        document.getElementById('btn-host-reset').addEventListener('click', () => {
+        document.getElementById('btn-host-reset').addEventListener('click', async () => {
           state.low = 1;
           state.high = state.maxInit;
           state.boomNumber = randomBoom(1, state.maxInit);
@@ -670,37 +631,41 @@
           state.participants.forEach(p => { p.alive = true; p.safeCount = 0; });
           document.getElementById('bomb-emoji').textContent = '💣';
           renderUI();
-          broadcast('STATE_UPDATE', {
+          await fbPatch(`angka_boom/${state.pin}`, {
             low: state.low,
             high: state.high,
             boomNumber: state.boomNumber,
-            participants: state.participants,
-            turnIndex: state.turnIndex,
-            status: state.status,
-            logs: state.logs
+            logs: [],
+            status: 'playing',
+            turnIndex: 0,
+            participants: state.participants
           });
         });
 
-        document.getElementById('btn-join-room').addEventListener('click', () => {
+        document.getElementById('btn-join-room').addEventListener('click', async () => {
           const name = document.getElementById('join-name').value.trim();
           const pin = document.getElementById('join-pin').value.trim();
           if (!name) return showToast('Masukkan nama Anda!');
           if (pin.length !== 6) return showToast('PIN harus 6 digit!');
 
+          const room = await fbGet(`angka_boom/${pin}`);
+          if (!room) return showToast('PIN Room tidak ditemukan!');
+
           state.mode = 'player';
           state.playerName = name;
           state.pin = pin;
-          state.status = 'lobby';
+          state.status = room.status || 'lobby';
+
+          await fbPut(`angka_boom/${pin}/playersMap/${state.playerId}`, { id: state.playerId, name: state.playerName });
 
           document.getElementById('view-home').classList.add('hidden');
           document.getElementById('host-pin-box').classList.add('hidden');
           document.getElementById('view-arena').classList.remove('hidden');
           renderUI();
-
-          broadcast('JOIN', { id: state.playerId, name: state.playerName });
+          startFirebaseSync();
         });
 
-        document.getElementById('btn-submit-guess').addEventListener('click', () => {
+        document.getElementById('btn-submit-guess').addEventListener('click', async () => {
           const inp = document.getElementById('guess-input');
           const val = parseInt(inp.value, 10);
           if (isNaN(val)) return showToast('Masukkan angka yang valid!');
@@ -708,7 +673,7 @@
           if (state.mode === 'solo') {
             processGuess(state.playerId, val);
           } else if (state.mode === 'player') {
-            broadcast('PLAYER_GUESS', { id: state.playerId, val });
+            await fbPut(`angka_boom/${state.pin}/lastGuess`, { id: state.playerId, val, ts: Date.now() });
           }
         });
 
