@@ -136,6 +136,49 @@
     }
     .pin-val { font-size: 2.3rem; font-weight: 900; letter-spacing: 6px; color: var(--blue); }
 
+    /* Lobby Joined Players Grid */
+    .lobby-players-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+      max-height: 360px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    .lobby-chip {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      animation: popScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .lobby-chip.is-me {
+      border-color: var(--green);
+      background: rgba(16,185,129,0.14);
+    }
+    .lobby-chip.is-bot {
+      border-color: rgba(245,158,11,0.45);
+    }
+    .chip-tag {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(59,130,246,0.22);
+      color: #93c5fd;
+      font-weight: 800;
+    }
+    .lobby-chip.is-bot .chip-tag {
+      background: rgba(245,158,11,0.22);
+      color: #fcd34d;
+    }
+
     /* Session Banner */
     .session-banner {
       background: var(--panel-dark);
@@ -483,7 +526,9 @@
     <!-- ARENA -->
     <div id="view-arena" class="hidden">
       <div id="host-bar" class="pin-box hidden">
-        <div style="font-size:0.8rem;color:var(--muted);">PIN ROOM PESERTA (KODE RAHASIA: <strong id="host-secret-show" style="color:#fbbf24;">****</strong>)</div>
+        <div style="font-size:0.8rem;color:var(--muted);">
+          PIN ROOM PESERTA <span id="host-secret-wrap" class="hidden">(KODE RAHASIA: <strong id="host-secret-show" style="color:#fbbf24;">****</strong>)</span>
+        </div>
         <div class="pin-val" id="display-pin">000000</div>
         <div style="display:flex;gap:8px;max-width:660px;margin:10px auto 0;flex-wrap:wrap;">
           <button id="btn-add-bot" class="btn btn-amber" style="flex:1;">+ Tambah Bot</button>
@@ -498,6 +543,15 @@
         <p style="color:var(--muted);margin-top:6px;">Menunggu Host memulai permainan...</p>
       </div>
 
+      <!-- LOBBY PARTICIPANTS LIST (REALTIME & SHOWS ALL JOINED PLAYERS) -->
+      <div id="lobby-box" class="box hidden" style="margin-bottom:14px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <h3>👥 Peserta yang Sudah Bergabung</h3>
+          <span class="conn-badge" id="lobby-count-badge">0 Peserta</span>
+        </div>
+        <div id="lobby-players-grid" class="lobby-players-grid"></div>
+      </div>
+
       <!-- SESSION STATUS BAR -->
       <div id="session-banner" class="session-banner session-phase-guessing hidden">
         <div>
@@ -507,7 +561,7 @@
         <div class="timer-pill" id="session-timer">15 dtk</div>
       </div>
 
-      <div class="arena-grid" id="arena-grid">
+      <div class="arena-grid hidden" id="arena-grid">
         <!-- INPUT PANEL (PLAYER & SOLO) -->
         <div class="box" id="guess-box">
           <div style="display:flex;justify-content:space-between;align-items:center;">
@@ -768,6 +822,37 @@
         });
       }
 
+      /* Render Semua Peserta yang Bergabung Saat di Lobby (Realtime & Tanpa Limit) */
+      function renderLobbyPlayers() {
+        const list = Object.values(st.players || {});
+        list.sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
+
+        const badge = document.getElementById('lobby-count-badge');
+        if (badge) badge.textContent = `${list.length} Peserta`;
+
+        const grid = document.getElementById('lobby-players-grid');
+        if (!grid) return;
+
+        if (list.length === 0) {
+          grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:22px 10px;font-size:0.9rem;">
+            Menunggu peserta bergabung menggunakan PIN <strong>${st.pin}</strong>...
+          </div>`;
+          return;
+        }
+
+        grid.innerHTML = list.map((p, idx) => {
+          const isMe = p.id === st.myId;
+          const cls = isMe ? 'lobby-chip is-me' : (p.isBot ? 'lobby-chip is-bot' : 'lobby-chip');
+          const tag = p.isBot ? 'BOT' : (isMe ? 'KAMU' : `#${idx + 1}`);
+          return `
+            <div class="${cls}">
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}</span>
+              <span class="chip-tag">${tag}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
       function renderSlots() {
         const wrap = document.getElementById('digit-slots');
         wrap.innerHTML = '';
@@ -992,7 +1077,6 @@
             });
           }
 
-          // Jika Bot ini menebak benar 100%, langsung menangkan & akhiri permainan!
           if (p.won) {
             renderHostGlobalHistory();
             renderLeaderboard();
@@ -1016,7 +1100,6 @@
           if (room) {
             if (room.players) st.players = room.players;
             if (room.feed) st.feedMap = { ...st.feedMap, ...room.feed };
-            // Cek apakah ada pemain yang menang tepat sebelum sesi berakhir
             const winnerPlayer = Object.values(st.players).find(pl => pl.won);
             if (winnerPlayer) {
               await endGame(winnerPlayer.id);
@@ -1187,7 +1270,6 @@
             wonSession: me.wonSession || null
           });
 
-          // Jika pemain ini berhasil menebak dengan benar, langsung akhiri permainan secara instan!
           if (isCorrectAll) {
             await fbPatch(`tebak_angka/${st.pin}`, {
               status: 'ended',
@@ -1220,6 +1302,7 @@
         }
 
         if (st.mode === 'host') {
+          document.getElementById('host-secret-wrap').classList.remove('hidden');
           document.getElementById('btn-host-end').classList.add('hidden');
           document.getElementById('btn-next-session').classList.add('hidden');
           document.getElementById('btn-play-again').classList.remove('hidden');
@@ -1231,6 +1314,7 @@
           document.getElementById('btn-play-again').classList.remove('hidden');
         }
 
+        document.getElementById('lobby-box').classList.add('hidden');
         document.getElementById('session-banner').classList.add('hidden');
         document.getElementById('guess-box').classList.add('hidden');
         document.getElementById('end-box').classList.remove('hidden');
@@ -1294,6 +1378,7 @@
           resetPlayers[pid] = {
             id: p.id,
             name: p.name,
+            joinedAt: p.joinedAt || Date.now(),
             attempts: 0,
             bestPB: 0,
             bestAB: 0,
@@ -1311,11 +1396,17 @@
         document.getElementById('lbl-attempts').textContent = '0';
 
         if (st.mode === 'host') {
+          // Sembunyikan kembali kode rahasia di lobby & tampilkan daftar peserta lobby
+          document.getElementById('host-secret-wrap').classList.add('hidden');
           document.getElementById('host-secret-show').textContent = st.secret;
           document.getElementById('btn-add-bot').classList.remove('hidden');
           document.getElementById('btn-host-start').classList.remove('hidden');
           document.getElementById('btn-host-end').classList.add('hidden');
           document.getElementById('btn-next-session').classList.add('hidden');
+
+          document.getElementById('arena-grid').classList.add('hidden');
+          document.getElementById('lobby-box').classList.remove('hidden');
+          renderLobbyPlayers();
 
           await fbPut(`tebak_angka/${st.pin}`, {
             pin: st.pin,
@@ -1376,10 +1467,14 @@
               if (room.feed) {
                 st.feedMap = { ...st.feedMap, ...room.feed };
               }
-              renderHostGlobalHistory();
-              renderLeaderboard();
 
-              // Jika ada peserta yang menang (baik via status room maupun flag pemain), langsung akhiri game!
+              if (st.status === 'lobby') {
+                renderLobbyPlayers();
+              } else {
+                renderHostGlobalHistory();
+                renderLeaderboard();
+              }
+
               if (st.status === 'playing') {
                 const winnerPlayer = (room.winnerId && st.players[room.winnerId])
                   ? st.players[room.winnerId]
@@ -1412,26 +1507,31 @@
                 }
               }
 
-              // Host menekan "Main Lagi (PIN Sama)" -> kembali ke ruang tunggu lobby secara otomatis
-              if (room.status === 'lobby' && st.status !== 'lobby') {
-                st.status = 'lobby';
-                st.sessionNum = 1;
-                st.phase = 'guessing';
-                st.input = '';
-                st.myHistory = [];
-                st.winnerId = null;
-                st.celebrated = false;
-                document.getElementById('my-history').innerHTML = '';
-                document.getElementById('lbl-attempts').textContent = '0';
-                document.getElementById('end-box').classList.add('hidden');
-                document.getElementById('guess-box').classList.add('hidden');
-                document.getElementById('player-wait').classList.remove('hidden');
-                showToast('Host membuka ronde baru! Bersiap menunggu dimulai...');
+              if (room.status === 'lobby') {
+                if (st.status !== 'lobby') {
+                  st.status = 'lobby';
+                  st.sessionNum = 1;
+                  st.phase = 'guessing';
+                  st.input = '';
+                  st.myHistory = [];
+                  st.winnerId = null;
+                  st.celebrated = false;
+                  document.getElementById('my-history').innerHTML = '';
+                  document.getElementById('lbl-attempts').textContent = '0';
+                  document.getElementById('end-box').classList.add('hidden');
+                  document.getElementById('arena-grid').classList.add('hidden');
+                  document.getElementById('player-wait').classList.remove('hidden');
+                  document.getElementById('lobby-box').classList.remove('hidden');
+                  showToast('Host membuka ronde baru! Bersiap menunggu dimulai...');
+                }
+                renderLobbyPlayers();
               } else if (room.status === 'playing') {
                 if (st.status === 'lobby') {
                   st.status = 'playing';
                   document.getElementById('player-wait').classList.add('hidden');
+                  document.getElementById('lobby-box').classList.add('hidden');
                   document.getElementById('end-box').classList.add('hidden');
+                  document.getElementById('arena-grid').classList.remove('hidden');
                   document.getElementById('guess-box').classList.remove('hidden');
                   renderSlots();
                 }
@@ -1449,16 +1549,15 @@
                 if (st.phase !== prevPhase || st.sessionNum !== prevSession) {
                   updatePlayerInputState();
                 }
+                renderSessionBanner();
+                updatePlayerInputState();
+                renderLeaderboard();
               } else if (room.status === 'ended' && st.status !== 'ended') {
                 const winnerPlayer = (room.winnerId && st.players[room.winnerId])
                   ? st.players[room.winnerId]
                   : Object.values(st.players).find(p => p.won);
                 await endGame(winnerPlayer ? winnerPlayer.id : room.winnerId);
               }
-
-              renderSessionBanner();
-              updatePlayerInputState();
-              renderLeaderboard();
             }
           }
         }, 800);
@@ -1503,6 +1602,7 @@
           st.players[st.myId] = {
             id: st.myId,
             name: 'Anda',
+            joinedAt: Date.now(),
             attempts: 0,
             bestPB: 0,
             bestAB: 0,
@@ -1517,6 +1617,7 @@
             st.players[bid] = {
               id: bid,
               name: botNames[i] || `Bot #${i + 1}`,
+              joinedAt: Date.now() + i + 1,
               isBot: true,
               attempts: 0,
               bestPB: 0,
@@ -1530,6 +1631,8 @@
           document.getElementById('lbl-digits').textContent = st.digits;
           document.getElementById('view-home').classList.add('hidden');
           document.getElementById('view-arena').classList.remove('hidden');
+          document.getElementById('lobby-box').classList.add('hidden');
+          document.getElementById('arena-grid').classList.remove('hidden');
           renderSlots();
           renderSessionBanner();
           updatePlayerInputState();
@@ -1578,13 +1681,15 @@
 
           document.getElementById('display-pin').textContent = st.pin;
           document.getElementById('host-secret-show').textContent = st.secret;
+          // Di lobby: kode rahasia disembunyikan & ruang peserta bergabung ditampilkan
+          document.getElementById('host-secret-wrap').classList.add('hidden');
           document.getElementById('lbl-digits').textContent = st.digits;
           document.getElementById('view-home').classList.add('hidden');
           document.getElementById('view-arena').classList.remove('hidden');
           document.getElementById('host-bar').classList.remove('hidden');
-          document.getElementById('guess-box').classList.add('hidden');
-          document.getElementById('host-feed-box').classList.remove('hidden');
-          renderHostGlobalHistory();
+          document.getElementById('lobby-box').classList.remove('hidden');
+          document.getElementById('arena-grid').classList.add('hidden');
+          renderLobbyPlayers();
           startPolling();
         });
 
@@ -1595,6 +1700,7 @@
           const botObj = {
             id: bid,
             name: 'Bot #' + (count + 1),
+            joinedAt: Date.now(),
             isBot: true,
             attempts: 0,
             bestPB: 0,
@@ -1605,6 +1711,7 @@
           };
           st.players[bid] = botObj;
           await fbPut(`tebak_angka/${st.pin}/players/${bid}`, botObj);
+          renderLobbyPlayers();
           renderLeaderboard();
           showToast(`${botObj.name} ditambahkan ke lobby!`);
         });
@@ -1619,9 +1726,16 @@
           st.phaseEndsAt = Date.now() + SESSION_GUESS_MS;
           st.lastProcessedSession = 0;
 
+          // Tampilkan kode rahasia pada layar Host setelah game dimulai & buka tampilan arena
+          document.getElementById('host-secret-wrap').classList.remove('hidden');
           document.getElementById('btn-add-bot').classList.add('hidden');
           document.getElementById('btn-host-start').classList.add('hidden');
           document.getElementById('btn-host-end').classList.remove('hidden');
+
+          document.getElementById('lobby-box').classList.add('hidden');
+          document.getElementById('arena-grid').classList.remove('hidden');
+          document.getElementById('guess-box').classList.add('hidden');
+          document.getElementById('host-feed-box').classList.remove('hidden');
 
           await fbPatch(`tebak_angka/${st.pin}`, {
             status: 'playing',
@@ -1641,7 +1755,6 @@
           renderLeaderboard();
         });
 
-        // Tombol manual Lanjut Sesi Berikutnya di Host saat jeda transisi
         document.getElementById('btn-next-session').addEventListener('click', () => {
           if (st.mode === 'host' && st.status === 'playing' && st.phase === 'break') {
             startNextSession();
@@ -1676,6 +1789,7 @@
           const meObj = {
             id: st.myId,
             name: st.myName,
+            joinedAt: Date.now(),
             attempts: 0,
             bestPB: 0,
             bestAB: 0,
@@ -1692,14 +1806,18 @@
           document.getElementById('view-arena').classList.remove('hidden');
 
           if (st.status === 'playing') {
+            document.getElementById('lobby-box').classList.add('hidden');
+            document.getElementById('arena-grid').classList.remove('hidden');
             renderSlots();
             renderSessionBanner();
             updatePlayerInputState();
+            renderLeaderboard();
           } else {
             document.getElementById('player-wait').classList.remove('hidden');
-            document.getElementById('guess-box').classList.add('hidden');
+            document.getElementById('lobby-box').classList.remove('hidden');
+            document.getElementById('arena-grid').classList.add('hidden');
+            renderLobbyPlayers();
           }
-          renderLeaderboard();
           startPolling();
         });
 
@@ -1723,6 +1841,7 @@
         document.getElementById('btn-guess').addEventListener('click', submitGuess);
 
         document.addEventListener('keydown', (e) => {
+          if (document.getElementById('arena-grid').classList.contains('hidden')) return;
           if (document.getElementById('guess-box').classList.contains('hidden')) return;
           if (document.getElementById('btn-guess').disabled) return;
           if (e.key >= '0' && e.key <= '9') {
