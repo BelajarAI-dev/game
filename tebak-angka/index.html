@@ -136,6 +136,46 @@
     }
     .pin-val { font-size: 2.3rem; font-weight: 900; letter-spacing: 6px; color: var(--blue); }
 
+    /* Peek Secret Controls (Host Only) */
+    .peek-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-peek {
+      padding: 7px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(251,191,36,0.45);
+      background: rgba(245,158,11,0.18);
+      color: #fde047;
+      font-weight: 800;
+      font-size: 0.84rem;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    .btn-peek:active {
+      background: rgba(245,158,11,0.35);
+      transform: scale(0.98);
+    }
+    .secret-peek-box {
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(255,255,255,0.16);
+      font-family: monospace;
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: #fde047;
+      min-width: 96px;
+      text-align: center;
+    }
+
     /* Lobby Joined Players Grid */
     .lobby-players-grid {
       display: grid;
@@ -527,11 +567,16 @@
     <!-- ARENA -->
     <div id="view-arena" class="hidden">
       <div id="host-bar" class="pin-box hidden">
-        <div style="font-size:0.8rem;color:var(--muted);">
-          PIN ROOM PESERTA <span id="host-secret-wrap" class="hidden">(KODE RAHASIA: <strong id="host-secret-show" style="color:#fbbf24;">****</strong>)</span>
-        </div>
+        <div style="font-size:0.8rem;color:var(--muted);">PIN ROOM PESERTA</div>
         <div class="pin-val" id="display-pin">000000</div>
-        <div style="display:flex;gap:8px;max-width:660px;margin:10px auto 0;flex-wrap:wrap;">
+
+        <!-- TOMBOL INTIP KODE RAHASIA SEKILAS (MAKSIMAL 1 DETIK SAAT DITEKAN) -->
+        <div class="peek-wrap">
+          <button type="button" id="btn-peek-secret" class="btn-peek">👁️ Intip Kode (Tahan ≤ 1 dtk)</button>
+          <span id="host-secret-display" class="secret-peek-box">••••</span>
+        </div>
+
+        <div style="display:flex;gap:8px;max-width:660px;margin:12px auto 0;flex-wrap:wrap;">
           <button id="btn-add-bot" class="btn btn-amber" style="flex:1;">+ Tambah Bot</button>
           <button id="btn-host-start" class="btn btn-green" style="flex:1;">▶ Mulai Game</button>
           <button id="btn-next-session" class="btn btn-amber hidden" style="flex:1;">⏭ Lanjut Sesi Berikutnya</button>
@@ -609,11 +654,10 @@
         </div>
       </div>
 
-      <!-- END GAME & SINGLE CHAMPION ANIMATION SCREEN -->
+      <!-- END GAME & SINGLE CHAMPION ANIMATION SCREEN (TANPA MENAMPILKAN KODE RAHASIA) -->
       <div id="end-box" class="pin-box hidden" style="border-color:var(--green);margin-top:16px;">
         <h2 id="end-title">🎉 Permainan Selesai!</h2>
-        <p style="margin:8px 0;">Kode Rahasia: <strong id="reveal-secret" style="font-size:1.6rem;color:#fbbf24;letter-spacing:4px;"></strong></p>
-        <div id="final-summary" style="font-size:0.92rem;color:var(--muted);margin-bottom:8px;"></div>
+        <div id="final-summary" style="font-size:0.95rem;color:var(--muted);margin:8px 0;"></div>
         <div class="champion-stage" id="winner-podium"></div>
         <div class="end-actions">
           <button id="btn-play-again" class="btn btn-green hidden">🔄 Main Lagi (PIN Sama)</button>
@@ -652,6 +696,7 @@
         botMemory: {},
         confettiRunning: false,
         celebrated: false,
+        peekTimeout: null,
         timers: []
       };
 
@@ -661,6 +706,31 @@
         t.classList.remove('hidden');
         clearTimeout(t._id);
         t._id = setTimeout(() => t.classList.add('hidden'), 2500);
+      }
+
+      function maskDots() {
+        return '•'.repeat(st.digits || 4);
+      }
+
+      function hidePeekSecret() {
+        if (st.peekTimeout) {
+          clearTimeout(st.peekTimeout);
+          st.peekTimeout = null;
+        }
+        const el = document.getElementById('host-secret-display');
+        if (el) el.textContent = maskDots();
+      }
+
+      function showPeekSecretBriefly() {
+        if (st.mode !== 'host' || !st.secret) return;
+        const el = document.getElementById('host-secret-display');
+        if (!el) return;
+        el.textContent = st.secret;
+        if (st.peekTimeout) clearTimeout(st.peekTimeout);
+        // Maksimal 1 detik (1000ms), lalu otomatis tersembunyi kembali
+        st.peekTimeout = setTimeout(() => {
+          hidePeekSecret();
+        }, 1000);
       }
 
       function launchConfetti(durationMs) {
@@ -753,6 +823,12 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data)
           });
+        } catch (e) {}
+      }
+
+      async function fbDelete(path) {
+        try {
+          await fetch(`${DB_URL}/${path}.json`, { method: 'DELETE' });
         } catch (e) {}
       }
 
@@ -947,9 +1023,38 @@
         }
       }
 
+      /* Sinkronkan & Gabungkan Seluruh Tebakan dari Node Feed Maupun Profil Pemain */
       function renderHostGlobalHistory() {
         if (st.mode !== 'host') return;
-        const allEntries = Object.values(st.feedMap || {});
+        const mergedMap = { ...(st.feedMap || {}) };
+
+        // Ambil juga histori dari setiap objek pemain agar tidak ada satupun yang terlewat
+        Object.values(st.players || {}).forEach(p => {
+          const histList = Array.isArray(p.history)
+            ? p.history
+            : (p.history && typeof p.history === 'object' ? Object.values(p.history) : []);
+
+          histList.forEach(h => {
+            if (!h || !h.guess) return;
+            const sNum = h.session || 1;
+            const key = `${sNum}_${p.id}`;
+            if (!mergedMap[key]) {
+              mergedMap[key] = {
+                id: key,
+                playerId: p.id,
+                playerName: p.name,
+                session: sNum,
+                guess: h.guess,
+                posisiBenar: h.posisiBenar || 0,
+                posisiSalah: (h.posisiSalah !== undefined) ? h.posisiSalah : (h.angkaBenar || 0),
+                ts: h.ts || 0
+              };
+            }
+          });
+        });
+
+        st.feedMap = mergedMap;
+        const allEntries = Object.values(mergedMap);
 
         allEntries.sort((a, b) => {
           if ((b.session || 1) !== (a.session || 1)) return (b.session || 1) - (a.session || 1);
@@ -1056,6 +1161,16 @@
           };
           st.feedMap[feedKey] = feedEntry;
 
+          const histList = Array.isArray(p.history) ? p.history : [];
+          histList.unshift({
+            session: sessionNumber,
+            guess,
+            posisiBenar: res.posisiBenar,
+            posisiSalah: res.posisiSalah,
+            ts: nowTs
+          });
+          p.history = histList;
+
           if (res.posisiBenar === st.digits) {
             p.won = true;
             p.wonAt = nowTs;
@@ -1074,7 +1189,8 @@
               bestPS: p.bestPS,
               won: !!p.won,
               wonAt: p.wonAt || null,
-              wonSession: p.wonSession || null
+              wonSession: p.wonSession || null,
+              history: p.history
             });
           }
 
@@ -1101,6 +1217,7 @@
           if (room) {
             if (room.players) st.players = room.players;
             if (room.feed) st.feedMap = { ...st.feedMap, ...room.feed };
+            renderHostGlobalHistory();
             const winnerPlayer = Object.values(st.players).find(pl => pl.won);
             if (winnerPlayer) {
               await endGame(winnerPlayer.id);
@@ -1208,9 +1325,10 @@
         renderSlots();
 
         const nowTs = Date.now();
+        const currentSession = st.sessionNum;
         const res = evaluateGuess(st.secret, guess);
         const entry = {
-          session: st.sessionNum,
+          session: currentSession,
           guess,
           posisiBenar: res.posisiBenar,
           posisiSalah: res.posisiSalah,
@@ -1230,9 +1348,10 @@
         `).join('');
 
         me.attempts = st.myHistory.length;
-        me.lastAnsweredSession = st.sessionNum;
+        me.lastAnsweredSession = currentSession;
         me.lastGuess = guess;
         me.missedStreak = 0;
+        me.history = st.myHistory;
         if (res.posisiBenar > (me.bestPB || 0)) me.bestPB = res.posisiBenar;
         if (res.posisiSalah > (me.bestPS || 0)) me.bestPS = res.posisiSalah;
 
@@ -1240,16 +1359,16 @@
         if (isCorrectAll) {
           me.won = true;
           me.wonAt = nowTs;
-          me.wonSession = st.sessionNum;
+          me.wonSession = currentSession;
           st.winnerId = st.myId;
         }
 
-        const feedKey = `${st.sessionNum}_${st.myId}`;
+        const feedKey = `${currentSession}_${st.myId}`;
         const feedEntry = {
           id: feedKey,
           playerId: st.myId,
           playerName: st.myName,
-          session: st.sessionNum,
+          session: currentSession,
           guess,
           posisiBenar: res.posisiBenar,
           posisiSalah: res.posisiSalah,
@@ -1268,7 +1387,8 @@
             bestPS: me.bestPS,
             won: !!me.won,
             wonAt: me.wonAt || null,
-            wonSession: me.wonSession || null
+            wonSession: me.wonSession || null,
+            history: st.myHistory
           });
 
           if (isCorrectAll) {
@@ -1283,7 +1403,7 @@
           showToast('🎉 SELAMAT! Kamu memecahkan kode paling cepat!');
           await endGame(st.myId);
         } else {
-          showToast(`Tebakan Sesi #${st.sessionNum} terkirim!`);
+          showToast(`Tebakan Sesi #${currentSession} terkirim!`);
           updatePlayerInputState();
           renderLeaderboard();
         }
@@ -1292,6 +1412,7 @@
       async function endGame(explicitWinnerId) {
         if (st.status === 'ended') return;
         st.status = 'ended';
+        hidePeekSecret();
 
         const list = getSortedPlayers();
         const champion = (explicitWinnerId && st.players[explicitWinnerId])
@@ -1303,7 +1424,6 @@
         }
 
         if (st.mode === 'host') {
-          document.getElementById('host-secret-wrap').classList.remove('hidden');
           document.getElementById('btn-host-end').classList.add('hidden');
           document.getElementById('btn-next-session').classList.add('hidden');
           document.getElementById('btn-play-again').classList.remove('hidden');
@@ -1319,7 +1439,6 @@
         document.getElementById('session-banner').classList.add('hidden');
         document.getElementById('guess-box').classList.add('hidden');
         document.getElementById('end-box').classList.remove('hidden');
-        document.getElementById('reveal-secret').textContent = st.secret;
 
         const dqCount = list.filter(p => p.disqualified).length;
         const podiumEl = document.getElementById('winner-podium');
@@ -1359,6 +1478,7 @@
       }
 
       async function resetToLobbySamePin() {
+        hidePeekSecret();
         st.status = 'lobby';
         st.round = (st.round || 1) + 1;
         st.sessionNum = 1;
@@ -1381,11 +1501,16 @@
             name: p.name,
             joinedAt: p.joinedAt || Date.now(),
             attempts: 0,
+            lastAnsweredSession: 0,
+            lastGuess: '',
             bestPB: 0,
             bestPS: 0,
             missedStreak: 0,
             disqualified: false,
             won: false,
+            wonAt: null,
+            wonSession: null,
+            history: [],
             ...(p.isBot ? { isBot: true } : {})
           };
         });
@@ -1394,11 +1519,11 @@
         document.getElementById('end-box').classList.add('hidden');
         document.getElementById('winner-podium').innerHTML = '';
         document.getElementById('my-history').innerHTML = '';
+        document.getElementById('host-global-history').innerHTML = '';
+        document.getElementById('total-guesses-lbl').textContent = '0 Tebakan';
         document.getElementById('lbl-attempts').textContent = '0';
 
         if (st.mode === 'host') {
-          document.getElementById('host-secret-wrap').classList.add('hidden');
-          document.getElementById('host-secret-show').textContent = st.secret;
           document.getElementById('btn-add-bot').classList.remove('hidden');
           document.getElementById('btn-host-start').classList.remove('hidden');
           document.getElementById('btn-host-end').classList.add('hidden');
@@ -1408,6 +1533,8 @@
           document.getElementById('lobby-box').classList.remove('hidden');
           renderLobbyPlayers();
 
+          // Hapus node feed lama & tulis ulang state lobby bersih ke Firebase
+          await fbDelete(`tebak_angka/${st.pin}/feed`);
           await fbPut(`tebak_angka/${st.pin}`, {
             pin: st.pin,
             digits: st.digits,
@@ -1418,10 +1545,10 @@
             phase: 'guessing',
             phaseEndsAt: 0,
             winnerId: null,
-            feed: {},
+            feed: null,
             players: resetPlayers
           });
-          showToast('Lobby dibuka kembali dengan PIN sama! Peserta baru dapat bergabung.');
+          showToast('Lobby dibuka kembali & histori ronde lalu telah dihapus bersih!');
         } else if (st.mode === 'solo') {
           st.status = 'playing';
           st.phaseEndsAt = Date.now() + SESSION_GUESS_MS;
@@ -1464,13 +1591,13 @@
               if (room.players) {
                 st.players = room.players;
               }
-              if (room.feed) {
-                st.feedMap = { ...st.feedMap, ...room.feed };
-              }
-
               if (st.status === 'lobby') {
+                st.feedMap = {};
                 renderLobbyPlayers();
               } else {
+                if (room.feed) {
+                  st.feedMap = { ...st.feedMap, ...room.feed };
+                }
                 renderHostGlobalHistory();
                 renderLeaderboard();
               }
@@ -1514,6 +1641,7 @@
                   st.phase = 'guessing';
                   st.input = '';
                   st.myHistory = [];
+                  st.feedMap = {};
                   st.winnerId = null;
                   st.celebrated = false;
                   document.getElementById('my-history').innerHTML = '';
@@ -1573,6 +1701,18 @@
           unlockedEl.classList.toggle("hidden", !isHostAllowed);
         }
 
+        // Event tekan-tahan tombol Intip Kode Rahasia (maksimal 1 detik, langsung sembunyi saat dilepas)
+        const peekBtn = document.getElementById('btn-peek-secret');
+        if (peekBtn) {
+          peekBtn.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            showPeekSecretBriefly();
+          });
+          peekBtn.addEventListener('pointerup', hidePeekSecret);
+          peekBtn.addEventListener('pointerleave', hidePeekSecret);
+          peekBtn.addEventListener('pointercancel', hidePeekSecret);
+        }
+
         document.querySelectorAll('.tab-btn').forEach(b => {
           b.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
@@ -1608,7 +1748,8 @@
             bestPS: 0,
             missedStreak: 0,
             disqualified: false,
-            won: false
+            won: false,
+            history: []
           };
 
           const botNames = ['Raka [BOT]', 'Nadia [BOT]', 'Fajar [BOT]'];
@@ -1624,7 +1765,8 @@
               bestPS: 0,
               missedStreak: 0,
               disqualified: false,
-              won: false
+              won: false,
+              history: []
             };
           }
 
@@ -1675,13 +1817,12 @@
             phase: 'guessing',
             phaseEndsAt: 0,
             winnerId: null,
-            feed: {},
+            feed: null,
             players: {}
           });
 
           document.getElementById('display-pin').textContent = st.pin;
-          document.getElementById('host-secret-show').textContent = st.secret;
-          document.getElementById('host-secret-wrap').classList.add('hidden');
+          hidePeekSecret();
           document.getElementById('lbl-digits').textContent = st.digits;
           document.getElementById('view-home').classList.add('hidden');
           document.getElementById('view-arena').classList.remove('hidden');
@@ -1706,7 +1847,8 @@
             bestPS: 0,
             missedStreak: 0,
             disqualified: false,
-            won: false
+            won: false,
+            history: []
           };
           st.players[bid] = botObj;
           await fbPut(`tebak_angka/${st.pin}/players/${bid}`, botObj);
@@ -1725,7 +1867,7 @@
           st.phaseEndsAt = Date.now() + SESSION_GUESS_MS;
           st.lastProcessedSession = 0;
 
-          document.getElementById('host-secret-wrap').classList.remove('hidden');
+          hidePeekSecret();
           document.getElementById('btn-add-bot').classList.add('hidden');
           document.getElementById('btn-host-start').classList.add('hidden');
           document.getElementById('btn-host-end').classList.remove('hidden');
@@ -1793,7 +1935,8 @@
             bestPS: 0,
             missedStreak: 0,
             disqualified: false,
-            won: false
+            won: false,
+            history: []
           };
           st.players = room.players || {};
           st.players[st.myId] = meObj;
