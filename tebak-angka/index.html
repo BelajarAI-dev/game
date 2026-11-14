@@ -8,13 +8,13 @@
     :root {
       --bg: #0f172a;
       --panel: #1e293b;
-      --panel-2: #0b1220;
+      --panel-dark: #0b1220;
       --border: rgba(255,255,255,0.1);
       --text: #f8fafc;
       --muted: #94a3b8;
+      --blue: #3b82f6;
       --green: #10b981;
       --amber: #f59e0b;
-      --blue: #3b82f6;
       --red: #ef4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -22,29 +22,30 @@
       background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 75%);
       color: var(--text);
       min-height: 100vh;
-      padding: 16px;
+      padding: 14px;
       display: flex;
       flex-direction: column;
       align-items: center;
+      overflow-x: hidden;
     }
     .topbar {
       width: 100%;
-      max-width: 1040px;
+      max-width: 1120px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
     .back-btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 8px 14px;
+      padding: 7px 13px;
       background: rgba(255,255,255,0.08);
       color: #fff;
       text-decoration: none;
       border-radius: 10px;
-      font-size: 0.88rem;
+      font-size: 0.85rem;
       font-weight: 600;
       border: 1px solid var(--border);
     }
@@ -56,22 +57,32 @@
       color: #34d399;
       font-weight: 700;
     }
-    .container {
+    .card {
       width: 100%;
-      max-width: 1040px;
+      max-width: 1120px;
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 24px;
+      padding: 22px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.35);
     }
-    h1 { font-size: clamp(1.4rem, 3vw, 2rem); margin-bottom: 6px; }
-    .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 18px; }
+    .hidden { display: none !important; }
+    h1 { font-size: clamp(1.35rem, 3vw, 1.9rem); margin-bottom: 4px; }
+    .sub { color: var(--muted); font-size: 0.92rem; margin-bottom: 16px; }
+    .rules {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.28);
+      border-radius: 14px;
+      padding: 12px 15px;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
     .tabs {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      background: var(--panel-2);
+      background: var(--panel-dark);
       padding: 6px;
       border-radius: 14px;
       margin-bottom: 18px;
@@ -85,71 +96,104 @@
       font-weight: 700;
       cursor: pointer;
     }
-    .tab-btn.active { background: var(--green); color: #052e16; }
-    .hidden { display: none !important; }
-    .form-group { margin-bottom: 14px; }
-    label { display: block; font-size: 0.88rem; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+    .tab-btn.active { background: var(--blue); color: #fff; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+    @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
+    .fg { margin-bottom: 12px; }
+    label { display: block; font-size: 0.85rem; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
     input, select {
       width: 100%;
-      padding: 12px 14px;
-      border-radius: 12px;
+      padding: 11px 13px;
+      border-radius: 11px;
       border: 1px solid var(--border);
-      background: var(--panel-2);
-      color: var(--text);
-      font-size: 1rem;
+      background: var(--panel-dark);
+      color: #fff;
+      font-size: 0.98rem;
     }
     .btn {
       width: 100%;
-      padding: 13px 18px;
+      padding: 13px 16px;
       border: none;
       border-radius: 12px;
       font-weight: 800;
-      font-size: 1rem;
+      font-size: 0.98rem;
       cursor: pointer;
     }
-    .btn-green { background: var(--green); color: #052e16; }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
     .btn-blue { background: var(--blue); color: #fff; }
+    .btn-green { background: var(--green); color: #052e16; }
+    .btn-amber { background: var(--amber); color: #1c1917; }
     .btn-red { background: var(--red); color: #fff; }
-    .rules-box {
-      background: rgba(16,185,129,0.1);
-      border: 1px solid rgba(16,185,129,0.25);
-      border-radius: 14px;
-      padding: 14px 16px;
-      margin-bottom: 18px;
-      font-size: 0.9rem;
-      line-height: 1.55;
-    }
-    .pin-banner {
-      background: var(--panel-2);
-      border: 2px dashed var(--green);
+
+    .pin-box {
+      background: var(--panel-dark);
+      border: 2px dashed var(--blue);
       border-radius: 16px;
       padding: 16px;
       text-align: center;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
     }
-    .pin-code { font-size: 2.4rem; font-weight: 900; letter-spacing: 6px; color: var(--green); }
-    .grid-2 { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; }
-    @media (max-width: 780px) { .grid-2 { grid-template-columns: 1fr; } }
-    .box {
-      background: var(--panel-2);
+    .pin-val { font-size: 2.3rem; font-weight: 900; letter-spacing: 6px; color: var(--blue); }
+
+    /* Session Banner */
+    .session-banner {
+      background: var(--panel-dark);
       border: 1px solid var(--border);
       border-radius: 16px;
-      padding: 16px;
+      padding: 14px 18px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
     }
-    .digit-slots { display: flex; justify-content: center; gap: 10px; margin: 16px 0; }
+    .session-phase-guessing { border-color: var(--blue); }
+    .session-phase-break { border-color: var(--amber); background: rgba(245,158,11,0.1); }
+    .timer-pill {
+      font-size: 1.35rem;
+      font-weight: 900;
+      padding: 6px 14px;
+      border-radius: 12px;
+      background: rgba(59,130,246,0.2);
+      color: #60a5fa;
+    }
+    .session-phase-break .timer-pill {
+      background: rgba(245,158,11,0.25);
+      color: #fbbf24;
+    }
+
+    .arena-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 820px) { .arena-grid { grid-template-columns: 1fr; } }
+
+    .box {
+      background: var(--panel-dark);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 15px;
+    }
+    .digit-slots {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 12px 0 14px;
+    }
     .slot {
-      width: 56px;
-      height: 66px;
-      border-radius: 14px;
-      border: 2px solid var(--border);
+      width: 52px;
+      height: 60px;
+      border-radius: 12px;
       background: var(--panel);
+      border: 2px solid var(--blue);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2rem;
+      font-size: 1.8rem;
       font-weight: 900;
     }
-    .slot.filled { border-color: var(--green); color: #fff; }
     .keypad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -157,74 +201,103 @@
       max-width: 320px;
       margin: 0 auto;
     }
-    .key-btn {
-      padding: 14px;
-      font-size: 1.25rem;
+    .k-btn {
+      padding: 12px;
+      font-size: 1.15rem;
       font-weight: 800;
-      border-radius: 12px;
+      border-radius: 11px;
       border: 1px solid var(--border);
       background: var(--panel);
       color: #fff;
       cursor: pointer;
     }
-    .key-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-    .key-btn.del { background: rgba(239,68,68,0.2); color: #fca5a5; }
-    .key-btn.ok { background: var(--green); color: #052e16; }
+    .k-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .k-btn.del { background: rgba(239,68,68,0.2); color: #fca5a5; }
+    .k-btn.sub { grid-column: span 2; background: var(--green); color: #052e16; }
+
     .history-list {
-      max-height: 310px;
+      max-height: 280px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 8px;
       margin-top: 10px;
     }
-    .history-item {
+    .hist-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 9px 12px;
       background: var(--panel);
-      padding: 10px 14px;
       border-radius: 10px;
-      border: 1px solid var(--border);
+      font-size: 0.9rem;
     }
-    .guess-num { font-size: 1.2rem; font-weight: 900; letter-spacing: 4px; }
-    .badges { display: flex; gap: 6px; flex-wrap: wrap; }
-    .b-pos {
+    .badge-pb {
       background: rgba(16,185,129,0.2);
       color: #34d399;
-      padding: 4px 10px;
-      border-radius: 999px;
+      padding: 3px 8px;
+      border-radius: 7px;
+      font-weight: 800;
       font-size: 0.8rem;
-      font-weight: 700;
     }
-    .b-num {
+    .badge-ab {
       background: rgba(245,158,11,0.2);
       color: #fbbf24;
-      padding: 4px 10px;
-      border-radius: 999px;
+      padding: 3px 8px;
+      border-radius: 7px;
+      font-weight: 800;
       font-size: 0.8rem;
+    }
+    .badge-dq {
+      background: rgba(239,68,68,0.22);
+      color: #fca5a5;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 0.74rem;
+    }
+    .badge-warn {
+      background: rgba(245,158,11,0.22);
+      color: #fcd34d;
+      padding: 2px 7px;
+      border-radius: 6px;
       font-weight: 700;
+      font-size: 0.74rem;
     }
-    .leader-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 12px;
-      border-radius: 10px;
-      background: var(--panel);
-      margin-bottom: 8px;
-      border-left: 4px solid var(--blue);
+
+    .status-banner {
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
     }
-    .leader-row.solved { border-left-color: var(--green); background: rgba(16,185,129,0.12); }
+    .status-locked {
+      background: rgba(59,130,246,0.16);
+      border: 1px solid rgba(59,130,246,0.4);
+      color: #93c5fd;
+    }
+    .status-dq {
+      background: rgba(239,68,68,0.18);
+      border: 1px solid rgba(239,68,68,0.5);
+      color: #fca5a5;
+    }
+    .status-won {
+      background: rgba(16,185,129,0.2);
+      border: 1px solid rgba(16,185,129,0.5);
+      color: #6ee7b7;
+    }
+
     .toast {
       position: fixed;
-      bottom: 20px;
+      bottom: 18px;
       left: 50%;
       transform: translateX(-50%);
       background: #0f172a;
-      border: 1px solid var(--green);
+      border: 1px solid var(--blue);
       color: #fff;
-      padding: 10px 20px;
+      padding: 9px 18px;
       border-radius: 999px;
       font-weight: 700;
       z-index: 999;
@@ -237,37 +310,50 @@
     <span class="conn-badge">● Firebase Terhubung</span>
   </div>
 
-  <div class="container">
-    <!-- VIEW 1: HOME -->
+  <div class="card">
+    <!-- HOME -->
     <div id="view-home">
-      <h1>🎯 Tebak Angka Posisi Benar</h1>
-      <p class="subtitle">Pecahkan kombinasi angka unik rahasia secepat mungkin!</p>
+      <h1>🔢 Tebak Angka Posisi Benar</h1>
+      <p class="sub">Pecahkan kode rahasia digit unik menggunakan logika <strong>Posisi Benar</strong> &amp; <strong>Angka Benar</strong>!</p>
 
-      <div class="rules-box">
-        <strong>Aturan Permainan:</strong><br>
-        • Angka rahasia terdiri dari <strong>3 atau 4 digit angka berbeda</strong> (0–9).<br>
-        • <span style="color:#34d399;font-weight:700;">Posisi Benar</span>: Angka benar dan berada di urutan posisi yang tepat.<br>
-        • <span style="color:#fbbf24;font-weight:700;">Angka Benar</span>: Angka ada di kode rahasia, tetapi posisinya masih salah.<br>
-        • Peringkat Top 10 ditentukan berdasarkan keberhasilan menebak semua <strong>Posisi Benar</strong> dengan percobaan paling sedikit.
+      <div class="rules">
+        <strong>Aturan Permainan &amp; Sesi:</strong><br>
+        • Setiap sesi berdurasi <strong>15 detik</strong>. Dalam 1 sesi, setiap peserta hanya dapat mengirimkan <strong>1 kali tebakan</strong>.<br>
+        • Setelah 15 detik berakhir, sesi berikutnya otomatis berjalan setelah jeda <strong>5 detik</strong>.<br>
+        • Peserta yang <strong>tidak menjawab 2 kali sesi berturut-turut</strong> otomatis <strong>didiskualifikasi</strong>.<br>
+        • Petunjuk: <strong>Posisi Benar</strong> = angka &amp; letak tepat | <strong>Angka Benar</strong> = angka ada di kode tetapi letaknya salah.
       </div>
 
       <div class="tabs">
-        <button class="tab-btn active" data-tab="solo">Main Solo</button>
+        <button class="tab-btn active" data-tab="solo">Main Lawan Bot</button>
         <button class="tab-btn" data-tab="host">Buat Room (Host)</button>
         <button class="tab-btn" data-tab="join">Gabung Room</button>
       </div>
 
+      <!-- SOLO -->
       <div id="tab-solo">
-        <div class="form-group">
-          <label>Jumlah Digit Angka Rahasia</label>
-          <select id="solo-digits">
-            <option value="3">3 Digit (Cepat)</option>
-            <option value="4" selected>4 Digit (Standar)</option>
-          </select>
+        <div class="form-row">
+          <div class="fg">
+            <label>Jumlah Digit Kode</label>
+            <select id="solo-digits">
+              <option value="3">3 Digit</option>
+              <option value="4" selected>4 Digit</option>
+              <option value="5">5 Digit</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Jumlah Lawan Bot</label>
+            <select id="solo-bots">
+              <option value="1">1 Bot</option>
+              <option value="2" selected>2 Bot</option>
+              <option value="3">3 Bot</option>
+            </select>
+          </div>
         </div>
-        <button id="btn-start-solo" class="btn btn-green">Mulai Main Solo</button>
+        <button id="btn-start-solo" class="btn btn-blue">Mulai Tantangan Solo</button>
       </div>
 
+      <!-- HOST -->
       <div id="tab-host" class="hidden">
         <div id="host-locked-notice" style="background:rgba(239,68,68,0.14);border:1px solid rgba(239,68,68,0.4);border-radius:14px;padding:18px;text-align:center;">
           <div style="font-size:1.8rem;margin-bottom:6px;">🔒</div>
@@ -281,100 +367,101 @@
         </div>
 
         <div id="host-unlocked-controls" class="hidden">
-          <div class="form-group">
-            <label>Jumlah Digit Angka Rahasia</label>
+          <div class="fg">
+            <label>Jumlah Digit Kode Rahasia</label>
             <select id="host-digits">
-              <option value="3">3 Digit (Cepat)</option>
-              <option value="4" selected>4 Digit (Standar)</option>
+              <option value="3">3 Digit</option>
+              <option value="4" selected>4 Digit</option>
+              <option value="5">5 Digit</option>
             </select>
           </div>
-          <button id="btn-create-room" class="btn btn-blue">Buat Room &amp; Dapatkan PIN</button>
+          <button id="btn-create-room" class="btn btn-green">Buat Room Multiplayer</button>
         </div>
       </div>
 
+      <!-- JOIN -->
       <div id="tab-join" class="hidden">
-        <div class="form-group">
+        <div class="fg">
           <label>Nama Peserta</label>
-          <input type="text" id="join-name" placeholder="Masukkan nama Anda..." maxlength="18" />
+          <input type="text" id="join-name" placeholder="Nama Anda..." maxlength="16" />
         </div>
-        <div class="form-group">
+        <div class="fg">
           <label>PIN Room (6 Digit)</label>
-          <input type="text" id="join-pin" placeholder="Contoh: 482910" maxlength="6" inputmode="numeric" />
+          <input type="text" id="join-pin" placeholder="Contoh: 123456" maxlength="6" inputmode="numeric" />
         </div>
-        <button id="btn-join-room" class="btn btn-green">Gabung ke Room</button>
+        <button id="btn-join-room" class="btn btn-blue">Gabung Permainan</button>
       </div>
     </div>
 
-    <!-- VIEW 2: HOST -->
-    <div id="view-host" class="hidden">
-      <div class="pin-banner">
-        <div style="font-size:0.85rem;color:var(--muted);">PIN ROOM PESERTA</div>
-        <div class="pin-code" id="host-pin-display">000000</div>
-        <div style="font-size:0.85rem;color:var(--muted);margin-top:4px;">
-          Mode: <strong id="host-digit-info">4 Digit</strong> • Status: <strong id="host-status-text" style="color:var(--amber);">Menunggu Peserta</strong>
+    <!-- ARENA -->
+    <div id="view-arena" class="hidden">
+      <div id="host-bar" class="pin-box hidden">
+        <div style="font-size:0.8rem;color:var(--muted);">PIN ROOM PESERTA (KODE RAHASIA: <strong id="host-secret-show" style="color:#fbbf24;">****</strong>)</div>
+        <div class="pin-val" id="display-pin">000000</div>
+        <div style="display:flex;gap:8px;max-width:560px;margin:10px auto 0;flex-wrap:wrap;">
+          <button id="btn-add-bot" class="btn btn-amber" style="flex:1;">+ Tambah Bot</button>
+          <button id="btn-host-start" class="btn btn-green" style="flex:1;">▶ Mulai Game</button>
+          <button id="btn-host-end" class="btn btn-red hidden" style="flex:1;">🛑 Akhiri Game</button>
         </div>
       </div>
 
-      <div style="display:flex;gap:10px;margin-bottom:18px;">
-        <button id="btn-host-start" class="btn btn-green">▶ Mulai Permainan</button>
-        <button id="btn-host-end" class="btn btn-red hidden">⏹ Akhiri &amp; Lihat Kunci</button>
+      <div id="player-wait" class="pin-box hidden">
+        <h3>⏳ Berhasil Masuk Lobby!</h3>
+        <p style="color:var(--muted);margin-top:6px;">Menunggu Host memulai permainan...</p>
       </div>
 
-      <div class="box">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
-          <h3>🏆 Klasemen Top 10 Peserta</h3>
-          <span id="host-player-count" style="font-size:0.85rem;color:var(--muted);">0 Peserta</span>
+      <!-- SESSION STATUS BAR -->
+      <div id="session-banner" class="session-banner session-phase-guessing hidden">
+        <div>
+          <div style="font-size:0.8rem;color:var(--muted);font-weight:700;">STATUS SESI TEBAKAN</div>
+          <div id="session-title" style="font-size:1.15rem;font-weight:900;">Sesi #1 — Silakan Kirim 1 Tebakan!</div>
         </div>
-        <div id="host-leaderboard">
-          <p style="color:var(--muted);font-size:0.9rem;">Belum ada peserta yang bergabung...</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- VIEW 3: PLAY -->
-    <div id="view-play" class="hidden">
-      <div id="wait-overlay" class="box hidden" style="text-align:center;padding:36px 16px;">
-        <div style="font-size:2.5rem;margin-bottom:10px;">⏳</div>
-        <h2>Berhasil Bergabung!</h2>
-        <p style="color:var(--muted);margin-top:6px;">Menunggu Host menekan tombol <strong>Mulai Permainan</strong>...</p>
+        <div class="timer-pill" id="session-timer">15 dtk</div>
       </div>
 
-      <div id="play-arena" class="grid-2">
-        <div class="box">
+      <div class="arena-grid">
+        <!-- INPUT PANEL (PLAYER & SOLO) -->
+        <div class="box" id="guess-box">
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <span id="play-player-label" style="font-weight:700;color:var(--green);">Mode Solo</span>
-            <span id="play-attempt-count" style="font-size:0.85rem;color:var(--muted);">Percobaan: 0</span>
+            <strong>Masukkan Tebakan (<span id="lbl-digits">4</span> Digit Unik)</strong>
+            <span style="font-size:0.82rem;color:var(--muted);">Sesi Dijawab: <strong id="lbl-attempts">0</strong></span>
           </div>
+
+          <div id="player-session-status" class="status-banner status-locked hidden" style="margin-top:10px;"></div>
 
           <div class="digit-slots" id="digit-slots"></div>
-
-          <div id="solved-banner" class="hidden" style="background:rgba(16,185,129,0.18);border:1px solid var(--green);padding:14px;border-radius:12px;text-align:center;margin-bottom:14px;">
-            <div style="font-size:1.2rem;font-weight:900;color:#34d399;">🎉 Selamat! Semua Posisi Benar!</div>
-            <div id="solved-detail" style="font-size:0.9rem;margin-top:4px;"></div>
-            <button id="btn-play-again" class="btn btn-green" style="margin-top:10px;">Main Lagi</button>
+          <div class="keypad">
+            <button class="k-btn" data-d="1">1</button>
+            <button class="k-btn" data-d="2">2</button>
+            <button class="k-btn" data-d="3">3</button>
+            <button class="k-btn" data-d="4">4</button>
+            <button class="k-btn" data-d="5">5</button>
+            <button class="k-btn" data-d="6">6</button>
+            <button class="k-btn" data-d="7">7</button>
+            <button class="k-btn" data-d="8">8</button>
+            <button class="k-btn" data-d="9">9</button>
+            <button class="k-btn" data-d="0">0</button>
+            <button class="k-btn del" id="btn-del">⌫</button>
+            <button class="k-btn sub" id="btn-guess">KIRIM TEBAKAN SESI INI</button>
           </div>
-
-          <div class="keypad" id="keypad">
-            <button class="key-btn" data-num="1">1</button>
-            <button class="key-btn" data-num="2">2</button>
-            <button class="key-btn" data-num="3">3</button>
-            <button class="key-btn" data-num="4">4</button>
-            <button class="key-btn" data-num="5">5</button>
-            <button class="key-btn" data-num="6">6</button>
-            <button class="key-btn" data-num="7">7</button>
-            <button class="key-btn" data-num="8">8</button>
-            <button class="key-btn" data-num="9">9</button>
-            <button class="key-btn del" id="key-del">⌫</button>
-            <button class="key-btn" data-num="0">0</button>
-            <button class="key-btn ok" id="key-ok">TEBAK</button>
-          </div>
+          <div class="history-list" id="my-history"></div>
         </div>
 
+        <!-- LEADERBOARD TOP 10 -->
         <div class="box">
-          <h3 style="margin-bottom:4px;">📋 Riwayat Tebakan</h3>
-          <p style="font-size:0.82rem;color:var(--muted);">Gunakan petunjuk di bawah untuk menyaring angka.</p>
-          <div class="history-list" id="history-list"></div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <h4>🏆 Klasemen Peserta (Top 10)</h4>
+            <span style="font-size:0.78rem;color:var(--muted);" id="active-count-lbl">0 Aktif</span>
+          </div>
+          <div class="history-list" id="leaderboard-list" style="max-height:420px;"></div>
         </div>
+      </div>
+
+      <div id="end-box" class="pin-box hidden" style="border-color:var(--green);margin-top:16px;">
+        <h2>🎉 Permainan Selesai!</h2>
+        <p style="margin:8px 0;">Kode Rahasia: <strong id="reveal-secret" style="font-size:1.5rem;color:#fbbf24;"></strong></p>
+        <div id="final-summary" style="font-size:0.9rem;color:var(--muted);margin-bottom:10px;"></div>
+        <button id="btn-reload" class="btn btn-blue" style="max-width:250px;margin-top:6px;">Kembali ke Awal</button>
       </div>
     </div>
   </div>
@@ -384,29 +471,34 @@
   <script>
     (function () {
       const DB_URL = "https://game-math-7361f-default-rtdb.asia-southeast1.firebasedatabase.app";
+      const SESSION_GUESS_MS = 15000; // 15 detik per sesi tebakan
+      const SESSION_BREAK_MS = 5000;  // 5 detik jeda antar sesi
 
-      let state = {
+      let st = {
         mode: 'solo',
         pin: '',
+        myId: 'p_' + Math.random().toString(36).slice(2, 9),
+        myName: 'Anda',
         digits: 4,
         secret: '',
-        playerId: 'p_' + Math.random().toString(36).slice(2, 9),
-        playerName: 'Pemain',
-        currentInput: [],
-        attempts: 0,
-        bestPos: 0,
-        solved: false,
-        startTime: 0,
-        roomStatus: 'lobby',
-        players: {}
+        status: 'lobby',
+        sessionNum: 1,
+        phase: 'guessing', // 'guessing' | 'break'
+        phaseEndsAt: 0,
+        lastProcessedSession: 0,
+        input: '',
+        myHistory: [],
+        players: {},
+        botMemory: {},
+        timers: []
       };
 
       function showToast(msg) {
-        const el = document.getElementById('toast');
-        el.textContent = msg;
-        el.classList.remove('hidden');
-        clearTimeout(el._t);
-        el._t = setTimeout(() => el.classList.add('hidden'), 2600);
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.remove('hidden');
+        clearTimeout(t._id);
+        t._id = setTimeout(() => t.classList.add('hidden'), 2500);
       }
 
       async function fbPut(path, data) {
@@ -449,138 +541,480 @@
       function evaluateGuess(secret, guess) {
         let posisiBenar = 0;
         let angkaBenar = 0;
-        for (let i = 0; i < guess.length; i++) {
-          if (guess[i] === secret[i]) posisiBenar++;
-          else if (secret.includes(guess[i])) angkaBenar++;
+        for (let i = 0; i < secret.length; i++) {
+          if (guess[i] === secret[i]) {
+            posisiBenar++;
+          } else if (secret.includes(guess[i])) {
+            angkaBenar++;
+          }
         }
         return { posisiBenar, angkaBenar };
+      }
+
+      /* Smart Bot Candidate Generator */
+      function buildAllCandidates(len) {
+        const res = [];
+        function dfs(curr) {
+          if (curr.length === len) {
+            res.push(curr);
+            return;
+          }
+          for (let d = 0; d <= 9; d++) {
+            const ch = String(d);
+            if (!curr.includes(ch)) dfs(curr + ch);
+          }
+        }
+        dfs('');
+        return res;
+      }
+
+      function pickBotGuess(botId, len) {
+        if (!st.botMemory[botId]) {
+          st.botMemory[botId] = buildAllCandidates(len);
+        }
+        const pool = st.botMemory[botId];
+        if (!pool.length) return generateSecret(len);
+        return pool[Math.floor(Math.random() * pool.length)];
+      }
+
+      function refineBotMemory(botId, guess, res) {
+        if (!st.botMemory[botId]) return;
+        st.botMemory[botId] = st.botMemory[botId].filter(cand => {
+          if (cand === guess) return false;
+          const sim = evaluateGuess(cand, guess);
+          return sim.posisiBenar === res.posisiBenar && sim.angkaBenar === res.angkaBenar;
+        });
       }
 
       function renderSlots() {
         const wrap = document.getElementById('digit-slots');
         wrap.innerHTML = '';
-        for (let i = 0; i < state.digits; i++) {
-          const div = document.createElement('div');
-          const val = state.currentInput[i] || '';
-          div.className = 'slot' + (val ? ' filled' : '');
-          div.textContent = val;
-          wrap.appendChild(div);
+        for (let i = 0; i < st.digits; i++) {
+          const d = document.createElement('div');
+          d.className = 'slot';
+          d.textContent = st.input[i] || '';
+          wrap.appendChild(d);
         }
-        document.querySelectorAll('#keypad .key-btn[data-num]').forEach(btn => {
-          const d = btn.getAttribute('data-num');
-          btn.disabled = state.solved || state.currentInput.includes(d) || state.currentInput.length >= state.digits;
+      }
+
+      function setKeypadEnabled(enabled) {
+        document.querySelectorAll('#guess-box .k-btn').forEach(btn => {
+          btn.disabled = !enabled;
         });
       }
 
-      function renderHostLeaderboard() {
-        const list = Object.values(state.players || {});
-        document.getElementById('host-player-count').textContent = list.length + ' Peserta';
-        const container = document.getElementById('host-leaderboard');
-        if (list.length === 0) {
-          container.innerHTML = '<p style="color:var(--muted);font-size:0.9rem;">Belum ada peserta yang bergabung...</p>';
+      function updatePlayerInputState() {
+        if (st.mode === 'host') return;
+        const me = st.players[st.myId];
+        const statusEl = document.getElementById('player-session-status');
+
+        if (!me || st.status !== 'playing') {
+          setKeypadEnabled(false);
+          statusEl.classList.add('hidden');
           return;
         }
+
+        if (me.disqualified) {
+          setKeypadEnabled(false);
+          statusEl.className = 'status-banner status-dq';
+          statusEl.textContent = '❌ Anda didiskualifikasi karena tidak menjawab 2 sesi berturut-turut.';
+          statusEl.classList.remove('hidden');
+          return;
+        }
+
+        if (me.won) {
+          setKeypadEnabled(false);
+          statusEl.className = 'status-banner status-won';
+          statusEl.textContent = `🎉 Selamat! Anda berhasil memecahkan kode pada Sesi #${me.wonSession || st.sessionNum}!`;
+          statusEl.classList.remove('hidden');
+          return;
+        }
+
+        if (st.phase === 'break') {
+          setKeypadEnabled(false);
+          statusEl.className = 'status-banner status-locked';
+          statusEl.textContent = `⏳ Sesi #${st.sessionNum} selesai. Sesi berikutnya dimulai dalam beberapa detik...`;
+          statusEl.classList.remove('hidden');
+          return;
+        }
+
+        if (me.lastAnsweredSession === st.sessionNum) {
+          setKeypadEnabled(false);
+          statusEl.className = 'status-banner status-locked';
+          statusEl.textContent = `✅ Tebakan Sesi #${st.sessionNum} (${me.lastGuess}) terkirim! Menunggu sesi berakhir...`;
+          statusEl.classList.remove('hidden');
+          return;
+        }
+
+        // Bisa menjawab di sesi aktif ini
+        setKeypadEnabled(true);
+        if ((me.missedStreak || 0) === 1) {
+          statusEl.className = 'status-banner status-dq';
+          statusEl.textContent = '⚠️ Peringatan: Sesi lalu Anda tidak menjawab (1/2). Wajib jawab sesi ini agar tidak didiskualifikasi!';
+          statusEl.classList.remove('hidden');
+        } else {
+          statusEl.classList.add('hidden');
+        }
+      }
+
+      function renderSessionBanner() {
+        const banner = document.getElementById('session-banner');
+        const titleEl = document.getElementById('session-title');
+        const timerEl = document.getElementById('session-timer');
+
+        if (st.status !== 'playing') {
+          banner.classList.add('hidden');
+          return;
+        }
+
+        banner.classList.remove('hidden');
+        const remSec = Math.max(0, Math.ceil((st.phaseEndsAt - Date.now()) / 1000));
+        timerEl.textContent = `${remSec} dtk`;
+
+        if (st.phase === 'guessing') {
+          banner.className = 'session-banner session-phase-guessing';
+          titleEl.textContent = `Sesi #${st.sessionNum} — Kirim 1 Tebakan (15 Detik)`;
+        } else {
+          banner.className = 'session-banner session-phase-break';
+          titleEl.textContent = `Jeda Evaluasi Sesi #${st.sessionNum} — Sesi #${st.sessionNum + 1} Segera Mulai`;
+        }
+      }
+
+      function renderLeaderboard() {
+        const list = Object.values(st.players || {});
+        const activeCount = list.filter(p => !p.disqualified && !p.won).length;
+        document.getElementById('active-count-lbl').textContent = `${activeCount} Aktif / ${list.length} Total`;
+
         list.sort((a, b) => {
-          if (a.solved !== b.solved) return a.solved ? -1 : 1;
-          if (a.solved && b.solved) {
-            if (a.attempts !== b.attempts) return a.attempts - b.attempts;
-            return (a.finishTime || 0) - (b.finishTime || 0);
-          }
-          if ((b.bestPos || 0) !== (a.bestPos || 0)) return (b.bestPos || 0) - (a.bestPos || 0);
+          if (a.disqualified && !b.disqualified) return 1;
+          if (!a.disqualified && b.disqualified) return -1;
+          if (a.won && !b.won) return -1;
+          if (!a.won && b.won) return 1;
+          if (a.won && b.won) return (a.wonAt || 0) - (b.wonAt || 0);
+          if ((b.bestPB || 0) !== (a.bestPB || 0)) return (b.bestPB || 0) - (a.bestPB || 0);
+          if ((b.bestAB || 0) !== (a.bestAB || 0)) return (b.bestAB || 0) - (a.bestAB || 0);
           return (a.attempts || 0) - (b.attempts || 0);
         });
 
-        container.innerHTML = list.slice(0, 10).map((p, idx) => {
-          const statusBadge = p.solved
-            ? `<span style="color:#34d399;font-weight:800;">✅ Selesai (${p.attempts}x)</span>`
-            : `<span style="color:var(--muted);font-size:0.85rem;">Percobaan: ${p.attempts || 0} • Maks Posisi Benar: ${p.bestPos || 0}</span>`;
+        document.getElementById('leaderboard-list').innerHTML = list.slice(0, 10).map((p, i) => {
+          let statusBadge = '';
+          if (p.disqualified) {
+            statusBadge = `<span class="badge-dq">DISKUALIFIKASI</span>`;
+          } else if (p.won) {
+            statusBadge = `<span class="badge-pb">🏆 SELESAI (Sesi #${p.wonSession || p.attempts})</span>`;
+          } else {
+            const warn = (p.missedStreak === 1) ? `<span class="badge-warn" title="1x tidak menjawab">⚠️ 1/2</span> ` : '';
+            const answeredNow = (st.status === 'playing' && st.phase === 'guessing' && p.lastAnsweredSession === st.sessionNum) ? ' ✓' : '';
+            statusBadge = `${warn}<span class="badge-pb">${p.bestPB || 0} Posisi</span> <span class="badge-ab">${p.bestAB || 0} Angka</span> <span style="color:#94a3b8;font-size:0.78rem;">(${p.attempts || 0}x${answeredNow})</span>`;
+          }
           return `
-            <div class="leader-row ${p.solved ? 'solved' : ''}">
-              <div><strong>#${idx + 1} ${p.name}</strong></div>
-              <div>${statusBadge}</div>
+            <div class="hist-item" style="${p.disqualified ? 'opacity:0.58;' : ''}">
+              <span><strong>#${i + 1}</strong> ${p.name}</span>
+              <span>${statusBadge}</span>
             </div>
           `;
         }).join('');
       }
 
-      async function submitGuess() {
-        if (state.solved || state.currentInput.length !== state.digits) return;
-        const guess = state.currentInput.join('');
-        state.attempts++;
-        document.getElementById('play-attempt-count').textContent = 'Percobaan: ' + state.attempts;
+      /* Host / Solo Master Session Controller */
+      async function runBotTurnsForSession(sessionNumber) {
+        const list = Object.values(st.players || {});
+        for (const p of list) {
+          if (!p.isBot || p.disqualified || p.won) continue;
+          if (p.lastAnsweredSession === sessionNumber) continue;
 
-        const res = evaluateGuess(state.secret, guess);
-        state.bestPos = Math.max(state.bestPos, res.posisiBenar);
+          const guess = pickBotGuess(p.id, st.digits);
+          const res = evaluateGuess(st.secret, guess);
+          refineBotMemory(p.id, guess, res);
 
-        const hist = document.getElementById('history-list');
-        const row = document.createElement('div');
-        row.className = 'history-item';
-        row.innerHTML = `
-          <span class="guess-num">${guess}</span>
-          <div class="badges">
-            <span class="b-pos">${res.posisiBenar} Posisi Benar</span>
-            <span class="b-num">${res.angkaBenar} Angka Benar</span>
-          </div>
-        `;
-        hist.prepend(row);
+          p.attempts = (p.attempts || 0) + 1;
+          p.lastAnsweredSession = sessionNumber;
+          p.lastGuess = guess;
+          p.missedStreak = 0;
+          if (res.posisiBenar > (p.bestPB || 0)) p.bestPB = res.posisiBenar;
+          if (res.angkaBenar > (p.bestAB || 0)) p.bestAB = res.angkaBenar;
+          if (res.posisiBenar === st.digits) {
+            p.won = true;
+            p.wonAt = Date.now();
+            p.wonSession = sessionNumber;
+          }
 
-        state.currentInput = [];
-        renderSlots();
+          if (st.mode === 'host') {
+            await fbPatch(`tebak_angka/${st.pin}/players/${p.id}`, {
+              attempts: p.attempts,
+              lastAnsweredSession: p.lastAnsweredSession,
+              lastGuess: p.lastGuess,
+              missedStreak: 0,
+              bestPB: p.bestPB,
+              bestAB: p.bestAB,
+              won: !!p.won,
+              wonAt: p.wonAt || null,
+              wonSession: p.wonSession || null
+            });
+          }
+        }
+      }
 
-        if (res.posisiBenar === state.digits) {
-          state.solved = true;
-          const dur = ((Date.now() - state.startTime) / 1000).toFixed(1);
-          document.getElementById('solved-banner').classList.remove('hidden');
-          document.getElementById('solved-detail').textContent = `Kode ${state.secret} terpecahkan dalam ${state.attempts} percobaan (${dur} detik).`;
-          document.getElementById('btn-play-again').classList.toggle('hidden', state.mode !== 'solo');
-          renderSlots();
+      async function evaluateSessionEnd(sessionNumber) {
+        if (st.lastProcessedSession >= sessionNumber) return;
+        st.lastProcessedSession = sessionNumber;
+
+        // Pastikan Bot sudah mengirim tebakan pada sesi ini
+        await runBotTurnsForSession(sessionNumber);
+
+        // Sinkronisasi data terbaru pemain dari Firebase (khusus mode Host)
+        if (st.mode === 'host' && st.pin) {
+          const latestPlayers = await fbGet(`tebak_angka/${st.pin}/players`);
+          if (latestPlayers) st.players = latestPlayers;
         }
 
-        if (state.mode === 'player') {
-          await fbPatch(`tebak_angka/${state.pin}/players/${state.playerId}`, {
-            attempts: state.attempts,
-            bestPos: state.bestPos,
-            solved: state.solved,
-            finishTime: state.solved ? Date.now() : null
+        const list = Object.values(st.players || {});
+        let activeRemaining = 0;
+        let newlyDisqualified = [];
+
+        for (const p of list) {
+          if (p.disqualified || p.won) continue;
+
+          if (p.lastAnsweredSession !== sessionNumber) {
+            p.missedStreak = (p.missedStreak || 0) + 1;
+            if (p.missedStreak >= 2) {
+              p.disqualified = true;
+              newlyDisqualified.push(p.name);
+            }
+          } else {
+            p.missedStreak = 0;
+          }
+
+          if (!p.disqualified && !p.won) {
+            activeRemaining++;
+          }
+
+          if (st.mode === 'host') {
+            await fbPatch(`tebak_angka/${st.pin}/players/${p.id}`, {
+              missedStreak: p.missedStreak,
+              disqualified: !!p.disqualified
+            });
+          }
+        }
+
+        if (newlyDisqualified.length > 0) {
+          showToast(`Diskualifikasi (2x tidak jawab): ${newlyDisqualified.join(', ')}`);
+        }
+
+        // Jika semua peserta sudah selesai (menang atau didiskualifikasi), akhiri permainan
+        if (list.length > 0 && activeRemaining === 0) {
+          endGame();
+          return;
+        }
+
+        // Masuk ke fase jeda 5 detik sebelum sesi berikutnya dimulai
+        st.phase = 'break';
+        st.phaseEndsAt = Date.now() + SESSION_BREAK_MS;
+        if (st.mode === 'host') {
+          await fbPatch(`tebak_angka/${st.pin}`, {
+            phase: 'break',
+            phaseEndsAt: st.phaseEndsAt
           });
         }
+
+        renderSessionBanner();
+        updatePlayerInputState();
+        renderLeaderboard();
       }
 
-      function startPlaySession(digits, secret) {
-        state.digits = digits;
-        state.secret = secret;
-        state.currentInput = [];
-        state.attempts = 0;
-        state.bestPos = 0;
-        state.solved = false;
-        state.startTime = Date.now();
-        document.getElementById('history-list').innerHTML = '';
-        document.getElementById('solved-banner').classList.add('hidden');
-        document.getElementById('play-attempt-count').textContent = 'Percobaan: 0';
-        document.getElementById('wait-overlay').classList.add('hidden');
-        document.getElementById('play-arena').classList.remove('hidden');
+      async function startNextSession() {
+        st.sessionNum += 1;
+        st.phase = 'guessing';
+        st.phaseEndsAt = Date.now() + SESSION_GUESS_MS;
+
+        if (st.mode === 'host') {
+          await fbPatch(`tebak_angka/${st.pin}`, {
+            sessionNum: st.sessionNum,
+            phase: 'guessing',
+            phaseEndsAt: st.phaseEndsAt
+          });
+        }
+
+        // Jadwalkan bot menebak secara alami di pertengahan sesi (detik ke-3 s/d ke-8)
+        const botDelay = 2500 + Math.floor(Math.random() * 4500);
+        setTimeout(() => {
+          if (st.status === 'playing' && st.phase === 'guessing') {
+            runBotTurnsForSession(st.sessionNum).then(renderLeaderboard);
+          }
+        }, botDelay);
+
+        renderSessionBanner();
+        updatePlayerInputState();
+        renderLeaderboard();
+      }
+
+      async function submitGuess() {
+        if (st.status !== 'playing' || st.mode === 'host') return;
+        const me = st.players[st.myId];
+        if (!me || me.disqualified || me.won) return;
+
+        if (st.phase !== 'guessing') {
+          return showToast('Tunggu sesi berikutnya dimulai!');
+        }
+        if (me.lastAnsweredSession === st.sessionNum) {
+          return showToast('Anda sudah mengirim tebakan pada sesi ini!');
+        }
+        if (st.input.length !== st.digits) {
+          return showToast(`Masukkan ${st.digits} digit angka unik!`);
+        }
+
+        const guess = st.input;
+        st.input = '';
         renderSlots();
+
+        const res = evaluateGuess(st.secret, guess);
+        st.myHistory.unshift({ session: st.sessionNum, guess, ...res });
+        document.getElementById('lbl-attempts').textContent = st.myHistory.length;
+
+        document.getElementById('my-history').innerHTML = st.myHistory.map((h) => `
+          <div class="hist-item">
+            <span><strong>Sesi #${h.session}</strong> • <span style="letter-spacing:3px;font-weight:900;">${h.guess}</span></span>
+            <span>
+              <span class="badge-pb">${h.posisiBenar} Posisi Benar</span>
+              <span class="badge-ab">${h.angkaBenar} Angka Benar</span>
+            </span>
+          </div>
+        `).join('');
+
+        me.attempts = st.myHistory.length;
+        me.lastAnsweredSession = st.sessionNum;
+        me.lastGuess = guess;
+        me.missedStreak = 0;
+        if (res.posisiBenar > (me.bestPB || 0)) me.bestPB = res.posisiBenar;
+        if (res.angkaBenar > (me.bestAB || 0)) me.bestAB = res.angkaBenar;
+
+        if (res.posisiBenar === st.digits) {
+          me.won = true;
+          me.wonAt = Date.now();
+          me.wonSession = st.sessionNum;
+          showToast('🎉 LUAR BIASA! Kode berhasil dipecahkan!');
+        } else {
+          showToast(`Tebakan Sesi #${st.sessionNum} terkirim!`);
+        }
+
+        if (st.mode === 'player') {
+          await fbPatch(`tebak_angka/${st.pin}/players/${st.myId}`, {
+            attempts: me.attempts,
+            lastAnsweredSession: me.lastAnsweredSession,
+            lastGuess: me.lastGuess,
+            missedStreak: 0,
+            bestPB: me.bestPB,
+            bestAB: me.bestAB,
+            won: !!me.won,
+            wonAt: me.wonAt || null,
+            wonSession: me.wonSession || null
+          });
+        }
+
+        updatePlayerInputState();
+        renderLeaderboard();
       }
 
-      function startFirebaseSync() {
-        setInterval(async () => {
-          if (!state.pin) return;
-          const room = await fbGet(`tebak_angka/${state.pin}`);
-          if (!room) return;
+      async function endGame() {
+        if (st.status === 'ended') return;
+        st.status = 'ended';
+        if (st.mode === 'host') {
+          await fbPatch(`tebak_angka/${st.pin}`, { status: 'ended' });
+        }
+        document.getElementById('session-banner').classList.add('hidden');
+        document.getElementById('guess-box').classList.add('hidden');
+        document.getElementById('end-box').classList.remove('hidden');
+        document.getElementById('reveal-secret').textContent = st.secret;
 
-          if (state.mode === 'host') {
-            state.players = room.players || {};
-            renderHostLeaderboard();
-          } else if (state.mode === 'player') {
-            if (room.status === 'playing' && state.roomStatus !== 'playing') {
-              state.roomStatus = 'playing';
-              startPlaySession(room.digits, room.secret);
-            } else if (room.status === 'ended' && state.roomStatus !== 'ended') {
-              state.roomStatus = 'ended';
-              showToast('Permainan diakhiri Host! Kode rahasia: ' + room.secret);
+        const list = Object.values(st.players || {});
+        const winners = list.filter(p => p.won).length;
+        const dqCount = list.filter(p => p.disqualified).length;
+        document.getElementById('final-summary').textContent =
+          `Total ${winners} peserta berhasil memecahkan kode, dan ${dqCount} peserta didiskualifikasi.`;
+        renderLeaderboard();
+      }
+
+      function startPolling() {
+        // Tick UI setiap 250ms untuk countdown mulus & kontrol sesi otomatis (Host / Solo)
+        const tickId = setInterval(() => {
+          if (st.status !== 'playing') return;
+          renderSessionBanner();
+
+          if (st.mode === 'host' || st.mode === 'solo') {
+            const now = Date.now();
+            if (st.phase === 'guessing' && now >= st.phaseEndsAt) {
+              evaluateSessionEnd(st.sessionNum);
+            } else if (st.phase === 'break' && now >= st.phaseEndsAt) {
+              startNextSession();
             }
           }
-        }, 1000);
+        }, 250);
+        st.timers.push(tickId);
+
+        // Sinkronisasi Firebase setiap 800ms
+        const fbId = setInterval(async () => {
+          if (st.mode === 'host' && st.pin) {
+            const room = await fbGet(`tebak_angka/${st.pin}`);
+            if (room && room.players) {
+              st.players = room.players;
+              renderLeaderboard();
+            }
+          } else if (st.mode === 'player' && st.pin) {
+            const room = await fbGet(`tebak_angka/${st.pin}`);
+            if (room) {
+              st.digits = room.digits || st.digits;
+              st.secret = room.secret || st.secret;
+              document.getElementById('lbl-digits').textContent = st.digits;
+
+              if (room.players) {
+                const localMe = st.players[st.myId];
+                st.players = room.players;
+                // Pertahankan status jawaban lokal sesi berjalan jika patch baru saja dikirim
+                if (localMe && st.players[st.myId]) {
+                  if ((localMe.lastAnsweredSession || 0) > (st.players[st.myId].lastAnsweredSession || 0)) {
+                    st.players[st.myId].lastAnsweredSession = localMe.lastAnsweredSession;
+                    st.players[st.myId].lastGuess = localMe.lastGuess;
+                    st.players[st.myId].attempts = localMe.attempts;
+                    st.players[st.myId].bestPB = Math.max(localMe.bestPB || 0, st.players[st.myId].bestPB || 0);
+                    st.players[st.myId].bestAB = Math.max(localMe.bestAB || 0, st.players[st.myId].bestAB || 0);
+                    st.players[st.myId].won = localMe.won || st.players[st.myId].won;
+                    st.players[st.myId].wonSession = localMe.wonSession || st.players[st.myId].wonSession;
+                  }
+                }
+              }
+
+              if (room.status === 'playing') {
+                if (st.status === 'lobby') {
+                  st.status = 'playing';
+                  document.getElementById('player-wait').classList.add('hidden');
+                  document.getElementById('guess-box').classList.remove('hidden');
+                  renderSlots();
+                }
+                const prevSession = st.sessionNum;
+                const prevPhase = st.phase;
+                st.sessionNum = room.sessionNum || 1;
+                st.phase = room.phase || 'guessing';
+                st.phaseEndsAt = room.phaseEndsAt || Date.now();
+
+                if (st.sessionNum !== prevSession && st.phase === 'guessing') {
+                  st.input = '';
+                  renderSlots();
+                  showToast(`Sesi #${st.sessionNum} dimulai! Kirim 1 tebakan (15 detik).`);
+                }
+                if (st.phase !== prevPhase || st.sessionNum !== prevSession) {
+                  updatePlayerInputState();
+                }
+              } else if (room.status === 'ended' && st.status !== 'ended') {
+                endGame();
+              }
+
+              renderSessionBanner();
+              updatePlayerInputState();
+              renderLeaderboard();
+            }
+          }
+        }, 800);
+        st.timers.push(fbId);
       }
 
       document.addEventListener('DOMContentLoaded', () => {
@@ -592,140 +1026,250 @@
           unlockedEl.classList.toggle("hidden", !isHostAllowed);
         }
 
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            const tab = btn.getAttribute('data-tab');
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
+            b.classList.add('active');
+            const tab = b.getAttribute('data-tab');
             ['solo', 'host', 'join'].forEach(t => document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab));
           });
         });
 
+        // SOLO
         document.getElementById('btn-start-solo').addEventListener('click', () => {
-          state.mode = 'solo';
-          const d = parseInt(document.getElementById('solo-digits').value, 10);
+          st.mode = 'solo';
+          st.status = 'playing';
+          st.digits = parseInt(document.getElementById('solo-digits').value, 10);
+          const botCount = parseInt(document.getElementById('solo-bots').value, 10);
+          st.secret = generateSecret(st.digits);
+          st.sessionNum = 1;
+          st.phase = 'guessing';
+          st.phaseEndsAt = Date.now() + SESSION_GUESS_MS;
+          st.lastProcessedSession = 0;
+          st.botMemory = {};
+
+          st.players = {};
+          st.players[st.myId] = {
+            id: st.myId,
+            name: 'Anda',
+            attempts: 0,
+            bestPB: 0,
+            bestAB: 0,
+            missedStreak: 0,
+            disqualified: false,
+            won: false
+          };
+
+          const botNames = ['Raka [BOT]', 'Nadia [BOT]', 'Fajar [BOT]'];
+          for (let i = 0; i < botCount; i++) {
+            const bid = 'bot_' + i;
+            st.players[bid] = {
+              id: bid,
+              name: botNames[i] || `Bot #${i + 1}`,
+              isBot: true,
+              attempts: 0,
+              bestPB: 0,
+              bestAB: 0,
+              missedStreak: 0,
+              disqualified: false,
+              won: false
+            };
+          }
+
+          document.getElementById('lbl-digits').textContent = st.digits;
           document.getElementById('view-home').classList.add('hidden');
-          document.getElementById('view-play').classList.remove('hidden');
-          document.getElementById('play-player-label').textContent = 'Mode Solo (' + d + ' Digit)';
-          startPlaySession(d, generateSecret(d));
+          document.getElementById('view-arena').classList.remove('hidden');
+          renderSlots();
+          renderSessionBanner();
+          updatePlayerInputState();
+          renderLeaderboard();
+
+          setTimeout(() => {
+            if (st.status === 'playing' && st.phase === 'guessing') {
+              runBotTurnsForSession(1).then(renderLeaderboard);
+            }
+          }, 3000);
+
+          startPolling();
         });
 
-        document.getElementById('btn-play-again').addEventListener('click', () => {
-          startPlaySession(state.digits, generateSecret(state.digits));
-        });
-
+        // HOST
         document.getElementById('btn-create-room').addEventListener('click', async () => {
           if (sessionStorage.getItem("arena_host_verified") !== "true") return showToast("Akses Host terkunci!");
-          state.mode = 'host';
-          state.digits = parseInt(document.getElementById('host-digits').value, 10);
-          state.pin = String(Math.floor(100000 + Math.random() * 900000));
-          state.secret = generateSecret(state.digits);
-          state.roomStatus = 'lobby';
-          state.players = {};
+          st.mode = 'host';
+          st.pin = String(Math.floor(100000 + Math.random() * 900000));
+          st.digits = parseInt(document.getElementById('host-digits').value, 10);
+          st.secret = generateSecret(st.digits);
+          st.status = 'lobby';
+          st.sessionNum = 1;
+          st.phase = 'guessing';
+          st.lastProcessedSession = 0;
+          st.players = {};
+          st.botMemory = {};
 
-          await fbPut(`tebak_angka/${state.pin}`, {
-            pin: state.pin,
-            digits: state.digits,
-            secret: state.secret,
+          await fbPut(`tebak_angka/${st.pin}`, {
+            pin: st.pin,
+            digits: st.digits,
+            secret: st.secret,
             status: 'lobby',
+            sessionNum: 1,
+            phase: 'guessing',
+            phaseEndsAt: 0,
             players: {}
           });
 
-          document.getElementById('host-pin-display').textContent = state.pin;
-          document.getElementById('host-digit-info').textContent = state.digits + ' Digit';
+          document.getElementById('display-pin').textContent = st.pin;
+          document.getElementById('host-secret-show').textContent = st.secret;
+          document.getElementById('lbl-digits').textContent = st.digits;
           document.getElementById('view-home').classList.add('hidden');
-          document.getElementById('view-host').classList.remove('hidden');
-          renderHostLeaderboard();
-          startFirebaseSync();
+          document.getElementById('view-arena').classList.remove('hidden');
+          document.getElementById('host-bar').classList.remove('hidden');
+          document.getElementById('guess-box').classList.add('hidden');
+          startPolling();
+        });
+
+        // + TAMBAH BOT (HOST)
+        document.getElementById('btn-add-bot').addEventListener('click', async () => {
+          const count = Object.keys(st.players || {}).length;
+          const bid = 'bot_' + Date.now() + '_' + Math.floor(Math.random() * 100);
+          const botObj = {
+            id: bid,
+            name: 'Bot #' + (count + 1),
+            isBot: true,
+            attempts: 0,
+            bestPB: 0,
+            bestAB: 0,
+            missedStreak: 0,
+            disqualified: false,
+            won: false
+          };
+          st.players[bid] = botObj;
+          await fbPut(`tebak_angka/${st.pin}/players/${bid}`, botObj);
+          renderLeaderboard();
+          showToast(`${botObj.name} ditambahkan ke lobby!`);
         });
 
         document.getElementById('btn-host-start').addEventListener('click', async () => {
-          state.roomStatus = 'playing';
-          document.getElementById('host-status-text').textContent = 'Sedang Berlangsung';
-          document.getElementById('host-status-text').style.color = 'var(--green)';
+          if (Object.keys(st.players || {}).length === 0) {
+            return showToast('Minimal ada 1 peserta atau Bot untuk memulai!');
+          }
+          st.status = 'playing';
+          st.sessionNum = 1;
+          st.phase = 'guessing';
+          st.phaseEndsAt = Date.now() + SESSION_GUESS_MS;
+          st.lastProcessedSession = 0;
+
+          document.getElementById('btn-add-bot').classList.add('hidden');
           document.getElementById('btn-host-start').classList.add('hidden');
           document.getElementById('btn-host-end').classList.remove('hidden');
-          await fbPatch(`tebak_angka/${state.pin}`, { status: 'playing' });
+
+          await fbPatch(`tebak_angka/${st.pin}`, {
+            status: 'playing',
+            sessionNum: 1,
+            phase: 'guessing',
+            phaseEndsAt: st.phaseEndsAt
+          });
+
+          setTimeout(() => {
+            if (st.status === 'playing' && st.phase === 'guessing') {
+              runBotTurnsForSession(1).then(renderLeaderboard);
+            }
+          }, 3000);
+
+          renderSessionBanner();
+          renderLeaderboard();
         });
 
-        document.getElementById('btn-host-end').addEventListener('click', async () => {
-          state.roomStatus = 'ended';
-          document.getElementById('host-status-text').textContent = 'Selesai (Kode: ' + state.secret + ')';
-          document.getElementById('host-status-text').style.color = 'var(--amber)';
-          await fbPatch(`tebak_angka/${state.pin}`, { status: 'ended' });
-          showToast('Permainan selesai! Angka rahasia: ' + state.secret);
-        });
+        document.getElementById('btn-host-end').addEventListener('click', endGame);
 
+        // JOIN
         document.getElementById('btn-join-room').addEventListener('click', async () => {
           const name = document.getElementById('join-name').value.trim();
           const pin = document.getElementById('join-pin').value.trim();
-          if (!name) return showToast('Masukkan nama Anda terlebih dahulu!');
+          if (!name) return showToast('Masukkan nama Anda!');
           if (pin.length !== 6) return showToast('PIN harus 6 digit!');
 
           const room = await fbGet(`tebak_angka/${pin}`);
-          if (!room) return showToast('PIN Room tidak ditemukan!');
+          if (!room) return showToast('Room PIN tidak ditemukan!');
+          if (room.status === 'ended') return showToast('Permainan untuk PIN ini sudah berakhir!');
 
-          state.mode = 'player';
-          state.playerName = name;
-          state.pin = pin;
-          state.digits = room.digits || 4;
-          state.secret = room.secret;
-          state.roomStatus = room.status || 'lobby';
+          st.mode = 'player';
+          st.pin = pin;
+          st.myName = name;
+          st.digits = room.digits || 4;
+          st.secret = room.secret;
+          st.status = room.status || 'lobby';
+          st.sessionNum = room.sessionNum || 1;
+          st.phase = room.phase || 'guessing';
+          st.phaseEndsAt = room.phaseEndsAt || Date.now();
 
-          await fbPut(`tebak_angka/${pin}/players/${state.playerId}`, {
-            id: state.playerId,
-            name: state.playerName,
+          const meObj = {
+            id: st.myId,
+            name: st.myName,
             attempts: 0,
-            bestPos: 0,
-            solved: false
-          });
+            bestPB: 0,
+            bestAB: 0,
+            missedStreak: 0,
+            disqualified: false,
+            won: false
+          };
+          st.players = room.players || {};
+          st.players[st.myId] = meObj;
+          await fbPut(`tebak_angka/${st.pin}/players/${st.myId}`, meObj);
 
+          document.getElementById('lbl-digits').textContent = st.digits;
           document.getElementById('view-home').classList.add('hidden');
-          document.getElementById('view-play').classList.remove('hidden');
-          document.getElementById('play-player-label').textContent = name + ' • PIN ' + pin;
+          document.getElementById('view-arena').classList.remove('hidden');
 
-          if (state.roomStatus === 'playing') {
-            startPlaySession(state.digits, state.secret);
+          if (st.status === 'playing') {
+            renderSlots();
+            renderSessionBanner();
+            updatePlayerInputState();
           } else {
-            document.getElementById('wait-overlay').classList.remove('hidden');
-            document.getElementById('play-arena').classList.add('hidden');
+            document.getElementById('player-wait').classList.remove('hidden');
+            document.getElementById('guess-box').classList.add('hidden');
           }
-          startFirebaseSync();
+          renderLeaderboard();
+          startPolling();
         });
 
-        document.querySelectorAll('#keypad .key-btn[data-num]').forEach(btn => {
+        // KEYPAD
+        document.querySelectorAll('.k-btn[data-d]').forEach(btn => {
           btn.addEventListener('click', () => {
-            if (state.solved || state.currentInput.length >= state.digits) return;
-            const d = btn.getAttribute('data-num');
-            if (!state.currentInput.includes(d)) {
-              state.currentInput.push(d);
+            const d = btn.getAttribute('data-d');
+            if (st.input.includes(d)) return showToast('Angka harus unik (tidak boleh kembar)!');
+            if (st.input.length < st.digits) {
+              st.input += d;
               renderSlots();
             }
           });
         });
 
-        document.getElementById('key-del').addEventListener('click', () => {
-          if (state.solved) return;
-          state.currentInput.pop();
+        document.getElementById('btn-del').addEventListener('click', () => {
+          st.input = st.input.slice(0, -1);
           renderSlots();
         });
 
-        document.getElementById('key-ok').addEventListener('click', submitGuess);
+        document.getElementById('btn-guess').addEventListener('click', submitGuess);
 
         document.addEventListener('keydown', (e) => {
-          if (document.getElementById('view-play').classList.contains('hidden')) return;
+          if (document.getElementById('guess-box').classList.contains('hidden')) return;
+          if (document.getElementById('btn-guess').disabled) return;
           if (e.key >= '0' && e.key <= '9') {
-            if (!state.solved && state.currentInput.length < state.digits && !state.currentInput.includes(e.key)) {
-              state.currentInput.push(e.key);
+            if (st.input.includes(e.key)) return showToast('Angka harus unik!');
+            if (st.input.length < st.digits) {
+              st.input += e.key;
               renderSlots();
             }
           } else if (e.key === 'Backspace') {
-            state.currentInput.pop();
+            st.input = st.input.slice(0, -1);
             renderSlots();
           } else if (e.key === 'Enter') {
             submitGuess();
           }
         });
+
+        document.getElementById('btn-reload').addEventListener('click', () => location.reload());
       });
     })();
   </script>
