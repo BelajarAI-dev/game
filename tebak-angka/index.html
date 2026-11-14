@@ -293,65 +293,57 @@
       animation: popScale 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* Animated Winner Podium */
-    .podium-stage {
+    /* Single Champion Podium Stage */
+    .champion-stage {
       display: flex;
-      align-items: flex-end;
+      flex-direction: column;
+      align-items: center;
       justify-content: center;
-      gap: 12px;
-      max-width: 540px;
-      margin: 22px auto 18px;
-      padding: 12px 8px 0;
-      min-height: 220px;
+      max-width: 340px;
+      margin: 18px auto 16px;
+      padding: 16px 14px 0;
     }
-    .podium-col {
-      flex: 1;
+    .champion-avatar {
       display: flex;
       flex-direction: column;
       align-items: center;
-      max-width: 165px;
-    }
-    .podium-avatar {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       animation: avatarCelebrate 0.8s infinite alternate ease-in-out;
     }
-    .podium-col.rank-1 .podium-avatar { animation-delay: 0s; }
-    .podium-col.rank-2 .podium-avatar { animation-delay: 0.2s; }
-    .podium-col.rank-3 .podium-avatar { animation-delay: 0.35s; }
     @keyframes avatarCelebrate {
       from { transform: translateY(0) scale(1); }
-      to { transform: translateY(-10px) scale(1.06); }
+      to { transform: translateY(-10px) scale(1.07); }
     }
     @keyframes popScale {
       from { transform: scale(0.82); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
-    .podium-medal { font-size: 2rem; margin-bottom: 2px; }
-    .podium-name {
-      font-weight: 800;
-      font-size: 0.92rem;
-      text-align: center;
-      margin-bottom: 2px;
+    .champion-crown { font-size: 2.8rem; line-height: 1.1; }
+    .champion-name {
+      font-weight: 900;
+      font-size: 1.25rem;
+      color: #fff;
+      margin-top: 4px;
       word-break: break-word;
     }
-    .podium-score {
-      font-size: 0.78rem;
+    .champion-detail {
+      font-size: 0.85rem;
       color: #fde047;
       font-weight: 700;
+      margin-top: 2px;
     }
-    .podium-block {
+    .champion-pedestal {
       width: 100%;
-      border-radius: 14px 14px 4px 4px;
+      height: 112px;
+      border-radius: 16px 16px 6px 6px;
+      background: linear-gradient(180deg, #fde047 0%, #f59e0b 100%);
+      box-shadow: 0 0 28px rgba(250,204,21,0.45);
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      padding-top: 10px;
-      font-weight: 900;
+      justify-content: center;
       color: #0f172a;
+      font-weight: 900;
       transform-origin: bottom;
       animation: risePodium 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
@@ -359,20 +351,6 @@
       from { transform: scaleY(0); opacity: 0; }
       to { transform: scaleY(1); opacity: 1; }
     }
-    .rank-1 .podium-block {
-      height: 130px;
-      background: linear-gradient(180deg, #fde047 0%, #f59e0b 100%);
-      box-shadow: 0 0 24px rgba(250,204,21,0.45);
-    }
-    .rank-2 .podium-block {
-      height: 98px;
-      background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 100%);
-    }
-    .rank-3 .podium-block {
-      height: 75px;
-      background: linear-gradient(180deg, #fdba74 0%, #c2410c 100%);
-    }
-    .podium-rank-num { font-size: 1.5rem; }
 
     .end-actions {
       display: flex;
@@ -380,7 +358,7 @@
       justify-content: center;
       flex-wrap: wrap;
       max-width: 520px;
-      margin: 10px auto 0;
+      margin: 12px auto 0;
     }
     .end-actions .btn {
       flex: 1;
@@ -428,9 +406,9 @@
       <div class="rules">
         <strong>Aturan Permainan &amp; Sesi:</strong><br>
         • Setiap sesi berdurasi <strong>15 detik</strong>. Dalam 1 sesi, setiap peserta hanya dapat mengirimkan <strong>1 kali tebakan</strong>.<br>
-        • Setelah 15 detik berakhir, sesi berikutnya otomatis berjalan setelah jeda <strong>5 detik</strong> (atau dapat dipercepat langsung oleh Host).<br>
-        • Peserta yang <strong>tidak menjawab 2 kali sesi berturut-turut</strong> otomatis <strong>didiskualifikasi</strong>.<br>
-        • Petunjuk: <strong>Posisi Benar</strong> = angka &amp; letak tepat | <strong>Angka Benar</strong> = angka ada di kode tetapi letaknya salah.
+        • Peserta <strong>pertama &amp; tercepat</strong> yang berhasil menebak kode rahasia dengan benar langsung menjadi <strong>Pemenang Tunggal</strong> dan permainan berakhir otomatis.<br>
+        • Jika belum ada yang benar, sesi berikutnya otomatis berjalan setelah jeda <strong>5 detik</strong> (atau dipercepat manual oleh Host).<br>
+        • Peserta yang <strong>tidak menjawab 2 kali sesi berturut-turut</strong> otomatis <strong>didiskualifikasi</strong>.
       </div>
 
       <div class="tabs">
@@ -576,12 +554,12 @@
         </div>
       </div>
 
-      <!-- END GAME & WINNER ANIMATION SCREEN (ALL SCREENS: HOST & PLAYERS) -->
+      <!-- END GAME & SINGLE CHAMPION ANIMATION SCREEN (ALL SCREENS: HOST & PLAYERS) -->
       <div id="end-box" class="pin-box hidden" style="border-color:var(--green);margin-top:16px;">
         <h2 id="end-title">🎉 Permainan Selesai!</h2>
         <p style="margin:8px 0;">Kode Rahasia: <strong id="reveal-secret" style="font-size:1.6rem;color:#fbbf24;letter-spacing:4px;"></strong></p>
         <div id="final-summary" style="font-size:0.92rem;color:var(--muted);margin-bottom:8px;"></div>
-        <div class="podium-stage" id="winner-podium"></div>
+        <div class="champion-stage" id="winner-podium"></div>
         <div class="end-actions">
           <button id="btn-play-again" class="btn btn-green hidden">🔄 Main Lagi (PIN Sama)</button>
           <button id="btn-reload" class="btn btn-blue">Kembali ke Awal</button>
@@ -608,13 +586,14 @@
         status: 'lobby',
         round: 1,
         sessionNum: 1,
-        phase: 'guessing', // 'guessing' | 'break'
+        phase: 'guessing',
         phaseEndsAt: 0,
         lastProcessedSession: 0,
         input: '',
         myHistory: [],
-        globalFeed: [],
+        feedMap: {},
         players: {},
+        winnerId: null,
         botMemory: {},
         confettiRunning: false,
         celebrated: false,
@@ -828,7 +807,7 @@
         if (me.won) {
           setKeypadEnabled(false);
           statusEl.className = 'status-banner status-won';
-          statusEl.textContent = `🎉 Selamat! Anda berhasil memecahkan kode pada Sesi #${me.wonSession || st.sessionNum}!`;
+          statusEl.textContent = `🎉 Selamat! Anda adalah Pemenang Tercepat pada Sesi #${me.wonSession || st.sessionNum}!`;
           statusEl.classList.remove('hidden');
           return;
         }
@@ -886,25 +865,13 @@
         }
       }
 
+      /* Render Histori Tebakan & Petunjuk Semua Peserta (Pemain + Bot) di Layar Host */
       function renderHostGlobalHistory() {
         if (st.mode !== 'host') return;
-        const allEntries = [];
-        Object.values(st.players || {}).forEach(p => {
-          const histList = Array.isArray(p.history) ? p.history : (p.history ? Object.values(p.history) : []);
-          histList.forEach(h => {
-            allEntries.push({
-              playerName: p.name,
-              session: h.session || 1,
-              guess: h.guess || '----',
-              posisiBenar: h.posisiBenar || 0,
-              angkaBenar: h.angkaBenar || 0,
-              ts: h.ts || 0
-            });
-          });
-        });
+        const allEntries = Object.values(st.feedMap || {});
 
         allEntries.sort((a, b) => {
-          if (b.session !== a.session) return b.session - a.session;
+          if ((b.session || 1) !== (a.session || 1)) return (b.session || 1) - (a.session || 1);
           return (b.ts || 0) - (a.ts || 0);
         });
 
@@ -918,7 +885,7 @@
         box.innerHTML = allEntries.map(item => `
           <div class="hist-item">
             <div>
-              <span style="font-size:0.76rem;color:#94a3b8;">Sesi #${item.session}</span> •
+              <span style="font-size:0.76rem;color:#94a3b8;">Sesi #${item.session || 1}</span> •
               <strong>${item.playerName}</strong>:
               <span style="letter-spacing:3px;font-weight:900;color:#fde047;">${item.guess}</span>
             </div>
@@ -954,7 +921,7 @@
           if (p.disqualified) {
             statusBadge = `<span class="badge-dq">DISKUALIFIKASI</span>`;
           } else if (p.won) {
-            statusBadge = `<span class="badge-pb">🏆 TERPECAHKAN (Sesi #${p.wonSession || p.attempts})</span>`;
+            statusBadge = `<span class="badge-pb">👑 JUARA (Sesi #${p.wonSession || p.attempts})</span>`;
           } else {
             const warn = (p.missedStreak === 1) ? `<span class="badge-warn" title="1x tidak menjawab">⚠️ 1/2</span> ` : '';
             const answeredNow = (st.status === 'playing' && st.phase === 'guessing' && p.lastAnsweredSession === st.sessionNum) ? ' ✓' : '';
@@ -971,8 +938,10 @@
 
       /* Host / Solo Master Session Controller */
       async function runBotTurnsForSession(sessionNumber) {
+        if (st.status !== 'playing') return;
         const list = Object.values(st.players || {});
         for (const p of list) {
+          if (st.status !== 'playing') break;
           if (!p.isBot || p.disqualified || p.won) continue;
           if (p.lastAnsweredSession === sessionNumber) continue;
 
@@ -980,29 +949,36 @@
           const res = evaluateGuess(st.secret, guess);
           refineBotMemory(p.id, guess, res);
 
+          const nowTs = Date.now();
           p.attempts = (p.attempts || 0) + 1;
           p.lastAnsweredSession = sessionNumber;
           p.lastGuess = guess;
           p.missedStreak = 0;
           if (res.posisiBenar > (p.bestPB || 0)) p.bestPB = res.posisiBenar;
           if (res.angkaBenar > (p.bestAB || 0)) p.bestAB = res.angkaBenar;
-          if (res.posisiBenar === st.digits) {
-            p.won = true;
-            p.wonAt = Date.now();
-            p.wonSession = sessionNumber;
-          }
 
-          const histList = Array.isArray(p.history) ? p.history : [];
-          histList.unshift({
+          const feedKey = `${sessionNumber}_${p.id}`;
+          const feedEntry = {
+            id: feedKey,
+            playerId: p.id,
+            playerName: p.name,
             session: sessionNumber,
             guess,
             posisiBenar: res.posisiBenar,
             angkaBenar: res.angkaBenar,
-            ts: Date.now()
-          });
-          p.history = histList;
+            ts: nowTs
+          };
+          st.feedMap[feedKey] = feedEntry;
+
+          if (res.posisiBenar === st.digits) {
+            p.won = true;
+            p.wonAt = nowTs;
+            p.wonSession = sessionNumber;
+            st.winnerId = p.id;
+          }
 
           if (st.mode === 'host') {
+            await fbPut(`tebak_angka/${st.pin}/feed/${feedKey}`, feedEntry);
             await fbPatch(`tebak_angka/${st.pin}/players/${p.id}`, {
               attempts: p.attempts,
               lastAnsweredSession: p.lastAnsweredSession,
@@ -1012,23 +988,41 @@
               bestAB: p.bestAB,
               won: !!p.won,
               wonAt: p.wonAt || null,
-              wonSession: p.wonSession || null,
-              history: p.history
+              wonSession: p.wonSession || null
             });
+          }
+
+          // Jika Bot ini menebak benar 100%, langsung menangkan & akhiri permainan!
+          if (p.won) {
+            renderHostGlobalHistory();
+            renderLeaderboard();
+            await endGame(p.id);
+            return;
           }
         }
         renderHostGlobalHistory();
       }
 
       async function evaluateSessionEnd(sessionNumber) {
+        if (st.status !== 'playing') return;
         if (st.lastProcessedSession >= sessionNumber) return;
         st.lastProcessedSession = sessionNumber;
 
         await runBotTurnsForSession(sessionNumber);
+        if (st.status !== 'playing') return;
 
         if (st.mode === 'host' && st.pin) {
-          const latestPlayers = await fbGet(`tebak_angka/${st.pin}/players`);
-          if (latestPlayers) st.players = latestPlayers;
+          const room = await fbGet(`tebak_angka/${st.pin}`);
+          if (room) {
+            if (room.players) st.players = room.players;
+            if (room.feed) st.feedMap = { ...st.feedMap, ...room.feed };
+            // Cek apakah ada pemain yang menang tepat sebelum sesi berakhir
+            const winnerPlayer = Object.values(st.players).find(pl => pl.won);
+            if (winnerPlayer) {
+              await endGame(winnerPlayer.id);
+              return;
+            }
+          }
         }
 
         const list = Object.values(st.players || {});
@@ -1065,7 +1059,7 @@
         }
 
         if (list.length > 0 && activeRemaining === 0) {
-          endGame();
+          await endGame(null);
           return;
         }
 
@@ -1129,13 +1123,14 @@
         st.input = '';
         renderSlots();
 
+        const nowTs = Date.now();
         const res = evaluateGuess(st.secret, guess);
         const entry = {
           session: st.sessionNum,
           guess,
           posisiBenar: res.posisiBenar,
           angkaBenar: res.angkaBenar,
-          ts: Date.now()
+          ts: nowTs
         };
         st.myHistory.unshift(entry);
         document.getElementById('lbl-attempts').textContent = st.myHistory.length;
@@ -1154,25 +1149,32 @@
         me.lastAnsweredSession = st.sessionNum;
         me.lastGuess = guess;
         me.missedStreak = 0;
-        me.history = st.myHistory;
         if (res.posisiBenar > (me.bestPB || 0)) me.bestPB = res.posisiBenar;
         if (res.angkaBenar > (me.bestAB || 0)) me.bestAB = res.angkaBenar;
 
-        if (res.posisiBenar === st.digits) {
+        const isCorrectAll = (res.posisiBenar === st.digits);
+        if (isCorrectAll) {
           me.won = true;
-          me.wonAt = Date.now();
+          me.wonAt = nowTs;
           me.wonSession = st.sessionNum;
-          showToast('🎉 LUAR BIASA! Kode berhasil dipecahkan!');
-          if (!st.celebrated) {
-            st.celebrated = true;
-            playVictorySound();
-            launchConfetti(5500);
-          }
-        } else {
-          showToast(`Tebakan Sesi #${st.sessionNum} terkirim!`);
+          st.winnerId = st.myId;
         }
 
+        const feedKey = `${st.sessionNum}_${st.myId}`;
+        const feedEntry = {
+          id: feedKey,
+          playerId: st.myId,
+          playerName: st.myName,
+          session: st.sessionNum,
+          guess,
+          posisiBenar: res.posisiBenar,
+          angkaBenar: res.angkaBenar,
+          ts: nowTs
+        };
+        st.feedMap[feedKey] = feedEntry;
+
         if (st.mode === 'player') {
+          await fbPut(`tebak_angka/${st.pin}/feed/${feedKey}`, feedEntry);
           await fbPatch(`tebak_angka/${st.pin}/players/${st.myId}`, {
             attempts: me.attempts,
             lastAnsweredSession: me.lastAnsweredSession,
@@ -1182,23 +1184,49 @@
             bestAB: me.bestAB,
             won: !!me.won,
             wonAt: me.wonAt || null,
-            wonSession: me.wonSession || null,
-            history: st.myHistory
+            wonSession: me.wonSession || null
           });
+
+          // Jika pemain ini berhasil menebak dengan benar, langsung akhiri permainan secara instan!
+          if (isCorrectAll) {
+            await fbPatch(`tebak_angka/${st.pin}`, {
+              status: 'ended',
+              winnerId: st.myId
+            });
+          }
         }
 
-        updatePlayerInputState();
-        renderLeaderboard();
+        if (isCorrectAll) {
+          showToast('🎉 SELAMAT! Kamu memecahkan kode paling cepat!');
+          await endGame(st.myId);
+        } else {
+          showToast(`Tebakan Sesi #${st.sessionNum} terkirim!`);
+          updatePlayerInputState();
+          renderLeaderboard();
+        }
       }
 
-      async function endGame() {
+      async function endGame(explicitWinnerId) {
         if (st.status === 'ended') return;
         st.status = 'ended';
+
+        const list = getSortedPlayers();
+        const champion = (explicitWinnerId && st.players[explicitWinnerId])
+          ? st.players[explicitWinnerId]
+          : list.find(p => p.won) || null;
+
+        if (champion) {
+          st.winnerId = champion.id;
+        }
+
         if (st.mode === 'host') {
           document.getElementById('btn-host-end').classList.add('hidden');
           document.getElementById('btn-next-session').classList.add('hidden');
           document.getElementById('btn-play-again').classList.remove('hidden');
-          await fbPatch(`tebak_angka/${st.pin}`, { status: 'ended' });
+          await fbPatch(`tebak_angka/${st.pin}`, {
+            status: 'ended',
+            winnerId: champion ? champion.id : null
+          });
         } else if (st.mode === 'solo') {
           document.getElementById('btn-play-again').classList.remove('hidden');
         }
@@ -1208,56 +1236,37 @@
         document.getElementById('end-box').classList.remove('hidden');
         document.getElementById('reveal-secret').textContent = st.secret;
 
-        const list = getSortedPlayers();
-        const winners = list.filter(p => p.won);
         const dqCount = list.filter(p => p.disqualified).length;
+        const podiumEl = document.getElementById('winner-podium');
 
-        if (winners.length > 0) {
-          document.getElementById('end-title').textContent = '🏆 SELAMAT KEPADA PARA PEMENANG!';
+        if (champion) {
+          const isMe = (champion.id === st.myId) ? ' (Kamu!)' : '';
+          document.getElementById('end-title').textContent = '👑 PEMENANG TERCEPAT DITEMUKAN!';
+          document.getElementById('final-summary').textContent =
+            `${champion.name} berhasil menebak kode rahasia pada Sesi #${champion.wonSession || champion.attempts}!`;
+
+          podiumEl.innerHTML = `
+            <div class="champion-avatar">
+              <div class="champion-crown">👑🏆</div>
+              <div class="champion-name">${champion.name}${isMe}</div>
+              <div class="champion-detail">Terpecahkan pada Sesi #${champion.wonSession || champion.attempts}</div>
+            </div>
+            <div class="champion-pedestal">
+              <div style="font-size:1.5rem;">JUARA 1</div>
+              <div style="font-size:0.8rem;opacity:0.85;">Tercepat &amp; Tepat</div>
+            </div>
+          `;
+
           if (!st.celebrated) {
             st.celebrated = true;
             playVictorySound();
           }
           launchConfetti(7000);
         } else {
-          document.getElementById('end-title').textContent = '🎉 Permainan Selesai!';
-        }
-
-        document.getElementById('final-summary').textContent =
-          `Total ${winners.length} peserta berhasil memecahkan kode rahasia, dan ${dqCount} peserta didiskualifikasi.`;
-
-        // Render Podium Top 3 (Juara 2 kiri, Juara 1 tengah tertinggi, Juara 3 kanan)
-        const top3 = list.filter(p => !p.disqualified).slice(0, 3);
-        const podiumOrder = [
-          { rank: 2, player: top3[1], medal: '🥈' },
-          { rank: 1, player: top3[0], medal: '👑🥇' },
-          { rank: 3, player: top3[2], medal: '🥉' }
-        ];
-
-        const podiumEl = document.getElementById('winner-podium');
-        if (top3.length === 0) {
+          document.getElementById('end-title').textContent = '🎉 Permainan Dihentikan!';
+          document.getElementById('final-summary').textContent =
+            `Tidak ada peserta yang memecahkan kode rahasia (${dqCount} peserta didiskualifikasi).`;
           podiumEl.innerHTML = '';
-        } else {
-          podiumEl.innerHTML = podiumOrder.map(item => {
-            if (!item.player) return '';
-            const p = item.player;
-            const isMe = (p.id === st.myId) ? ' (Kamu!)' : '';
-            const detail = p.won
-              ? `Terpecahkan Sesi #${p.wonSession || p.attempts}`
-              : `${p.bestPB || 0} Posisi, ${p.bestAB || 0} Angka`;
-            return `
-              <div class="podium-col rank-${item.rank}">
-                <div class="podium-avatar">
-                  <div class="podium-medal">${item.medal}</div>
-                  <div class="podium-name">${p.name}${isMe}</div>
-                  <div class="podium-score">${detail}</div>
-                </div>
-                <div class="podium-block">
-                  <span class="podium-rank-num">${item.rank}</span>
-                </div>
-              </div>
-            `;
-          }).join('');
         }
 
         renderHostGlobalHistory();
@@ -1273,6 +1282,8 @@
         st.lastProcessedSession = 0;
         st.input = '';
         st.myHistory = [];
+        st.feedMap = {};
+        st.winnerId = null;
         st.botMemory = {};
         st.celebrated = false;
         st.secret = generateSecret(st.digits);
@@ -1289,7 +1300,6 @@
             missedStreak: 0,
             disqualified: false,
             won: false,
-            history: [],
             ...(p.isBot ? { isBot: true } : {})
           };
         });
@@ -1316,6 +1326,8 @@
             sessionNum: 1,
             phase: 'guessing',
             phaseEndsAt: 0,
+            winnerId: null,
+            feed: {},
             players: resetPlayers
           });
           showToast('Lobby dibuka kembali dengan PIN sama! Peserta baru dapat bergabung.');
@@ -1357,10 +1369,25 @@
         const fbId = setInterval(async () => {
           if (st.mode === 'host' && st.pin) {
             const room = await fbGet(`tebak_angka/${st.pin}`);
-            if (room && room.players) {
-              st.players = room.players;
+            if (room) {
+              if (room.players) {
+                st.players = room.players;
+              }
+              if (room.feed) {
+                st.feedMap = { ...st.feedMap, ...room.feed };
+              }
               renderHostGlobalHistory();
               renderLeaderboard();
+
+              // Jika ada peserta yang menang (baik via status room maupun flag pemain), langsung akhiri game!
+              if (st.status === 'playing') {
+                const winnerPlayer = (room.winnerId && st.players[room.winnerId])
+                  ? st.players[room.winnerId]
+                  : Object.values(st.players).find(p => p.won);
+                if (room.status === 'ended' || winnerPlayer) {
+                  await endGame(winnerPlayer ? winnerPlayer.id : room.winnerId);
+                }
+              }
             }
           } else if (st.mode === 'player' && st.pin) {
             const room = await fbGet(`tebak_angka/${st.pin}`);
@@ -1392,6 +1419,7 @@
                 st.phase = 'guessing';
                 st.input = '';
                 st.myHistory = [];
+                st.winnerId = null;
                 st.celebrated = false;
                 document.getElementById('my-history').innerHTML = '';
                 document.getElementById('lbl-attempts').textContent = '0';
@@ -1422,7 +1450,10 @@
                   updatePlayerInputState();
                 }
               } else if (room.status === 'ended' && st.status !== 'ended') {
-                endGame();
+                const winnerPlayer = (room.winnerId && st.players[room.winnerId])
+                  ? st.players[room.winnerId]
+                  : Object.values(st.players).find(p => p.won);
+                await endGame(winnerPlayer ? winnerPlayer.id : room.winnerId);
               }
 
               renderSessionBanner();
@@ -1463,6 +1494,8 @@
           st.phase = 'guessing';
           st.phaseEndsAt = Date.now() + SESSION_GUESS_MS;
           st.lastProcessedSession = 0;
+          st.feedMap = {};
+          st.winnerId = null;
           st.botMemory = {};
           st.celebrated = false;
 
@@ -1475,8 +1508,7 @@
             bestAB: 0,
             missedStreak: 0,
             disqualified: false,
-            won: false,
-            history: []
+            won: false
           };
 
           const botNames = ['Raka [BOT]', 'Nadia [BOT]', 'Fajar [BOT]'];
@@ -1491,8 +1523,7 @@
               bestAB: 0,
               missedStreak: 0,
               disqualified: false,
-              won: false,
-              history: []
+              won: false
             };
           }
 
@@ -1526,6 +1557,8 @@
           st.phase = 'guessing';
           st.lastProcessedSession = 0;
           st.players = {};
+          st.feedMap = {};
+          st.winnerId = null;
           st.botMemory = {};
           st.celebrated = false;
 
@@ -1538,6 +1571,8 @@
             sessionNum: 1,
             phase: 'guessing',
             phaseEndsAt: 0,
+            winnerId: null,
+            feed: {},
             players: {}
           });
 
@@ -1566,8 +1601,7 @@
             bestAB: 0,
             missedStreak: 0,
             disqualified: false,
-            won: false,
-            history: []
+            won: false
           };
           st.players[bid] = botObj;
           await fbPut(`tebak_angka/${st.pin}/players/${bid}`, botObj);
@@ -1615,7 +1649,7 @@
           }
         });
 
-        document.getElementById('btn-host-end').addEventListener('click', endGame);
+        document.getElementById('btn-host-end').addEventListener('click', () => endGame(null));
 
         // JOIN
         document.getElementById('btn-join-room').addEventListener('click', async () => {
@@ -1647,8 +1681,7 @@
             bestAB: 0,
             missedStreak: 0,
             disqualified: false,
-            won: false,
-            history: []
+            won: false
           };
           st.players = room.players || {};
           st.players[st.myId] = meObj;
