@@ -33,8 +33,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 18px;
-      gap: 10px;
+      margin-bottom: 16px;
     }
     .back-btn {
       display: inline-flex;
@@ -49,7 +48,14 @@
       font-weight: 600;
       border: 1px solid var(--border);
     }
-    .back-btn:hover { background: rgba(255,255,255,0.15); }
+    .conn-badge {
+      font-size: 0.78rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(16,185,129,0.18);
+      color: #34d399;
+      font-weight: 700;
+    }
     .container {
       width: 100%;
       max-width: 1040px;
@@ -60,7 +66,7 @@
       box-shadow: 0 20px 40px rgba(0,0,0,0.35);
     }
     h1 { font-size: clamp(1.4rem, 3vw, 2rem); margin-bottom: 6px; }
-    .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 20px; }
+    .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 18px; }
     .tabs {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -68,7 +74,7 @@
       background: var(--panel-2);
       padding: 6px;
       border-radius: 14px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
     }
     .tab-btn {
       padding: 11px 8px;
@@ -78,12 +84,8 @@
       color: var(--muted);
       font-weight: 700;
       cursor: pointer;
-      font-size: 0.92rem;
     }
-    .tab-btn.active {
-      background: var(--green);
-      color: #052e16;
-    }
+    .tab-btn.active { background: var(--green); color: #052e16; }
     .hidden { display: none !important; }
     .form-group { margin-bottom: 14px; }
     label { display: block; font-size: 0.88rem; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
@@ -104,13 +106,10 @@
       font-weight: 800;
       font-size: 1rem;
       cursor: pointer;
-      transition: transform 0.1s ease, opacity 0.15s ease;
     }
-    .btn:active { transform: scale(0.98); }
     .btn-green { background: var(--green); color: #052e16; }
     .btn-blue { background: var(--blue); color: #fff; }
     .btn-red { background: var(--red); color: #fff; }
-    .btn-amber { background: var(--amber); color: #1c1917; }
     .rules-box {
       background: rgba(16,185,129,0.1);
       border: 1px solid rgba(16,185,129,0.25);
@@ -128,32 +127,16 @@
       text-align: center;
       margin-bottom: 18px;
     }
-    .pin-code {
-      font-size: 2.4rem;
-      font-weight: 900;
-      letter-spacing: 6px;
-      color: var(--green);
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: 1.1fr 0.9fr;
-      gap: 20px;
-    }
-    @media (max-width: 780px) {
-      .grid-2 { grid-template-columns: 1fr; }
-    }
+    .pin-code { font-size: 2.4rem; font-weight: 900; letter-spacing: 6px; color: var(--green); }
+    .grid-2 { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 20px; }
+    @media (max-width: 780px) { .grid-2 { grid-template-columns: 1fr; } }
     .box {
       background: var(--panel-2);
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 16px;
     }
-    .digit-slots {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin: 16px 0;
-    }
+    .digit-slots { display: flex; justify-content: center; gap: 10px; margin: 16px 0; }
     .slot {
       width: 56px;
       height: 66px;
@@ -245,14 +228,13 @@
       border-radius: 999px;
       font-weight: 700;
       z-index: 999;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
   </style>
 </head>
 <body>
   <div class="topbar">
     <a href="../index.html" class="back-btn">← Menu Utama</a>
-    <span style="font-size:0.85rem;color:var(--muted);font-weight:600;">Tebak Angka Posisi Benar</span>
+    <span class="conn-badge">● Firebase Terhubung</span>
   </div>
 
   <div class="container">
@@ -266,7 +248,7 @@
         • Angka rahasia terdiri dari <strong>3 atau 4 digit angka berbeda</strong> (0–9).<br>
         • <span style="color:#34d399;font-weight:700;">Posisi Benar</span>: Angka benar dan berada di urutan posisi yang tepat.<br>
         • <span style="color:#fbbf24;font-weight:700;">Angka Benar</span>: Angka ada di kode rahasia, tetapi posisinya masih salah.<br>
-        • Peringkat ditentukan berdasarkan keberhasilan menebak semua <strong>Posisi Benar</strong> dengan jumlah percobaan paling sedikit &amp; tercepat.
+        • Peringkat Top 10 ditentukan berdasarkan keberhasilan menebak semua <strong>Posisi Benar</strong> dengan percobaan paling sedikit.
       </div>
 
       <div class="tabs">
@@ -275,19 +257,17 @@
         <button class="tab-btn" data-tab="join">Gabung Room</button>
       </div>
 
-      <!-- TAB SOLO -->
       <div id="tab-solo">
         <div class="form-group">
           <label>Jumlah Digit Angka Rahasia</label>
           <select id="solo-digits">
-            <option value="3">3 Digit (Mudah / Cepat)</option>
+            <option value="3">3 Digit (Cepat)</option>
             <option value="4" selected>4 Digit (Standar)</option>
           </select>
         </div>
         <button id="btn-start-solo" class="btn btn-green">Mulai Main Solo</button>
       </div>
 
-      <!-- TAB HOST -->
       <div id="tab-host" class="hidden">
         <div class="form-group">
           <label>Jumlah Digit Angka Rahasia</label>
@@ -299,7 +279,6 @@
         <button id="btn-create-room" class="btn btn-blue">Buat Room &amp; Dapatkan PIN</button>
       </div>
 
-      <!-- TAB JOIN -->
       <div id="tab-join" class="hidden">
         <div class="form-group">
           <label>Nama Peserta</label>
@@ -313,7 +292,7 @@
       </div>
     </div>
 
-    <!-- VIEW 2: HOST LOBBY & LEADERBOARD -->
+    <!-- VIEW 2: HOST -->
     <div id="view-host" class="hidden">
       <div class="pin-banner">
         <div style="font-size:0.85rem;color:var(--muted);">PIN ROOM PESERTA</div>
@@ -339,7 +318,7 @@
       </div>
     </div>
 
-    <!-- VIEW 3: PLAYER / SOLO ARENA -->
+    <!-- VIEW 3: PLAY -->
     <div id="view-play" class="hidden">
       <div id="wait-overlay" class="box hidden" style="text-align:center;padding:36px 16px;">
         <div style="font-size:2.5rem;margin-bottom:10px;">⏳</div>
@@ -391,11 +370,10 @@
 
   <script>
     (function () {
-      const CHANNEL_NAME = 'arena_tebak_angka_v1';
-      const bc = ('BroadcastChannel' in window) ? new BroadcastChannel(CHANNEL_NAME) : null;
+      const DB_URL = "https://game-math-7361f-default-rtdb.asia-southeast1.firebasedatabase.app";
 
       let state = {
-        mode: 'solo', // solo | host | player
+        mode: 'solo',
         pin: '',
         digits: 4,
         secret: '',
@@ -403,9 +381,10 @@
         playerName: 'Pemain',
         currentInput: [],
         attempts: 0,
+        bestPos: 0,
         solved: false,
         startTime: 0,
-        roomStatus: 'lobby', // lobby | playing | ended
+        roomStatus: 'lobby',
         players: {}
       };
 
@@ -415,6 +394,34 @@
         el.classList.remove('hidden');
         clearTimeout(el._t);
         el._t = setTimeout(() => el.classList.add('hidden'), 2600);
+      }
+
+      async function fbPut(path, data) {
+        try {
+          await fetch(`${DB_URL}/${path}.json`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        } catch (e) {}
+      }
+
+      async function fbPatch(path, data) {
+        try {
+          await fetch(`${DB_URL}/${path}.json`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+        } catch (e) {}
+      }
+
+      async function fbGet(path) {
+        try {
+          const r = await fetch(`${DB_URL}/${path}.json`);
+          if (!r.ok) return null;
+          return await r.json();
+        } catch (e) { return null; }
       }
 
       function generateSecret(len) {
@@ -430,41 +437,10 @@
         let posisiBenar = 0;
         let angkaBenar = 0;
         for (let i = 0; i < guess.length; i++) {
-          if (guess[i] === secret[i]) {
-            posisiBenar++;
-          } else if (secret.includes(guess[i])) {
-            angkaBenar++;
-          }
+          if (guess[i] === secret[i]) posisiBenar++;
+          else if (secret.includes(guess[i])) angkaBenar++;
         }
         return { posisiBenar, angkaBenar };
-      }
-
-      function broadcast(type, payload) {
-        const msg = { type, pin: state.pin, payload, ts: Date.now() };
-        if (bc) bc.postMessage(msg);
-        try {
-          localStorage.setItem(CHANNEL_NAME + '_evt', JSON.stringify(msg));
-        } catch (e) {}
-      }
-
-      function saveRoomLocal() {
-        if (!state.pin) return;
-        try {
-          localStorage.setItem(CHANNEL_NAME + '_room_' + state.pin, JSON.stringify({
-            pin: state.pin,
-            digits: state.digits,
-            secret: state.secret,
-            status: state.roomStatus,
-            players: state.players
-          }));
-        } catch (e) {}
-      }
-
-      function loadRoomLocal(pin) {
-        try {
-          const raw = localStorage.getItem(CHANNEL_NAME + '_room_' + pin);
-          return raw ? JSON.parse(raw) : null;
-        } catch (e) { return null; }
       }
 
       function renderSlots() {
@@ -484,7 +460,7 @@
       }
 
       function renderHostLeaderboard() {
-        const list = Object.values(state.players);
+        const list = Object.values(state.players || {});
         document.getElementById('host-player-count').textContent = list.length + ' Peserta';
         const container = document.getElementById('host-leaderboard');
         if (list.length === 0) {
@@ -501,8 +477,7 @@
           return (a.attempts || 0) - (b.attempts || 0);
         });
 
-        const top10 = list.slice(0, 10);
-        container.innerHTML = top10.map((p, idx) => {
+        container.innerHTML = list.slice(0, 10).map((p, idx) => {
           const statusBadge = p.solved
             ? `<span style="color:#34d399;font-weight:800;">✅ Selesai (${p.attempts}x)</span>`
             : `<span style="color:var(--muted);font-size:0.85rem;">Percobaan: ${p.attempts || 0} • Maks Posisi Benar: ${p.bestPos || 0}</span>`;
@@ -515,13 +490,15 @@
         }).join('');
       }
 
-      function submitGuess() {
+      async function submitGuess() {
         if (state.solved || state.currentInput.length !== state.digits) return;
         const guess = state.currentInput.join('');
         state.attempts++;
         document.getElementById('play-attempt-count').textContent = 'Percobaan: ' + state.attempts;
 
         const res = evaluateGuess(state.secret, guess);
+        state.bestPos = Math.max(state.bestPos, res.posisiBenar);
+
         const hist = document.getElementById('history-list');
         const row = document.createElement('div');
         row.className = 'history-item';
@@ -542,20 +519,14 @@
           const dur = ((Date.now() - state.startTime) / 1000).toFixed(1);
           document.getElementById('solved-banner').classList.remove('hidden');
           document.getElementById('solved-detail').textContent = `Kode ${state.secret} terpecahkan dalam ${state.attempts} percobaan (${dur} detik).`;
-          if (state.mode === 'solo') {
-            document.getElementById('btn-play-again').classList.remove('hidden');
-          } else {
-            document.getElementById('btn-play-again').classList.add('hidden');
-          }
+          document.getElementById('btn-play-again').classList.toggle('hidden', state.mode !== 'solo');
           renderSlots();
         }
 
         if (state.mode === 'player') {
-          broadcast('PROGRESS', {
-            id: state.playerId,
-            name: state.playerName,
+          await fbPatch(`tebak_angka/${state.pin}/players/${state.playerId}`, {
             attempts: state.attempts,
-            bestPos: res.posisiBenar,
+            bestPos: state.bestPos,
             solved: state.solved,
             finishTime: state.solved ? Date.now() : null
           });
@@ -567,6 +538,7 @@
         state.secret = secret;
         state.currentInput = [];
         state.attempts = 0;
+        state.bestPos = 0;
         state.solved = false;
         state.startTime = Date.now();
         document.getElementById('history-list').innerHTML = '';
@@ -577,54 +549,26 @@
         renderSlots();
       }
 
-      function handleIncomingMessage(msg) {
-        if (!msg || msg.pin !== state.pin) return;
-        if (state.mode === 'host') {
-          if (msg.type === 'JOIN') {
-            state.players[msg.payload.id] = {
-              id: msg.payload.id,
-              name: msg.payload.name,
-              attempts: 0,
-              bestPos: 0,
-              solved: false
-            };
-            saveRoomLocal();
-            renderHostLeaderboard();
-            broadcast('SYNC_ROOM', {
-              digits: state.digits,
-              secret: state.secret,
-              status: state.roomStatus
-            });
-          } else if (msg.type === 'PROGRESS') {
-            const prev = state.players[msg.payload.id] || {};
-            state.players[msg.payload.id] = {
-              ...prev,
-              ...msg.payload,
-              bestPos: Math.max(prev.bestPos || 0, msg.payload.bestPos || 0)
-            };
-            saveRoomLocal();
-            renderHostLeaderboard();
-          }
-        } else if (state.mode === 'player') {
-          if (msg.type === 'SYNC_ROOM' || msg.type === 'START_GAME') {
-            state.digits = msg.payload.digits;
-            state.secret = msg.payload.secret;
-            state.roomStatus = msg.payload.status;
-            if (state.roomStatus === 'playing') {
-              startPlaySession(state.digits, state.secret);
-            }
-          } else if (msg.type === 'END_GAME') {
-            showToast('Permainan diakhiri Host! Kode rahasia: ' + state.secret);
-          }
-        }
-      }
+      function startFirebaseSync() {
+        setInterval(async () => {
+          if (!state.pin) return;
+          const room = await fbGet(`tebak_angka/${state.pin}`);
+          if (!room) return;
 
-      if (bc) bc.onmessage = (e) => handleIncomingMessage(e.data);
-      window.addEventListener('storage', (e) => {
-        if (e.key === CHANNEL_NAME + '_evt' && e.newValue) {
-          try { handleIncomingMessage(JSON.parse(e.newValue)); } catch (err) {}
-        }
-      });
+          if (state.mode === 'host') {
+            state.players = room.players || {};
+            renderHostLeaderboard();
+          } else if (state.mode === 'player') {
+            if (room.status === 'playing' && state.roomStatus !== 'playing') {
+              state.roomStatus = 'playing';
+              startPlaySession(room.digits, room.secret);
+            } else if (room.status === 'ended' && state.roomStatus !== 'ended') {
+              state.roomStatus = 'ended';
+              showToast('Permainan diakhiri Host! Kode rahasia: ' + room.secret);
+            }
+          }
+        }, 1000);
+      }
 
       document.addEventListener('DOMContentLoaded', () => {
         document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -632,9 +576,7 @@
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             const tab = btn.getAttribute('data-tab');
-            ['solo', 'host', 'join'].forEach(t => {
-              document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
-            });
+            ['solo', 'host', 'join'].forEach(t => document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab));
           });
         });
 
@@ -651,68 +593,82 @@
           startPlaySession(state.digits, generateSecret(state.digits));
         });
 
-        document.getElementById('btn-create-room').addEventListener('click', () => {
+        document.getElementById('btn-create-room').addEventListener('click', async () => {
           state.mode = 'host';
           state.digits = parseInt(document.getElementById('host-digits').value, 10);
           state.pin = String(Math.floor(100000 + Math.random() * 900000));
           state.secret = generateSecret(state.digits);
           state.roomStatus = 'lobby';
           state.players = {};
-          saveRoomLocal();
+
+          await fbPut(`tebak_angka/${state.pin}`, {
+            pin: state.pin,
+            digits: state.digits,
+            secret: state.secret,
+            status: 'lobby',
+            players: {}
+          });
 
           document.getElementById('host-pin-display').textContent = state.pin;
           document.getElementById('host-digit-info').textContent = state.digits + ' Digit';
           document.getElementById('view-home').classList.add('hidden');
           document.getElementById('view-host').classList.remove('hidden');
           renderHostLeaderboard();
+          startFirebaseSync();
         });
 
-        document.getElementById('btn-host-start').addEventListener('click', () => {
+        document.getElementById('btn-host-start').addEventListener('click', async () => {
           state.roomStatus = 'playing';
-          saveRoomLocal();
           document.getElementById('host-status-text').textContent = 'Sedang Berlangsung';
           document.getElementById('host-status-text').style.color = 'var(--green)';
           document.getElementById('btn-host-start').classList.add('hidden');
           document.getElementById('btn-host-end').classList.remove('hidden');
-          broadcast('START_GAME', {
-            digits: state.digits,
-            secret: state.secret,
-            status: 'playing'
-          });
+          await fbPatch(`tebak_angka/${state.pin}`, { status: 'playing' });
         });
 
-        document.getElementById('btn-host-end').addEventListener('click', () => {
+        document.getElementById('btn-host-end').addEventListener('click', async () => {
           state.roomStatus = 'ended';
-          saveRoomLocal();
           document.getElementById('host-status-text').textContent = 'Selesai (Kode: ' + state.secret + ')';
           document.getElementById('host-status-text').style.color = 'var(--amber)';
-          broadcast('END_GAME', { secret: state.secret });
+          await fbPatch(`tebak_angka/${state.pin}`, { status: 'ended' });
           showToast('Permainan selesai! Angka rahasia: ' + state.secret);
         });
 
-        document.getElementById('btn-join-room').addEventListener('click', () => {
+        document.getElementById('btn-join-room').addEventListener('click', async () => {
           const name = document.getElementById('join-name').value.trim();
           const pin = document.getElementById('join-pin').value.trim();
           if (!name) return showToast('Masukkan nama Anda terlebih dahulu!');
           if (pin.length !== 6) return showToast('PIN harus 6 digit!');
 
+          const room = await fbGet(`tebak_angka/${pin}`);
+          if (!room) return showToast('PIN Room tidak ditemukan!');
+
           state.mode = 'player';
           state.playerName = name;
           state.pin = pin;
+          state.digits = room.digits || 4;
+          state.secret = room.secret;
+          state.roomStatus = room.status || 'lobby';
 
-          const existing = loadRoomLocal(pin);
+          await fbPut(`tebak_angka/${pin}/players/${state.playerId}`, {
+            id: state.playerId,
+            name: state.playerName,
+            attempts: 0,
+            bestPos: 0,
+            solved: false
+          });
+
           document.getElementById('view-home').classList.add('hidden');
           document.getElementById('view-play').classList.remove('hidden');
           document.getElementById('play-player-label').textContent = name + ' • PIN ' + pin;
 
-          broadcast('JOIN', { id: state.playerId, name: state.playerName });
-
-          if (existing && existing.status === 'playing') {
-            startPlaySession(existing.digits, existing.secret);
+          if (state.roomStatus === 'playing') {
+            startPlaySession(state.digits, state.secret);
           } else {
             document.getElementById('wait-overlay').classList.remove('hidden');
             document.getElementById('play-arena').classList.add('hidden');
           }
+          startFirebaseSync();
         });
 
         document.querySelectorAll('#keypad .key-btn[data-num]').forEach(btn => {
