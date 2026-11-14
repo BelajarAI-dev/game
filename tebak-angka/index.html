@@ -286,7 +286,7 @@
       font-weight: 800;
       font-size: 0.8rem;
     }
-    .badge-ab {
+    .badge-ps {
       background: rgba(245,158,11,0.2);
       color: #fbbf24;
       padding: 3px 8px;
@@ -444,13 +444,14 @@
     <!-- HOME -->
     <div id="view-home">
       <h1>🔢 Tebak Angka Posisi Benar</h1>
-      <p class="sub">Pecahkan kode rahasia digit unik menggunakan logika <strong>Posisi Benar</strong> &amp; <strong>Angka Benar</strong>!</p>
+      <p class="sub">Pecahkan kode rahasia digit unik menggunakan petunjuk <strong>Posisi Benar</strong> &amp; <strong>Posisi Salah</strong>!</p>
 
       <div class="rules">
-        <strong>Aturan Permainan &amp; Sesi:</strong><br>
-        • Setiap sesi berdurasi <strong>15 detik</strong>. Dalam 1 sesi, setiap peserta hanya dapat mengirimkan <strong>1 kali tebakan</strong>.<br>
-        • Peserta <strong>pertama &amp; tercepat</strong> yang berhasil menebak kode rahasia dengan benar langsung menjadi <strong>Pemenang Tunggal</strong> dan permainan berakhir otomatis.<br>
-        • Jika belum ada yang benar, sesi berikutnya otomatis berjalan setelah jeda <strong>5 detik</strong> (atau dipercepat manual oleh Host).<br>
+        <strong>Aturan Permainan &amp; Petunjuk:</strong><br>
+        • <strong>Posisi Benar</strong> = angka ada di kode rahasia dan letak/posisinya sudah tepat.<br>
+        • <strong>Posisi Salah</strong> = angka ada di kode rahasia, namun letak/posisinya masih salah.<br>
+        • Setiap sesi berdurasi <strong>15 detik</strong> (1 kali tebakan per sesi). Jika belum ada yang benar, sesi berikutnya otomatis berjalan setelah jeda <strong>5 detik</strong>.<br>
+        • Peserta <strong>pertama &amp; tercepat</strong> yang berhasil menebak semua digit dengan tepat langsung menjadi <strong>Pemenang Tunggal</strong>.<br>
         • Peserta yang <strong>tidak menjawab 2 kali sesi berturut-turut</strong> otomatis <strong>didiskualifikasi</strong>.
       </div>
 
@@ -543,7 +544,7 @@
         <p style="color:var(--muted);margin-top:6px;">Menunggu Host memulai permainan...</p>
       </div>
 
-      <!-- LOBBY PARTICIPANTS LIST (REALTIME & SHOWS ALL JOINED PLAYERS) -->
+      <!-- LOBBY PARTICIPANTS LIST -->
       <div id="lobby-box" class="box hidden" style="margin-bottom:14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
           <h3>👥 Peserta yang Sudah Bergabung</h3>
@@ -589,7 +590,7 @@
           <div class="history-list" id="my-history"></div>
         </div>
 
-        <!-- HOST GLOBAL GUESSES & HINTS LOG (LAYAR UTAMA HOST) -->
+        <!-- HOST GLOBAL GUESSES & HINTS LOG -->
         <div class="box hidden" id="host-feed-box">
           <div style="display:flex;justify-content:space-between;align-items:center;">
             <h4>📜 Histori Tebakan &amp; Petunjuk Peserta</h4>
@@ -608,7 +609,7 @@
         </div>
       </div>
 
-      <!-- END GAME & SINGLE CHAMPION ANIMATION SCREEN (ALL SCREENS: HOST & PLAYERS) -->
+      <!-- END GAME & SINGLE CHAMPION ANIMATION SCREEN -->
       <div id="end-box" class="pin-box hidden" style="border-color:var(--green);margin-top:16px;">
         <h2 id="end-title">🎉 Permainan Selesai!</h2>
         <p style="margin:8px 0;">Kode Rahasia: <strong id="reveal-secret" style="font-size:1.6rem;color:#fbbf24;letter-spacing:4px;"></strong></p>
@@ -627,8 +628,8 @@
   <script>
     (function () {
       const DB_URL = "https://game-math-7361f-default-rtdb.asia-southeast1.firebasedatabase.app";
-      const SESSION_GUESS_MS = 15000; // 15 detik per sesi tebakan
-      const SESSION_BREAK_MS = 5000;  // 5 detik jeda antar sesi
+      const SESSION_GUESS_MS = 15000;
+      const SESSION_BREAK_MS = 5000;
 
       let st = {
         mode: 'solo',
@@ -662,7 +663,6 @@
         t._id = setTimeout(() => t.classList.add('hidden'), 2500);
       }
 
-      /* Confetti Celebration Animation */
       function launchConfetti(durationMs) {
         const canvas = document.getElementById('confetti-canvas');
         if (!canvas) return;
@@ -716,7 +716,6 @@
         requestAnimationFrame(frame);
       }
 
-      /* Web Audio Victory Fanfare */
       function playVictorySound() {
         try {
           const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -776,18 +775,17 @@
 
       function evaluateGuess(secret, guess) {
         let posisiBenar = 0;
-        let angkaBenar = 0;
+        let posisiSalah = 0;
         for (let i = 0; i < secret.length; i++) {
           if (guess[i] === secret[i]) {
             posisiBenar++;
           } else if (secret.includes(guess[i])) {
-            angkaBenar++;
+            posisiSalah++;
           }
         }
-        return { posisiBenar, angkaBenar };
+        return { posisiBenar, posisiSalah };
       }
 
-      /* Smart Bot Candidate Generator */
       function buildAllCandidates(len) {
         const res = [];
         function dfs(curr) {
@@ -818,11 +816,10 @@
         st.botMemory[botId] = st.botMemory[botId].filter(cand => {
           if (cand === guess) return false;
           const sim = evaluateGuess(cand, guess);
-          return sim.posisiBenar === res.posisiBenar && sim.angkaBenar === res.angkaBenar;
+          return sim.posisiBenar === res.posisiBenar && sim.posisiSalah === res.posisiSalah;
         });
       }
 
-      /* Render Semua Peserta yang Bergabung Saat di Lobby (Realtime & Tanpa Limit) */
       function renderLobbyPlayers() {
         const list = Object.values(st.players || {});
         list.sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
@@ -950,7 +947,6 @@
         }
       }
 
-      /* Render Histori Tebakan & Petunjuk Semua Peserta (Pemain + Bot) di Layar Host */
       function renderHostGlobalHistory() {
         if (st.mode !== 'host') return;
         const allEntries = Object.values(st.feedMap || {});
@@ -967,19 +963,22 @@
           return;
         }
 
-        box.innerHTML = allEntries.map(item => `
-          <div class="hist-item">
-            <div>
-              <span style="font-size:0.76rem;color:#94a3b8;">Sesi #${item.session || 1}</span> •
-              <strong>${item.playerName}</strong>:
-              <span style="letter-spacing:3px;font-weight:900;color:#fde047;">${item.guess}</span>
+        box.innerHTML = allEntries.map(item => {
+          const psCount = (item.posisiSalah !== undefined) ? item.posisiSalah : (item.angkaBenar || 0);
+          return `
+            <div class="hist-item">
+              <div>
+                <span style="font-size:0.76rem;color:#94a3b8;">Sesi #${item.session || 1}</span> •
+                <strong>${item.playerName}</strong>:
+                <span style="letter-spacing:3px;font-weight:900;color:#fde047;">${item.guess}</span>
+              </div>
+              <div>
+                <span class="badge-pb">${item.posisiBenar} Posisi Benar</span>
+                <span class="badge-ps">${psCount} Posisi Salah</span>
+              </div>
             </div>
-            <div>
-              <span class="badge-pb">${item.posisiBenar} Posisi Benar</span>
-              <span class="badge-ab">${item.angkaBenar} Angka Benar</span>
-            </div>
-          </div>
-        `).join('');
+          `;
+        }).join('');
       }
 
       function getSortedPlayers() {
@@ -991,7 +990,9 @@
           if (!a.won && b.won) return 1;
           if (a.won && b.won) return (a.wonAt || 0) - (b.wonAt || 0);
           if ((b.bestPB || 0) !== (a.bestPB || 0)) return (b.bestPB || 0) - (a.bestPB || 0);
-          if ((b.bestAB || 0) !== (a.bestAB || 0)) return (b.bestAB || 0) - (a.bestAB || 0);
+          const bPS = (b.bestPS !== undefined) ? b.bestPS : (b.bestAB || 0);
+          const aPS = (a.bestPS !== undefined) ? a.bestPS : (a.bestAB || 0);
+          if (bPS !== aPS) return bPS - aPS;
           return (a.attempts || 0) - (b.attempts || 0);
         });
       }
@@ -1003,6 +1004,7 @@
 
         document.getElementById('leaderboard-list').innerHTML = list.slice(0, 10).map((p, i) => {
           let statusBadge = '';
+          const psVal = (p.bestPS !== undefined) ? p.bestPS : (p.bestAB || 0);
           if (p.disqualified) {
             statusBadge = `<span class="badge-dq">DISKUALIFIKASI</span>`;
           } else if (p.won) {
@@ -1010,7 +1012,7 @@
           } else {
             const warn = (p.missedStreak === 1) ? `<span class="badge-warn" title="1x tidak menjawab">⚠️ 1/2</span> ` : '';
             const answeredNow = (st.status === 'playing' && st.phase === 'guessing' && p.lastAnsweredSession === st.sessionNum) ? ' ✓' : '';
-            statusBadge = `${warn}<span class="badge-pb">${p.bestPB || 0} Posisi</span> <span class="badge-ab">${p.bestAB || 0} Angka</span> <span style="color:#94a3b8;font-size:0.78rem;">(${p.attempts || 0}x${answeredNow})</span>`;
+            statusBadge = `${warn}<span class="badge-pb">${p.bestPB || 0} Posisi Benar</span> <span class="badge-ps">${psVal} Posisi Salah</span> <span style="color:#94a3b8;font-size:0.78rem;">(${p.attempts || 0}x${answeredNow})</span>`;
           }
           return `
             <div class="hist-item" style="${p.disqualified ? 'opacity:0.58;' : ''}">
@@ -1021,7 +1023,6 @@
         }).join('');
       }
 
-      /* Host / Solo Master Session Controller */
       async function runBotTurnsForSession(sessionNumber) {
         if (st.status !== 'playing') return;
         const list = Object.values(st.players || {});
@@ -1040,7 +1041,7 @@
           p.lastGuess = guess;
           p.missedStreak = 0;
           if (res.posisiBenar > (p.bestPB || 0)) p.bestPB = res.posisiBenar;
-          if (res.angkaBenar > (p.bestAB || 0)) p.bestAB = res.angkaBenar;
+          if (res.posisiSalah > (p.bestPS || 0)) p.bestPS = res.posisiSalah;
 
           const feedKey = `${sessionNumber}_${p.id}`;
           const feedEntry = {
@@ -1050,7 +1051,7 @@
             session: sessionNumber,
             guess,
             posisiBenar: res.posisiBenar,
-            angkaBenar: res.angkaBenar,
+            posisiSalah: res.posisiSalah,
             ts: nowTs
           };
           st.feedMap[feedKey] = feedEntry;
@@ -1070,7 +1071,7 @@
               lastGuess: p.lastGuess,
               missedStreak: 0,
               bestPB: p.bestPB,
-              bestAB: p.bestAB,
+              bestPS: p.bestPS,
               won: !!p.won,
               wonAt: p.wonAt || null,
               wonSession: p.wonSession || null
@@ -1212,7 +1213,7 @@
           session: st.sessionNum,
           guess,
           posisiBenar: res.posisiBenar,
-          angkaBenar: res.angkaBenar,
+          posisiSalah: res.posisiSalah,
           ts: nowTs
         };
         st.myHistory.unshift(entry);
@@ -1223,7 +1224,7 @@
             <span><strong>Sesi #${h.session}</strong> • <span style="letter-spacing:3px;font-weight:900;">${h.guess}</span></span>
             <span>
               <span class="badge-pb">${h.posisiBenar} Posisi Benar</span>
-              <span class="badge-ab">${h.angkaBenar} Angka Benar</span>
+              <span class="badge-ps">${h.posisiSalah} Posisi Salah</span>
             </span>
           </div>
         `).join('');
@@ -1233,7 +1234,7 @@
         me.lastGuess = guess;
         me.missedStreak = 0;
         if (res.posisiBenar > (me.bestPB || 0)) me.bestPB = res.posisiBenar;
-        if (res.angkaBenar > (me.bestAB || 0)) me.bestAB = res.angkaBenar;
+        if (res.posisiSalah > (me.bestPS || 0)) me.bestPS = res.posisiSalah;
 
         const isCorrectAll = (res.posisiBenar === st.digits);
         if (isCorrectAll) {
@@ -1251,7 +1252,7 @@
           session: st.sessionNum,
           guess,
           posisiBenar: res.posisiBenar,
-          angkaBenar: res.angkaBenar,
+          posisiSalah: res.posisiSalah,
           ts: nowTs
         };
         st.feedMap[feedKey] = feedEntry;
@@ -1264,7 +1265,7 @@
             lastGuess: me.lastGuess,
             missedStreak: 0,
             bestPB: me.bestPB,
-            bestAB: me.bestAB,
+            bestPS: me.bestPS,
             won: !!me.won,
             wonAt: me.wonAt || null,
             wonSession: me.wonSession || null
@@ -1381,7 +1382,7 @@
             joinedAt: p.joinedAt || Date.now(),
             attempts: 0,
             bestPB: 0,
-            bestAB: 0,
+            bestPS: 0,
             missedStreak: 0,
             disqualified: false,
             won: false,
@@ -1396,7 +1397,6 @@
         document.getElementById('lbl-attempts').textContent = '0';
 
         if (st.mode === 'host') {
-          // Sembunyikan kembali kode rahasia di lobby & tampilkan daftar peserta lobby
           document.getElementById('host-secret-wrap').classList.add('hidden');
           document.getElementById('host-secret-show').textContent = st.secret;
           document.getElementById('btn-add-bot').classList.remove('hidden');
@@ -1500,7 +1500,7 @@
                     st.players[st.myId].lastGuess = localMe.lastGuess;
                     st.players[st.myId].attempts = localMe.attempts;
                     st.players[st.myId].bestPB = Math.max(localMe.bestPB || 0, st.players[st.myId].bestPB || 0);
-                    st.players[st.myId].bestAB = Math.max(localMe.bestAB || 0, st.players[st.myId].bestAB || 0);
+                    st.players[st.myId].bestPS = Math.max(localMe.bestPS || 0, st.players[st.myId].bestPS || 0);
                     st.players[st.myId].won = localMe.won || st.players[st.myId].won;
                     st.players[st.myId].wonSession = localMe.wonSession || st.players[st.myId].wonSession;
                   }
@@ -1605,7 +1605,7 @@
             joinedAt: Date.now(),
             attempts: 0,
             bestPB: 0,
-            bestAB: 0,
+            bestPS: 0,
             missedStreak: 0,
             disqualified: false,
             won: false
@@ -1621,7 +1621,7 @@
               isBot: true,
               attempts: 0,
               bestPB: 0,
-              bestAB: 0,
+              bestPS: 0,
               missedStreak: 0,
               disqualified: false,
               won: false
@@ -1681,7 +1681,6 @@
 
           document.getElementById('display-pin').textContent = st.pin;
           document.getElementById('host-secret-show').textContent = st.secret;
-          // Di lobby: kode rahasia disembunyikan & ruang peserta bergabung ditampilkan
           document.getElementById('host-secret-wrap').classList.add('hidden');
           document.getElementById('lbl-digits').textContent = st.digits;
           document.getElementById('view-home').classList.add('hidden');
@@ -1704,7 +1703,7 @@
             isBot: true,
             attempts: 0,
             bestPB: 0,
-            bestAB: 0,
+            bestPS: 0,
             missedStreak: 0,
             disqualified: false,
             won: false
@@ -1726,7 +1725,6 @@
           st.phaseEndsAt = Date.now() + SESSION_GUESS_MS;
           st.lastProcessedSession = 0;
 
-          // Tampilkan kode rahasia pada layar Host setelah game dimulai & buka tampilan arena
           document.getElementById('host-secret-wrap').classList.remove('hidden');
           document.getElementById('btn-add-bot').classList.add('hidden');
           document.getElementById('btn-host-start').classList.add('hidden');
@@ -1792,7 +1790,7 @@
             joinedAt: Date.now(),
             attempts: 0,
             bestPB: 0,
-            bestAB: 0,
+            bestPS: 0,
             missedStreak: 0,
             disqualified: false,
             won: false
