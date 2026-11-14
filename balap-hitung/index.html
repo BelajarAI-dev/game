@@ -26,6 +26,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      overflow-x: hidden;
     }
     .topbar {
       width: 100%;
@@ -65,6 +66,7 @@
       border-radius: 20px;
       padding: 22px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+      position: relative;
     }
     .hidden { display: none !important; }
     h1 { font-size: clamp(1.35rem, 3vw, 1.9rem); margin-bottom: 4px; }
@@ -139,7 +141,7 @@
       padding: 12px;
       position: relative;
       overflow: hidden;
-      min-height: 220px;
+      min-height: 230px;
     }
     .track-header {
       display: flex;
@@ -151,7 +153,7 @@
     }
     .track-canvas {
       position: relative;
-      height: 168px;
+      height: 176px;
       border-bottom: 4px dashed rgba(255,255,255,0.35);
     }
     .finish-line {
@@ -174,12 +176,19 @@
       width: 56px;
       pointer-events: none;
     }
+    .runner.opponent {
+      opacity: 0.72;
+      z-index: 2;
+    }
+    .runner.me {
+      z-index: 10;
+    }
     .runner-label {
-      background: rgba(15,23,42,0.88);
-      border: 1px solid rgba(255,255,255,0.2);
-      padding: 2px 6px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(255,255,255,0.22);
+      padding: 2px 7px;
       border-radius: 6px;
-      font-size: 0.72rem;
+      font-size: 0.73rem;
       font-weight: 800;
       white-space: nowrap;
       margin-bottom: 2px;
@@ -187,7 +196,8 @@
     .runner.me .runner-label {
       background: var(--green);
       color: #052e16;
-      border-color: #fff;
+      border: 2px solid #fff;
+      box-shadow: 0 2px 8px rgba(16,185,129,0.5);
     }
     .stickman-svg { width: 34px; height: 48px; }
     .running .leg-l { animation: swingL 0.25s infinite alternate; transform-origin: 17px 28px; }
@@ -265,11 +275,124 @@
       background: var(--panel-dark);
       border: 2px dashed var(--blue);
       border-radius: 16px;
-      padding: 14px;
+      padding: 16px;
       text-align: center;
       margin-bottom: 14px;
     }
     .pin-val { font-size: 2.3rem; font-weight: 900; letter-spacing: 6px; color: var(--blue); }
+
+    /* Player Finish Celebration Banner */
+    .finish-celebration {
+      background: linear-gradient(135deg, rgba(16,185,129,0.22), rgba(245,158,11,0.22));
+      border: 2px solid #fbbf24;
+      border-radius: 18px;
+      padding: 24px 16px;
+      text-align: center;
+      margin-top: 10px;
+      animation: popScale 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      box-shadow: 0 0 30px rgba(251,191,36,0.25);
+    }
+    .trophy-bounce {
+      font-size: 3.4rem;
+      display: inline-block;
+      animation: bounceTrophy 0.9s infinite alternate ease-in-out;
+    }
+    @keyframes popScale {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    @keyframes bounceTrophy {
+      from { transform: translateY(0) rotate(-6deg) scale(1); }
+      to { transform: translateY(-12px) rotate(6deg) scale(1.12); }
+    }
+
+    /* Animated 3D-style Podium */
+    .podium-stage {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 12px;
+      max-width: 540px;
+      margin: 22px auto 18px;
+      padding: 12px 8px 0;
+      min-height: 230px;
+    }
+    .podium-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 165px;
+    }
+    .podium-avatar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 6px;
+      animation: avatarCelebrate 0.8s infinite alternate ease-in-out;
+    }
+    .podium-col.rank-1 .podium-avatar { animation-delay: 0s; }
+    .podium-col.rank-2 .podium-avatar { animation-delay: 0.2s; }
+    .podium-col.rank-3 .podium-avatar { animation-delay: 0.35s; }
+    @keyframes avatarCelebrate {
+      from { transform: translateY(0); }
+      to { transform: translateY(-10px); }
+    }
+    .podium-name {
+      font-weight: 800;
+      font-size: 0.88rem;
+      text-align: center;
+      margin-bottom: 2px;
+      word-break: break-word;
+    }
+    .podium-score {
+      font-size: 0.78rem;
+      color: #fde047;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .podium-block {
+      width: 100%;
+      border-radius: 14px 14px 4px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding-top: 10px;
+      font-weight: 900;
+      color: #0f172a;
+      transform-origin: bottom;
+      animation: risePodium 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    @keyframes risePodium {
+      from { transform: scaleY(0); opacity: 0; }
+      to { transform: scaleY(1); opacity: 1; }
+    }
+    .rank-1 .podium-block {
+      height: 135px;
+      background: linear-gradient(180deg, #fde047 0%, #f59e0b 100%);
+      box-shadow: 0 0 24px rgba(250,204,21,0.45);
+    }
+    .rank-2 .podium-block {
+      height: 102px;
+      background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 100%);
+    }
+    .rank-3 .podium-block {
+      height: 78px;
+      background: linear-gradient(180deg, #fdba74 0%, #c2410c 100%);
+    }
+    .podium-rank-num { font-size: 1.5rem; }
+
+    /* Confetti Layer */
+    #confetti-canvas {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: 1200;
+    }
+
     .toast {
       position: fixed;
       bottom: 18px;
@@ -286,6 +409,8 @@
   </style>
 </head>
 <body>
+  <canvas id="confetti-canvas" class="hidden"></canvas>
+
   <div class="topbar">
     <a href="../index.html" class="back-btn">← Menu Utama</a>
     <span class="conn-badge" id="fb-status">● Firebase Terhubung</span>
@@ -404,7 +529,7 @@
         <p style="color:var(--muted);margin-top:6px;">Menunggu Host menekan tombol <strong>Mulai Game</strong>...</p>
       </div>
 
-      <div class="race-layout">
+      <div class="race-layout" id="race-layout">
         <div class="track-box">
           <div class="track-header">
             <span>🏁 Lintasan Maraton (Target: <strong id="lbl-target">50</strong> Poin)</span>
@@ -446,10 +571,20 @@
         </div>
       </div>
 
-      <!-- PODIUM -->
+      <!-- CELEBRATION WHEN THIS PLAYER REACHES FINISH -->
+      <div id="finish-celebration" class="finish-celebration hidden">
+        <div class="trophy-bounce" id="finish-emoji">🏆🎉</div>
+        <h2 id="finish-headline" style="color:#fde047;margin:8px 0 4px;">LUAR BIASA! KAMU SAMPAI FINIS!</h2>
+        <p id="finish-subtext" style="color:#e2e8f0;font-size:0.95rem;">
+          Menunggu peserta lain menyelesaikan balapan untuk melihat Podium Juara 1, 2, dan 3...
+        </p>
+      </div>
+
+      <!-- PODIUM JUARA 1, 2, 3 (ALL SCREENS: HOST & ALL PLAYERS) -->
       <div id="podium-box" class="pin-box hidden" style="border-color:var(--green);margin-top:14px;">
-        <h2>🏆 Hasil Akhir Balapan</h2>
-        <div id="podium-list" style="max-width:460px;margin:12px auto;"></div>
+        <h2>🏆 PODIUM JUARA BALAP HITUNG</h2>
+        <p style="color:var(--muted);font-size:0.88rem;margin-top:4px;">Selamat kepada para pemenang!</p>
+        <div class="podium-stage" id="podium-stage"></div>
         <button id="btn-reload" class="btn btn-blue" style="max-width:260px;margin-top:8px;">Kembali ke Awal</button>
       </div>
     </div>
@@ -475,6 +610,9 @@
         q: { text: '', ans: 0, start: 0 },
         input: '',
         wrongStreak: 0,
+        hasFinished: false,
+        celebrated: false,
+        confettiRunning: false,
         timers: []
       };
 
@@ -484,6 +622,81 @@
         t.classList.remove('hidden');
         clearTimeout(t._id);
         t._id = setTimeout(() => t.classList.add('hidden'), 2400);
+      }
+
+      /* Confetti Celebration Animation */
+      function launchConfetti(durationMs) {
+        const canvas = document.getElementById('confetti-canvas');
+        if (!canvas) return;
+        canvas.classList.remove('hidden');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        const confettiColors = ['#fde047', '#34d399', '#60a5fa', '#f472b6', '#fb923c', '#a78bfa'];
+        const pieces = Array.from({ length: 130 }, () => ({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height - canvas.height,
+          w: Math.random() * 10 + 6,
+          h: Math.random() * 6 + 4,
+          color: confettiColors[Math.floor(Math.random() * confettiColors.length)],
+          vy: Math.random() * 3.5 + 2.2,
+          vx: (Math.random() - 0.5) * 2.5,
+          rot: Math.random() * 360,
+          vRot: (Math.random() - 0.5) * 8
+        }));
+
+        const endAt = Date.now() + (durationMs || 5000);
+        st.confettiRunning = true;
+
+        function frame() {
+          if (!st.confettiRunning) return;
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+          pieces.forEach(p => {
+            p.x += p.vx;
+            p.y += p.vy;
+            p.rot += p.vRot;
+            if (p.y > canvas.height) {
+              p.y = -12;
+              p.x = Math.random() * canvas.width;
+            }
+            ctx.save();
+            ctx.translate(p.x, p.y);
+            ctx.rotate((p.rot * Math.PI) / 180);
+            ctx.fillStyle = p.color;
+            ctx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+            ctx.restore();
+          });
+          if (Date.now() < endAt) {
+            requestAnimationFrame(frame);
+          } else {
+            st.confettiRunning = false;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvas.classList.add('hidden');
+          }
+        }
+        requestAnimationFrame(frame);
+      }
+
+      /* Web Audio Fanfare */
+      function playVictorySound() {
+        try {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          const ctx = new AudioCtx();
+          const notes = [523.25, 659.25, 783.99, 1046.50];
+          notes.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.14, ctx.currentTime + i * 0.11);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.11 + 0.35);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(ctx.currentTime + i * 0.11);
+            osc.stop(ctx.currentTime + i * 0.11 + 0.36);
+          });
+        } catch (e) {}
       }
 
       async function fbPut(path, data) {
@@ -515,6 +728,7 @@
       }
 
       function makeQuestion(prevText) {
+        if (st.hasFinished) return;
         let a, b, op, text, ans;
         do {
           a = Math.floor(Math.random() * 39) - 19;
@@ -541,6 +755,23 @@
         </svg>`;
       }
 
+      function getRankedPlayers() {
+        const list = Object.values(st.players || {});
+        return list.sort((a, b) => {
+          const aDone = (a.score || 0) >= st.target;
+          const bDone = (b.score || 0) >= st.target;
+          if (aDone && bDone) {
+            if ((a.finishedAt || 0) !== (b.finishedAt || 0)) {
+              return (a.finishedAt || 0) - (b.finishedAt || 0);
+            }
+          }
+          if ((b.score || 0) !== (a.score || 0)) {
+            return (b.score || 0) - (a.score || 0);
+          }
+          return (a.finishedAt || Number.MAX_SAFE_INTEGER) - (b.finishedAt || Number.MAX_SAFE_INTEGER);
+        });
+      }
+
       function renderRace() {
         const list = Object.values(st.players || {});
         const track = document.getElementById('track-canvas');
@@ -550,27 +781,37 @@
 
         list.forEach((p, idx) => {
           const isMe = p.id === st.myId;
-          if (st.mode === 'player' && !isMe) return;
-
           const ratio = Math.min(1, Math.max(0, (p.score || 0) / st.target));
           const leftPx = 10 + ratio * maxW;
           const div = document.createElement('div');
-          div.className = 'runner running' + (isMe ? ' me' : '');
+          const isStopped = (p.score || 0) >= st.target || st.status === 'ended';
+
+          div.className = 'runner'
+            + (isStopped ? '' : ' running')
+            + (isMe ? ' me' : ' opponent');
+
           div.style.left = leftPx + 'px';
-          div.style.bottom = (4 + (idx % 4) * 14) + 'px';
+          div.style.bottom = (4 + (idx % 5) * 12) + 'px';
 
-          const labelTxt = (st.mode === 'player')
-            ? p.name
-            : `${p.name} (${p.score || 0})`;
+          // Layar HP Pemain: tampilkan semua stickman lawan tanpa label nama, namun stickman milik pemain tersebut tetap berlabel namanya
+          // Layar Host & Solo: tampilkan Nama (Skor) di atas setiap stickman
+          let labelHTML = '';
+          if (st.mode === 'player') {
+            if (isMe) {
+              labelHTML = `<div class="runner-label">${p.name}</div>`;
+            }
+          } else {
+            labelHTML = `<div class="runner-label">${p.name} (${p.score || 0})</div>`;
+          }
 
-          div.innerHTML = `<div class="runner-label">${labelTxt}</div>${stickmanSVG(p.color || COLORS[idx % COLORS.length])}`;
+          div.innerHTML = `${labelHTML}${stickmanSVG(p.color || COLORS[idx % COLORS.length])}`;
           track.appendChild(div);
         });
 
-        const sorted = [...list].sort((a, b) => (b.score || 0) - (a.score || 0));
+        const sorted = getRankedPlayers();
         document.getElementById('top5-list').innerHTML = sorted.slice(0, 5).map((p, i) => `
           <div class="top5-item">
-            <span><strong>#${i + 1}</strong> ${p.name}</span>
+            <span><strong>#${i + 1}</strong> ${p.name} ${(p.score || 0) >= st.target ? '🏁' : ''}</span>
             <strong style="color:#34d399;">${p.score || 0} poin</strong>
           </div>
         `).join('');
@@ -588,23 +829,89 @@
         }
       }
 
+      function onThisPlayerReachedFinish() {
+        if (st.hasFinished) return;
+        st.hasFinished = true;
+
+        // Sembunyikan panel soal agar tidak muncul lagi di layar peserta yang sudah finis
+        document.getElementById('question-panel').classList.add('hidden');
+
+        // Hitung peringkat saat finis
+        const ranked = getRankedPlayers();
+        const myRank = ranked.findIndex(p => p.id === st.myId) + 1;
+
+        const celebBox = document.getElementById('finish-celebration');
+        celebBox.classList.remove('hidden');
+
+        if (myRank >= 1 && myRank <= 3) {
+          const medalMap = { 1: '🥇 JUARA 1!', 2: '🥈 JUARA 2!', 3: '🥉 JUARA 3!' };
+          document.getElementById('finish-emoji').textContent = myRank === 1 ? '👑🏆🎉' : '🏅🎉✨';
+          document.getElementById('finish-headline').textContent = `SELAMAT! KAMU MERAIH ${medalMap[myRank]}`;
+          document.getElementById('finish-subtext').textContent = `Kamu mencapai garis finis di peringkat #${myRank}! Menunggu podium akhir...`;
+          if (!st.celebrated) {
+            st.celebrated = true;
+            playVictorySound();
+            launchConfetti(6000);
+          }
+        } else {
+          document.getElementById('finish-emoji').textContent = '🏁👏';
+          document.getElementById('finish-headline').textContent = 'HEBAT! KAMU SAMPAI GARIS FINIS!';
+          document.getElementById('finish-subtext').textContent = `Kamu finis di posisi #${myRank}. Menunggu balapan selesai untuk melihat Podium...`;
+        }
+      }
+
       function endRace() {
         if (st.status === 'ended') return;
         st.status = 'ended';
         if (st.mode === 'host') {
           fbPatch(`balap_hitung/${st.pin}`, { status: 'ended' });
         }
+
         document.getElementById('question-panel').classList.add('hidden');
+        document.getElementById('finish-celebration').classList.add('hidden');
         document.getElementById('podium-box').classList.remove('hidden');
 
-        const sorted = Object.values(st.players || {}).sort((a, b) => (b.score || 0) - (a.score || 0));
-        const medals = ['🥇 Juara 1', '🥈 Juara 2', '🥉 Juara 3'];
-        document.getElementById('podium-list').innerHTML = sorted.slice(0, 3).map((p, i) => `
-          <div class="top5-item" style="font-size:1rem;padding:12px;">
-            <span><strong>${medals[i]}</strong> — ${p.name}</span>
-            <strong style="color:#fbbf24;">${p.score || 0} poin</strong>
-          </div>
-        `).join('');
+        const sorted = getRankedPlayers();
+        const top3 = sorted.slice(0, 3);
+
+        // Cek apakah pemain di HP ini masuk Juara 1, 2, atau 3 untuk memicu selebrasi meriah
+        if ((st.mode === 'player' || st.mode === 'solo') && top3.some(p => p.id === st.myId)) {
+          if (!st.celebrated) {
+            st.celebrated = true;
+            playVictorySound();
+          }
+          launchConfetti(7500);
+        } else if (st.mode === 'host') {
+          playVictorySound();
+          launchConfetti(6500);
+        }
+
+        // Susun urutan tampilan podium: Juara 2 (kiri), Juara 1 (tengah tertinggi), Juara 3 (kanan)
+        const order = [
+          { rank: 2, player: top3[1], medal: '🥈' },
+          { rank: 1, player: top3[0], medal: '👑🥇' },
+          { rank: 3, player: top3[2], medal: '🥉' }
+        ];
+
+        const stage = document.getElementById('podium-stage');
+        stage.innerHTML = order.map(item => {
+          if (!item.player) return '';
+          const p = item.player;
+          const isMeTag = (p.id === st.myId) ? ' (Kamu!)' : '';
+          return `
+            <div class="podium-col rank-${item.rank}">
+              <div class="podium-avatar">
+                <div style="font-size:1.3rem;">${item.medal}</div>
+                ${stickmanSVG(p.color || '#fde047')}
+                <div class="podium-name">${p.name}${isMeTag}</div>
+                <div class="podium-score">${p.score || 0} poin</div>
+              </div>
+              <div class="podium-block">
+                <span class="podium-rank-num">${item.rank}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
       }
 
       function checkWinners() {
@@ -626,7 +933,7 @@
       }
 
       function handleAnswerSubmit() {
-        if (st.status !== 'playing' || st.mode === 'host') return;
+        if (st.status !== 'playing' || st.mode === 'host' || st.hasFinished) return;
         const val = parseInt(st.input, 10);
         if (isNaN(val)) return;
 
@@ -641,8 +948,23 @@
           else if (elapsed <= 4) pts = 2;
 
           me.score = (me.score || 0) + pts;
-          showToast(`Benar (${elapsed.toFixed(1)} dtk)! +${pts} poin`);
-          makeQuestion(st.q.text);
+          if (me.score >= st.target && !me.finishedAt) {
+            me.finishedAt = Date.now();
+          }
+
+          if (st.mode === 'player') {
+            fbPatch(`balap_hitung/${st.pin}/players/${st.myId}`, {
+              score: me.score,
+              finishedAt: me.finishedAt || null
+            });
+          }
+
+          if (me.score >= st.target) {
+            onThisPlayerReachedFinish();
+          } else {
+            showToast(`Benar (${elapsed.toFixed(1)} dtk)! +${pts} poin`);
+            makeQuestion(st.q.text);
+          }
         } else {
           st.wrongStreak++;
           const panel = document.getElementById('question-panel');
@@ -657,19 +979,20 @@
           } else {
             showToast('Salah (1/2)! Soal baru...');
           }
+
+          if (st.mode === 'player') {
+            fbPatch(`balap_hitung/${st.pin}/players/${st.myId}`, { score: me.score });
+          }
           makeQuestion(st.q.text);
         }
 
-        if (st.mode === 'player') {
-          fbPatch(`balap_hitung/${st.pin}/players/${st.myId}`, { score: me.score });
-        }
         checkWinners();
         renderRace();
       }
 
       function startPollingLoop() {
         const id = setInterval(async () => {
-          if ((st.mode === 'player' || st.mode === 'solo') && st.status === 'playing') {
+          if ((st.mode === 'player' || st.mode === 'solo') && st.status === 'playing' && !st.hasFinished) {
             document.getElementById('q-timer').textContent = ((Date.now() - st.q.start) / 1000).toFixed(1) + ' dtk';
           }
 
@@ -688,23 +1011,33 @@
               st.target = room.target || st.target;
               document.getElementById('lbl-target').textContent = st.target;
               if (room.players) {
-                const myScore = st.players[st.myId] ? st.players[st.myId].score : 0;
+                const myLocal = st.players[st.myId];
                 st.players = room.players;
-                if (st.players[st.myId]) st.players[st.myId].score = Math.max(myScore, st.players[st.myId].score || 0);
+                if (myLocal && st.players[st.myId]) {
+                  if ((myLocal.score || 0) > (st.players[st.myId].score || 0)) {
+                    st.players[st.myId].score = myLocal.score;
+                  }
+                  if (myLocal.finishedAt) {
+                    st.players[st.myId].finishedAt = myLocal.finishedAt;
+                  }
+                }
               }
               if (room.firstWinAt) st.firstWinAt = room.firstWinAt;
+
               if (room.status === 'playing' && st.status === 'lobby') {
                 st.status = 'playing';
                 document.getElementById('player-wait').classList.add('hidden');
-                document.getElementById('question-panel').classList.remove('hidden');
-                makeQuestion('');
+                if (!st.hasFinished) {
+                  document.getElementById('question-panel').classList.remove('hidden');
+                  makeQuestion('');
+                }
               } else if (room.status === 'ended' && st.status !== 'ended') {
                 endRace();
               }
               renderRace();
             }
           }
-        }, 900);
+        }, 850);
         st.timers.push(id);
       }
 
@@ -730,9 +1063,12 @@
           document.getElementById('host-custom-wrap').classList.toggle('hidden', e.target.value !== 'custom');
         });
 
+        // SOLO
         document.getElementById('btn-start-solo').addEventListener('click', () => {
           st.mode = 'solo';
           st.status = 'playing';
+          st.hasFinished = false;
+          st.celebrated = false;
           st.target = parseInt(document.getElementById('solo-target').value, 10);
           const botCount = parseInt(document.getElementById('solo-bots').value, 10);
           const diff = document.getElementById('solo-diff').value;
@@ -756,10 +1092,11 @@
           const botTimer = setInterval(() => {
             if (st.status !== 'playing') return;
             Object.values(st.players).forEach(p => {
-              if (!p.isBot) return;
+              if (!p.isBot || (p.score || 0) >= st.target) return;
               if (Math.random() < 0.78) {
                 p.streak = 0;
                 p.score += diff === 'hard' ? 2 : 1;
+                if (p.score >= st.target && !p.finishedAt) p.finishedAt = Date.now();
               } else {
                 p.streak = (p.streak || 0) + 1;
                 if (p.streak >= 2) { p.streak = 0; p.score = Math.max(0, p.score - 1); }
@@ -772,6 +1109,7 @@
           startPollingLoop();
         });
 
+        // HOST
         document.getElementById('btn-create-room').addEventListener('click', async () => {
           if (sessionStorage.getItem("arena_host_verified") !== "true") return showToast("Akses Host terkunci!");
           st.mode = 'host';
@@ -817,9 +1155,13 @@
           const bt = setInterval(() => {
             if (st.status !== 'playing') return;
             Object.values(st.players).forEach(p => {
-              if (!p.isBot) return;
+              if (!p.isBot || (p.score || 0) >= st.target) return;
               p.score += Math.random() < 0.7 ? 2 : 0;
-              fbPatch(`balap_hitung/${st.pin}/players/${p.id}`, { score: p.score });
+              if (p.score >= st.target && !p.finishedAt) p.finishedAt = Date.now();
+              fbPatch(`balap_hitung/${st.pin}/players/${p.id}`, {
+                score: p.score,
+                finishedAt: p.finishedAt || null
+              });
             });
             checkWinners();
             renderRace();
@@ -829,6 +1171,7 @@
 
         document.getElementById('btn-host-end').addEventListener('click', endRace);
 
+        // JOIN
         document.getElementById('btn-join-room').addEventListener('click', async () => {
           const name = document.getElementById('join-name').value.trim();
           const pin = document.getElementById('join-pin').value.trim();
@@ -843,8 +1186,11 @@
           st.myName = name;
           st.target = room.target || 50;
           st.status = room.status || 'lobby';
+          st.hasFinished = false;
+          st.celebrated = false;
 
           const meObj = { id: st.myId, name: st.myName, score: 0, color: COLORS[Math.floor(Math.random() * COLORS.length)] };
+          st.players = room.players || {};
           st.players[st.myId] = meObj;
           await fbPut(`balap_hitung/${st.pin}/players/${st.myId}`, meObj);
 
@@ -858,9 +1204,11 @@
           } else {
             document.getElementById('player-wait').classList.remove('hidden');
           }
+          renderRace();
           startPollingLoop();
         });
 
+        // KEYPAD
         document.querySelectorAll('.k-btn[data-k]').forEach(btn => {
           btn.addEventListener('click', () => {
             if (st.input.length < 4) {
