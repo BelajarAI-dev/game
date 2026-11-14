@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Angka Boom</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --panel-2: #0b1220;
+      --border: rgba(255,255,255,0.1);
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --green: #10b981;
+      --blue: #3b82f6;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body {
+      background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 75%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: background 0.3s ease;
+    }
+    body.boom-flash {
+      background: radial-gradient(circle at center, #7f1d1d 0%, #0f172a 80%);
+    }
+    .topbar {
+      width: 100%;
+      max-width: 1040px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      background: rgba(255,255,255,0.08);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      border: 1px solid var(--border);
+    }
+    .container {
+      width: 100%;
+      max-width: 1040px;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.35);
+    }
+    h1 { font-size: clamp(1.4rem, 3vw, 2rem); margin-bottom: 6px; }
+    .subtitle { color: var(--muted); font-size: 0.95rem; margin-bottom: 20px; }
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      background: var(--panel-2);
+      padding: 6px;
+      border-radius: 14px;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      padding: 11px 8px;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      color: var(--muted);
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: var(--amber);
+      color: #1c1917;
+    }
+    .hidden { display: none !important; }
+    .form-group { margin-bottom: 14px; }
+    label { display: block; font-size: 0.88rem; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+    input, select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      color: var(--text);
+      font-size: 1rem;
+    }
+    .btn {
+      width: 100%;
+      padding: 13px 18px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 800;
+      font-size: 1rem;
+      cursor: pointer;
+    }
+    .btn-amber { background: var(--amber); color: #1c1917; }
+    .btn-blue { background: var(--blue); color: #fff; }
+    .btn-green { background: var(--green); color: #052e16; }
+    .btn-red { background: var(--red); color: #fff; }
+    .rules-box {
+      background: rgba(245,158,11,0.1);
+      border: 1px solid rgba(245,158,11,0.28);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 18px;
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+    .range-card {
+      background: var(--panel-2);
+      border: 2px solid var(--amber);
+      border-radius: 18px;
+      padding: 22px 16px;
+      text-align: center;
+      margin-bottom: 18px;
+    }
+    .range-numbers {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      margin: 10px 0;
+    }
+    .bound-num {
+      font-size: clamp(2.2rem, 5vw, 3.4rem);
+      font-weight: 900;
+      color: var(--amber);
+    }
+    .bomb-icon {
+      font-size: 2.8rem;
+      display: inline-block;
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.14); }
+    }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 20px;
+    }
+    @media (max-width: 780px) { .grid-2 { grid-template-columns: 1fr; } }
+    .box {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    .log-list {
+      max-height: 290px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .log-item {
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--panel);
+      font-size: 0.9rem;
+      display: flex;
+      justify-content: space-between;
+    }
+    .log-item.boom {
+      background: rgba(239,68,68,0.22);
+      border: 1px solid var(--red);
+      color: #fca5a5;
+      font-weight: 800;
+    }
+    .leader-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--panel);
+      margin-bottom: 8px;
+      border-left: 4px solid var(--green);
+    }
+    .leader-row.eliminated {
+      border-left-color: var(--red);
+      opacity: 0.65;
+    }
+    .pin-code {
+      font-size: 2.3rem;
+      font-weight: 900;
+      letter-spacing: 6px;
+      color: var(--amber);
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #0f172a;
+      border: 1px solid var(--amber);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-weight: 700;
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <a href="../index.html" class="back-btn">← Menu Utama</a>
+    <span style="font-size:0.85rem;color:var(--muted);font-weight:600;">Angka Boom</span>
+  </div>
+
+  <div class="container">
+    <!-- HOME -->
+    <div id="view-home">
+      <h1>💣 Angka Boom</h1>
+      <p class="subtitle">Tebak angka aman untuk mempersempit batas—jangan sampai memilih Angka Boom!</p>
+
+      <div class="rules-box">
+        <strong>Aturan Permainan:</strong><br>
+        • Sistem memilih satu <strong>Angka Boom</strong> rahasia di dalam rentang batas bawah dan batas atas.<br>
+        • Peserta menebak angka secara bergantian. Jika tebakan bukan Angka Boom, rentang otomatis menyempit sesuai angka tebakan.<br>
+        • Peserta yang menebak tepat pada <strong>Angka Boom</strong> akan terkena ledakan (<strong>BOOM!</strong>) dan tereliminasi!
+      </div>
+
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="solo">Main Lawan Bot</button>
+        <button class="tab-btn" data-tab="host">Buat Room (Host)</button>
+        <button class="tab-btn" data-tab="join">Gabung Room</button>
+      </div>
+
+      <!-- SOLO -->
+      <div id="tab-solo">
+        <div class="form-group">
+          <label>Batas Atas Angka</label>
+          <select id="solo-max">
+            <option value="50">1 – 50 (Cepat)</option>
+            <option value="100" selected>1 – 100 (Standar)</option>
+            <option value="200">1 – 200 (Menegangkan)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Jumlah Lawan Bot</label>
+          <select id="solo-bots">
+            <option value="1">1 Bot</option>
+            <option value="2" selected>2 Bot</option>
+            <option value="3">3 Bot</option>
+          </select>
+        </div>
+        <button id="btn-start-solo" class="btn btn-amber">Mulai Main Lawan Bot</button>
+      </div>
+
+      <!-- HOST -->
+      <div id="tab-host" class="hidden">
+        <div class="form-group">
+          <label>Rentang Awal Permainan</label>
+          <select id="host-max">
+            <option value="50">1 – 50</option>
+            <option value="100" selected>1 – 100</option>
+            <option value="200">1 – 200</option>
+          </select>
+        </div>
+        <button id="btn-create-room" class="btn btn-blue">Buat Room Angka Boom</button>
+      </div>
+
+      <!-- JOIN -->
+      <div id="tab-join" class="hidden">
+        <div class="form-group">
+          <label>Nama Peserta</label>
+          <input type="text" id="join-name" placeholder="Masukkan nama Anda..." maxlength="18" />
+        </div>
+        <div class="form-group">
+          <label>PIN Room (6 Digit)</label>
+          <input type="text" id="join-pin" placeholder="Contoh: 719304" maxlength="6" inputmode="numeric" />
+        </div>
+        <button id="btn-join-room" class="btn btn-amber">Gabung ke Room</button>
+      </div>
+    </div>
+
+    <!-- ARENA HOST & SOLO -->
+    <div id="view-arena" class="hidden">
+      <div id="host-pin-box" class="box hidden" style="text-align:center;margin-bottom:16px;">
+        <div style="font-size:0.82rem;color:var(--muted);">PIN ROOM PESERTA</div>
+        <div class="pin-code" id="arena-pin">000000</div>
+        <div style="display:flex;gap:10px;max-width:420px;margin:12px auto 0;">
+          <button id="btn-host-start" class="btn btn-green">▶ Mulai Giliran</button>
+          <button id="btn-host-reset" class="btn btn-amber hidden">🔄 Babak Baru</button>
+        </div>
+      </div>
+
+      <div class="range-card">
+        <div id="turn-indicator" style="font-weight:800;font-size:1.05rem;color:#34d399;margin-bottom:6px;">
+          Giliran: Anda
+        </div>
+        <div class="range-numbers">
+          <span class="bound-num" id="low-bound">1</span>
+          <span class="bomb-icon" id="bomb-emoji">💣</span>
+          <span class="bound-num" id="high-bound">100</span>
+        </div>
+        <div style="font-size:0.88rem;color:var(--muted);" id="range-hint">
+          Pilih angka di antara <strong>2</strong> sampai <strong>99</strong>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="box">
+          <div id="input-section">
+            <label id="input-label">Masukkan Tebakan Anda</label>
+            <div style="display:flex;gap:10px;">
+              <input type="number" id="guess-input" placeholder="Ketik angka..." />
+              <button id="btn-submit-guess" class="btn btn-amber" style="width:auto;padding:0 24px;">KIRIM</button>
+            </div>
+          </div>
+
+          <div id="boom-result-box" class="hidden" style="text-align:center;padding:12px 0;">
+            <h2 id="boom-title" style="color:var(--red);margin-bottom:6px;">💥 DUARRR! ANGKA BOOM!</h2>
+            <p id="boom-desc" style="color:var(--muted);margin-bottom:14px;"></p>
+            <button id="btn-solo-restart" class="btn btn-amber">Main Ronde Baru</button>
+          </div>
+
+          <h3 style="margin-top:18px;margin-bottom:4px;">📜 Riwayat Tebakan</h3>
+          <div class="log-list" id="log-list"></div>
+        </div>
+
+        <div class="box">
+          <h3 style="margin-bottom:10px;">🏆 Top 10 Peserta &amp; Status</h3>
+          <div id="participants-list"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script>
+    (function () {
+      const CHANNEL_NAME = 'arena_angka_boom_v1';
+      const bc = ('BroadcastChannel' in window) ? new BroadcastChannel(CHANNEL_NAME) : null;
+
+      let state = {
+        mode: 'solo', // solo | host | player
+        pin: '',
+        playerId: 'p_' + Math.random().toString(36).slice(2, 9),
+        playerName: 'Anda',
+        low: 1,
+        high: 100,
+        maxInit: 100,
+        boomNumber: 50,
+        participants: [], // { id, name, alive, safeCount, isBot }
+        turnIndex: 0,
+        status: 'lobby', // lobby | playing | ended
+        logs: []
+      };
+
+      function showToast(msg) {
+        const el = document.getElementById('toast');
+        el.textContent = msg;
+        el.classList.remove('hidden');
+        clearTimeout(el._t);
+        el._t = setTimeout(() => el.classList.add('hidden'), 2600);
+      }
+
+      function randomBoom(low, high) {
+        return Math.floor(Math.random() * (high - low - 1)) + low + 1;
+      }
+
+      function broadcast(type, payload) {
+        const msg = { type, pin: state.pin, payload, ts: Date.now() };
+        if (bc) bc.postMessage(msg);
+        try { localStorage.setItem(CHANNEL_NAME + '_evt', JSON.stringify(msg)); } catch (e) {}
+      }
+
+      function renderUI() {
+        document.getElementById('low-bound').textContent = state.low;
+        document.getElementById('high-bound').textContent = state.high;
+        const minSafe = state.low + 1;
+        const maxSafe = state.high - 1;
+        document.getElementById('range-hint').innerHTML = minSafe <= maxSafe
+          ? `Pilih angka di antara <strong>${minSafe}</strong> sampai <strong>${maxSafe}</strong>`
+          : 'Hanya tersisa 1 angka!';
+
+        const guessInput = document.getElementById('guess-input');
+        guessInput.min = minSafe;
+        guessInput.max = maxSafe;
+
+        const activePlayer = state.participants[state.turnIndex];
+        const turnEl = document.getElementById('turn-indicator');
+        const inputSection = document.getElementById('input-section');
+        const boomBox = document.getElementById('boom-result-box');
+
+        if (state.status === 'ended') {
+          turnEl.textContent = '💥 Permainan Berakhir!';
+          turnEl.style.color = 'var(--red)';
+          inputSection.classList.add('hidden');
+          boomBox.classList.remove('hidden');
+          document.getElementById('btn-solo-restart').classList.toggle('hidden', state.mode !== 'solo');
+        } else if (state.status === 'lobby') {
+          turnEl.textContent = '⏳ Menunggu Host Memulai Permainan...';
+          turnEl.style.color = 'var(--amber)';
+          inputSection.classList.add('hidden');
+          boomBox.classList.add('hidden');
+        } else {
+          boomBox.classList.add('hidden');
+          turnEl.textContent = activePlayer ? `Giliran: ${activePlayer.name}` : 'Menunggu giliran...';
+          turnEl.style.color = '#34d399';
+          const isMyTurn = activePlayer && activePlayer.id === state.playerId && activePlayer.alive;
+          inputSection.classList.toggle('hidden', !isMyTurn);
+        }
+
+        // Render Top 10 Participants
+        const sorted = [...state.participants].sort((a, b) => {
+          if (a.alive !== b.alive) return a.alive ? -1 : 1;
+          return (b.safeCount || 0) - (a.safeCount || 0);
+        }).slice(0, 10);
+
+        document.getElementById('participants-list').innerHTML = sorted.map((p, i) => `
+          <div class="leader-row ${p.alive ? '' : 'eliminated'}">
+            <div><strong>#${i + 1} ${p.name}</strong></div>
+            <div style="font-size:0.85rem;">
+              ${p.alive ? `🛡️ Aman ${p.safeCount || 0}x` : '💥 Kena Boom'}
+            </div>
+          </div>
+        `).join('');
+
+        // Render Logs
+        document.getElementById('log-list').innerHTML = state.logs.map(l => `
+          <div class="log-item ${l.isBoom ? 'boom' : ''}">
+            <span><strong>${l.name}</strong> menebak <strong>${l.val}</strong></span>
+            <span>${l.isBoom ? '💥 BOOM!' : `Rentang: ${l.range}`}</span>
+          </div>
+        `).join('');
+      }
+
+      function nextTurn() {
+        const aliveList = state.participants.filter(p => p.alive);
+        if (aliveList.length <= 1) {
+          state.status = 'ended';
+          const winner = aliveList[0];
+          document.getElementById('boom-title').textContent = winner
+            ? `🏆 Pemenang: ${winner.name}!`
+            : '💥 Angka Boom Terpicu!';
+          document.getElementById('boom-desc').textContent = `Angka Boom adalah ${state.boomNumber}.`;
+          return;
+        }
+        for (let step = 1; step <= state.participants.length; step++) {
+          const idx = (state.turnIndex + step) % state.participants.length;
+          if (state.participants[idx].alive) {
+            state.turnIndex = idx;
+            break;
+          }
+        }
+      }
+
+      function processGuess(playerId, val) {
+        if (state.status !== 'playing') return;
+        const p = state.participants.find(x => x.id === playerId);
+        if (!p || !p.alive) return;
+
+        if (val <= state.low || val >= state.high) {
+          if (playerId === state.playerId) showToast(`Angka harus di antara ${state.low + 1} dan ${state.high - 1}!`);
+          return;
+        }
+
+        if (val === state.boomNumber) {
+          p.alive = false;
+          state.logs.unshift({ name: p.name, val, isBoom: true, range: '' });
+          document.body.classList.add('boom-flash');
+          setTimeout(() => document.body.classList.remove('boom-flash'), 600);
+          document.getElementById('bomb-emoji').textContent = '💥';
+
+          if (state.mode === 'solo' || state.participants.filter(x => x.alive).length <= 1) {
+            state.status = 'ended';
+            const survivor = state.participants.find(x => x.alive);
+            document.getElementById('boom-title').textContent = `💥 ${p.name} Kena Angka Boom (${val})!`;
+            document.getElementById('boom-desc').textContent = survivor
+              ? `Selamat! ${survivor.name} bertahan paling akhir.`
+              : 'Permainan berakhir.';
+          } else {
+            nextTurn();
+          }
+        } else {
+          p.safeCount = (p.safeCount || 0) + 1;
+          if (val < state.boomNumber) state.low = val;
+          else state.high = val;
+          state.logs.unshift({
+            name: p.name,
+            val,
+            isBoom: false,
+            range: `${state.low} – ${state.high}`
+          });
+          nextTurn();
+        }
+
+        if (state.mode === 'host') {
+          broadcast('STATE_UPDATE', {
+            low: state.low,
+            high: state.high,
+            boomNumber: state.boomNumber,
+            participants: state.participants,
+            turnIndex: state.turnIndex,
+            status: state.status,
+            logs: state.logs
+          });
+        }
+
+        renderUI();
+        scheduleBotTurn();
+      }
+
+      function scheduleBotTurn() {
+        if (state.mode !== 'solo' || state.status !== 'playing') return;
+        const current = state.participants[state.turnIndex];
+        if (!current || !current.isBot) return;
+        setTimeout(() => {
+          if (state.status !== 'playing') return;
+          const min = state.low + 1;
+          const max = state.high - 1;
+          const botGuess = min >= max ? min : Math.floor(Math.random() * (max - min + 1)) + min;
+          processGuess(current.id, botGuess);
+        }, 1100);
+      }
+
+      function initSoloGame() {
+        const maxVal = parseInt(document.getElementById('solo-max').value, 10);
+        const botCount = parseInt(document.getElementById('solo-bots').value, 10);
+        state.mode = 'solo';
+        state.low = 1;
+        state.high = maxVal;
+        state.maxInit = maxVal;
+        state.boomNumber = randomBoom(1, maxVal);
+        state.logs = [];
+        state.status = 'playing';
+        state.turnIndex = 0;
+        document.getElementById('bomb-emoji').textContent = '💣';
+
+        state.participants = [
+          { id: state.playerId, name: 'Anda', alive: true, safeCount: 0, isBot: false }
+        ];
+        for (let i = 1; i <= botCount; i++) {
+          state.participants.push({
+            id: 'bot_' + i,
+            name: 'Bot ' + i,
+            alive: true,
+            safeCount: 0,
+            isBot: true
+          });
+        }
+
+        document.getElementById('view-home').classList.add('hidden');
+        document.getElementById('host-pin-box').classList.add('hidden');
+        document.getElementById('view-arena').classList.remove('hidden');
+        renderUI();
+      }
+
+      function handleMessage(msg) {
+        if (!msg || msg.pin !== state.pin) return;
+        if (state.mode === 'host') {
+          if (msg.type === 'JOIN') {
+            if (!state.participants.some(p => p.id === msg.payload.id)) {
+              state.participants.push({
+                id: msg.payload.id,
+                name: msg.payload.name,
+                alive: true,
+                safeCount: 0,
+                isBot: false
+              });
+            }
+            renderUI();
+            broadcast('STATE_UPDATE', {
+              low: state.low,
+              high: state.high,
+              boomNumber: state.boomNumber,
+              participants: state.participants,
+              turnIndex: state.turnIndex,
+              status: state.status,
+              logs: state.logs
+            });
+          } else if (msg.type === 'PLAYER_GUESS') {
+            processGuess(msg.payload.id, msg.payload.val);
+          }
+        } else if (state.mode === 'player') {
+          if (msg.type === 'STATE_UPDATE') {
+            Object.assign(state, msg.payload);
+            document.getElementById('bomb-emoji').textContent = state.status === 'ended' ? '💥' : '💣';
+            renderUI();
+          }
+        }
+      }
+
+      if (bc) bc.onmessage = (e) => handleMessage(e.data);
+      window.addEventListener('storage', (e) => {
+        if (e.key === CHANNEL_NAME + '_evt' && e.newValue) {
+          try { handleMessage(JSON.parse(e.newValue)); } catch (err) {}
+        }
+      });
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const tab = btn.getAttribute('data-tab');
+            ['solo', 'host', 'join'].forEach(t => {
+              document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
+            });
+          });
+        });
+
+        document.getElementById('btn-start-solo').addEventListener('click', initSoloGame);
+        document.getElementById('btn-solo-restart').addEventListener('click', initSoloGame);
+
+        document.getElementById('btn-create-room').addEventListener('click', () => {
+          const maxVal = parseInt(document.getElementById('host-max').value, 10);
+          state.mode = 'host';
+          state.pin = String(Math.floor(100000 + Math.random() * 900000));
+          state.low = 1;
+          state.high = maxVal;
+          state.maxInit = maxVal;
+          state.boomNumber = randomBoom(1, maxVal);
+          state.participants = [];
+          state.logs = [];
+          state.status = 'lobby';
+          state.turnIndex = 0;
+
+          document.getElementById('arena-pin').textContent = state.pin;
+          document.getElementById('view-home').classList.add('hidden');
+          document.getElementById('view-arena').classList.remove('hidden');
+          document.getElementById('host-pin-box').classList.remove('hidden');
+          renderUI();
+        });
+
+        document.getElementById('btn-host-start').addEventListener('click', () => {
+          if (state.participants.length === 0) return showToast('Tunggu minimal 1 peserta bergabung!');
+          state.status = 'playing';
+          state.turnIndex = 0;
+          document.getElementById('btn-host-start').classList.add('hidden');
+          document.getElementById('btn-host-reset').classList.remove('hidden');
+          renderUI();
+          broadcast('STATE_UPDATE', {
+            low: state.low,
+            high: state.high,
+            boomNumber: state.boomNumber,
+            participants: state.participants,
+            turnIndex: state.turnIndex,
+            status: state.status,
+            logs: state.logs
+          });
+        });
+
+        document.getElementById('btn-host-reset').addEventListener('click', () => {
+          state.low = 1;
+          state.high = state.maxInit;
+          state.boomNumber = randomBoom(1, state.maxInit);
+          state.logs = [];
+          state.status = 'playing';
+          state.turnIndex = 0;
+          state.participants.forEach(p => { p.alive = true; p.safeCount = 0; });
+          document.getElementById('bomb-emoji').textContent = '💣';
+          renderUI();
+          broadcast('STATE_UPDATE', {
+            low: state.low,
+            high: state.high,
+            boomNumber: state.boomNumber,
+            participants: state.participants,
+            turnIndex: state.turnIndex,
+            status: state.status,
+            logs: state.logs
+          });
+        });
+
+        document.getElementById('btn-join-room').addEventListener('click', () => {
+          const name = document.getElementById('join-name').value.trim();
+          const pin = document.getElementById('join-pin').value.trim();
+          if (!name) return showToast('Masukkan nama Anda!');
+          if (pin.length !== 6) return showToast('PIN harus 6 digit!');
+
+          state.mode = 'player';
+          state.playerName = name;
+          state.pin = pin;
+          state.status = 'lobby';
+
+          document.getElementById('view-home').classList.add('hidden');
+          document.getElementById('host-pin-box').classList.add('hidden');
+          document.getElementById('view-arena').classList.remove('hidden');
+          renderUI();
+
+          broadcast('JOIN', { id: state.playerId, name: state.playerName });
+        });
+
+        document.getElementById('btn-submit-guess').addEventListener('click', () => {
+          const inp = document.getElementById('guess-input');
+          const val = parseInt(inp.value, 10);
+          if (isNaN(val)) return showToast('Masukkan angka yang valid!');
+          inp.value = '';
+          if (state.mode === 'solo') {
+            processGuess(state.playerId, val);
+          } else if (state.mode === 'player') {
+            broadcast('PLAYER_GUESS', { id: state.playerId, val });
+          }
+        });
+
+        document.getElementById('guess-input').addEventListener('keydown', (e) => {
+          if (e.key === 'Enter') document.getElementById('btn-submit-guess').click();
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

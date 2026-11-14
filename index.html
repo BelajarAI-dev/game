@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portal Game Interaktif Kelas</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --card-hover: #26354d;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --accent-1: #3b82f6;
+      --accent-2: #10b981;
+      --accent-3: #f59e0b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    body {
+      background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 70%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    header {
+      text-align: center;
+      max-width: 680px;
+      margin-bottom: 40px;
+    }
+    header h1 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      font-weight: 800;
+      margin-bottom: 10px;
+      letter-spacing: -0.5px;
+    }
+    header p {
+      color: var(--muted);
+      font-size: 1.05rem;
+      line-height: 1.5;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      width: 100%;
+      max-width: 1020px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 20px;
+      padding: 28px 24px;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    }
+    .card:hover {
+      transform: translateY(-6px);
+      background: var(--card-hover);
+      box-shadow: 0 20px 35px -15px rgba(0,0,0,0.5);
+    }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 999px;
+      margin-bottom: 16px;
+      width: fit-content;
+    }
+    .b1 { background: rgba(59,130,246,0.2); color: #60a5fa; }
+    .b2 { background: rgba(16,185,129,0.2); color: #34d399; }
+    .b3 { background: rgba(245,158,11,0.2); color: #fbbf24; }
+    .icon { font-size: 2.6rem; margin-bottom: 14px; }
+    .card h2 { font-size: 1.35rem; margin-bottom: 10px; }
+    .card p { color: var(--muted); font-size: 0.95rem; line-height: 1.5; margin-bottom: 24px; }
+    .btn {
+      text-align: center;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+    .btn-1 { background: var(--accent-1); }
+    .btn-2 { background: var(--accent-2); }
+    .btn-3 { background: var(--accent-3); color: #0f172a; }
+    footer {
+      margin-top: 48px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Arena Game Interaktif</h1>
+    <p>Pilih permainan di bawah ini untuk memulai sesi Host atau bergabung sebagai Pemain.</p>
+  </header>
+
+  <main class="grid">
+    <!-- Game 1 -->
+    <a href="./balap-hitung/index.html" class="card">
+      <div>
+        <span class="badge b1">Kecepatan & Berhitung</span>
+        <div class="icon">🏃‍♂️➕</div>
+        <h2>Balap Hitung Stickman</h2>
+        <p>Adu cepat menjawab operasi penjumlahan dan pengurangan (-19 s/d 19) dalam lintasan maraton real-time.</p>
+      </div>
+      <div class="btn btn-1">Mainkan Sekarang →</div>
+    </a>
+
+    <!-- Game 2 -->
+    <a href="./tebak-angka/index.html" class="card">
+      <div>
+        <span class="badge b2">Logika & Deduksi</span>
+        <div class="icon">🔢🎯</div>
+        <h2>Tebak Angka Posisi Benar</h2>
+        <p>Pecahkan kombinasi angka rahasia menggunakan petunjuk jumlah <strong>Posisi Benar</strong> dan <strong>Angka Benar</strong>.</p>
+      </div>
+      <div class="btn btn-2">Mainkan Sekarang →</div>
+    </a>
+
+    <!-- Game 3 -->
+    <a href="./angka-boom/index.html" class="card">
+      <div>
+        <span class="badge b3">Ketegangan & Strategi</span>
+        <div class="icon">💣💥</div>
+        <h2>Angka Boom</h2>
+        <p>Persempit rentang tebakan secara bergantian dan hindari menjadi peserta yang memicu ledakan Angka Boom!</p>
+      </div>
+      <div class="btn btn-3">Mainkan Sekarang →</div>
+    </a>
+  </main>
+
+  <footer>
+    Platform Game Edukasi & Interaktif Kelas
+  </footer>
+</body>
+</html>
