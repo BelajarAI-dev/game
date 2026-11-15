@@ -130,6 +130,34 @@
     }
     .rules-banner strong { color: #fde047; }
 
+    /* Banner Countdown 30 Detik Setelah Juara 1 Finish */
+    .countdown-banner {
+      background: linear-gradient(90deg, rgba(245,158,11,0.22), rgba(239,68,68,0.22));
+      border: 1px solid rgba(251,191,36,0.65);
+      border-radius: 14px;
+      padding: 11px 16px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      animation: pulseWarn 1.2s infinite alternate;
+    }
+    @keyframes pulseWarn {
+      from { box-shadow: 0 0 0 rgba(245,158,11,0.1); }
+      to { box-shadow: 0 0 18px rgba(245,158,11,0.35); }
+    }
+    .countdown-timer-pill {
+      background: #ef4444;
+      color: #fff;
+      font-weight: 900;
+      font-size: 1.05rem;
+      padding: 5px 13px;
+      border-radius: 999px;
+      letter-spacing: 0.5px;
+    }
+
     .pin-box {
       background: var(--panel-dark);
       border: 2px dashed var(--blue);
@@ -256,7 +284,6 @@
       border: 1px solid rgba(255,255,255,0.14);
       box-shadow: inset 0 18px 36px rgba(0,0,0,0.55);
     }
-    /* Tribun / Latar cakrawala atas */
     .stadium-horizon {
       position: absolute;
       top: 0;
@@ -274,7 +301,6 @@
       font-weight: 700;
       letter-spacing: 0.5px;
     }
-    /* Permukaan jalan lintasan miring 45 derajat */
     .marathon-surface {
       position: absolute;
       left: -4%;
@@ -294,7 +320,6 @@
       transform-origin: center bottom;
       border-top: 2px solid rgba(255,255,255,0.22);
     }
-    /* Garis Start Miring 45° */
     .start-line-45 {
       position: absolute;
       left: 46px;
@@ -317,7 +342,6 @@
       border-radius: 6px;
       border: 1px solid rgba(255,255,255,0.15);
     }
-    /* Garis Finish Kotak-Kotak Miring 45° */
     .finish-line-45 {
       position: absolute;
       right: 44px;
@@ -659,7 +683,8 @@
         Jawab benar <strong>&lt; 2 detik = +3 poin</strong> •
         Jawab benar <strong>2 – 4 detik = +2 poin</strong> •
         Jawab benar <strong>&gt; 4 detik = +1 poin</strong> •
-        Salah <strong>2× berturut-turut = -1 poin</strong> (soal langsung berganti acak saat salah).
+        Salah <strong>2× berturut-turut = -1 poin</strong> (soal berganti acak saat salah).<br/>
+        <strong>🏁 Akhir Permainan:</strong> Selesai jika <strong>3 Juara terkunci</strong>, <strong>30 detik setelah Juara 1 finish</strong>, atau Host menekan <strong>Akhiri Balapan</strong>.
       </div>
 
       <div class="tabs">
@@ -787,6 +812,14 @@
 
       <!-- ACTIVE RACE AREA -->
       <div id="race-area" class="hidden">
+        <!-- BANNER COUNTDOWN 30 DETIK SETELAH JUARA 1 FINISH -->
+        <div id="countdown-banner" class="countdown-banner hidden">
+          <div style="font-size:0.9rem;font-weight:700;color:#fef3c7;">
+            👑 <strong id="first-finisher-name">Juara 1</strong> sudah finish! Sisa waktu perebutan Juara 2 &amp; 3:
+          </div>
+          <div class="countdown-timer-pill" id="countdown-timer-text">⏱️ 30 detik</div>
+        </div>
+
         <!-- INPUT KEYPAD (PLAYER & SOLO) -->
         <div class="box" id="solve-box">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:0.86rem;color:var(--muted);flex-wrap:wrap;gap:6px;">
@@ -895,6 +928,7 @@
     (function () {
       const DB_URL = "https://game-math-7361f-default-rtdb.asia-southeast1.firebasedatabase.app";
       const RUNNER_COLORS = ['#38bdf8', '#34d399', '#fbbf24', '#f472b6', '#a78bfa', '#fb923c', '#2dd4bf', '#f87171'];
+      const GRACE_PERIOD_MS = 30000; // 30 detik setelah Juara 1 sampai finish
 
       let st = {
         mode: 'solo',
@@ -906,6 +940,8 @@
         status: 'lobby',
         startedAt: 0,
         endedAt: 0,
+        firstFinisherAt: 0,
+        firstFinisherName: '',
         questionShownAt: 0,
         wrongStreak: 0,
         lastQuestionKey: '',
@@ -1197,6 +1233,11 @@
         document.getElementById('ans-display').textContent = '';
       }
 
+      /*
+       * Urutan Peringkat:
+       * 1. Peserta yang sudah finish (score >= target) diurutkan berdasarkan waktu tempuh finish tercepat
+       * 2. Peserta yang belum finish diurutkan berdasarkan skor tertinggi (Juara 2 & 3 jika waktu 30 detik habis)
+       */
       function getSortedPlayers() {
         const list = Object.values(st.players || {});
         return list.sort((a, b) => {
@@ -1212,6 +1253,68 @@
           if ((b.score || 0) !== (a.score || 0)) return (b.score || 0) - (a.score || 0);
           return getPlayerAvgStat(a).avgMs - getPlayerAvgStat(b).avgMs;
         });
+      }
+
+      /*
+       * Evaluasi 3 Syarat Berakhirnya Game:
+       * 1. Host menekan tombol akhiri permainan (ditangani langsung via endRace)
+       * 2. Ada 3 juara terkunci (finishedCount >= Math.min(3, list.length))
+       * 3. 30 detik setelah Juara 1 sampai finish (Date.now() - st.firstFinisherAt >= 30000)
+       */
+      async function evaluateRaceEndConditions() {
+        if (st.status !== 'playing') return;
+        const list = Object.values(st.players || {});
+        if (list.length === 0) return;
+
+        const finishers = list
+          .filter(pl => (pl.score || 0) >= st.target)
+          .sort((a, b) => {
+            const aF = a.finishDurationMs || (a.finishedAt || 9999999999999);
+            const bF = b.finishDurationMs || (b.finishedAt || 9999999999999);
+            return aF - bF;
+          });
+
+        const neededWinners = Math.min(3, list.length);
+
+        // Syarat 2: Sudah ada 3 juara terkunci (atau semua pemain jika pemain < 3)
+        if (finishers.length >= neededWinners) {
+          await endRace('3 Juara sudah terkunci di garis finish!');
+          return;
+        }
+
+        // Aktifkan timer 30 detik begitu Juara 1 menyentuh garis finish
+        if (finishers.length >= 1 && !st.firstFinisherAt) {
+          st.firstFinisherAt = Date.now();
+          st.firstFinisherName = finishers[0].name || 'Juara 1';
+
+          if (st.mode === 'host' || st.mode === 'player') {
+            await fbPatch(`balap_hitung/${st.pin}`, {
+              firstFinisherAt: st.firstFinisherAt,
+              firstFinisherName: st.firstFinisherName
+            });
+          }
+          showToast(`👑 ${st.firstFinisherName} finish! 30 detik tersisa untuk Juara 2 & 3!`);
+        }
+
+        // Perbarui tampilan countdown 30 detik & cek syarat 3
+        if (st.firstFinisherAt > 0) {
+          const elapsed = Date.now() - st.firstFinisherAt;
+          const remainingMs = Math.max(0, GRACE_PERIOD_MS - elapsed);
+          const remainingSec = Math.ceil(remainingMs / 1000);
+
+          const banner = document.getElementById('countdown-banner');
+          const nameEl = document.getElementById('first-finisher-name');
+          const timerEl = document.getElementById('countdown-timer-text');
+          if (banner && nameEl && timerEl) {
+            banner.classList.remove('hidden');
+            nameEl.textContent = st.firstFinisherName || 'Juara 1';
+            timerEl.textContent = `⏱️ ${remainingSec} detik`;
+          }
+
+          if (remainingMs <= 0) {
+            await endRace('Waktu 30 detik setelah Juara 1 finish telah habis!');
+          }
+        }
       }
 
       function renderLobbyPlayers() {
@@ -1258,7 +1361,6 @@
         document.getElementById('lbl-target-info').textContent = `Target Finish: ${st.target} Poin`;
         document.getElementById('lbl-player-count').textContent = `${sorted.length} Peserta`;
 
-        // Render Daftar Peringkat
         document.getElementById('rank-list').innerHTML = sorted.map((p, idx) => {
           const isMe = p.id === st.myId;
           const done = (p.score || 0) >= st.target;
@@ -1281,9 +1383,6 @@
           `;
         }).join('');
 
-        // Render 1 Lintasan Maraton Sudut Elevasi Kamera 45°:
-        // Setiap pelari ditempatkan pada jalur kedalaman (depthSlot) dari atas (jauh) ke bawah (dekat)
-        // sehingga semua pelari terlihat jelas tanpa saling menutupi.
         const runnersContainer = document.getElementById('marathon-runners');
         if (runnersContainer) {
           const joinOrderList = Object.values(st.players || {}).sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
@@ -1293,11 +1392,9 @@
             const isMe = p.id === st.myId;
             const ratio = Math.min(1, Math.max(0, (p.score || 0) / st.target));
 
-            // Distribusi kedalaman vertikal (depthFraction 0 = sisi atas lintasan, 1 = sisi bawah lintasan)
             const depthFraction = total === 1 ? 0.5 : (idx / (total - 1));
             const bottomPx = Math.round(14 + (1 - depthFraction) * 118);
 
-            // Efek perspektif 45 derajat: pelari di bawah tampak sedikit lebih besar & bergeser sedikit ke kiri
             const scaleVal = (0.82 + depthFraction * 0.24).toFixed(2);
             const perspectiveSkewOffset = (1 - depthFraction) * 3.2;
             const leftPct = (3 + perspectiveSkewOffset + ratio * 80).toFixed(1);
@@ -1364,12 +1461,9 @@
 
         if (me.score >= st.target) {
           showToast(`🏁 FINISH! (+${gainedPoints} Poin) Waktu: ${formatDurationSec(me.finishDurationMs)}`);
-          if (st.mode === 'solo') {
-            await endRace();
-          } else {
-            document.getElementById('q-text').textContent = '🏁 GARIS FINISH!';
-            document.getElementById('ans-display').textContent = formatDurationSec(me.finishDurationMs);
-          }
+          document.getElementById('q-text').textContent = '🏁 GARIS FINISH!';
+          document.getElementById('ans-display').textContent = formatDurationSec(me.finishDurationMs);
+          await evaluateRaceEndConditions();
         } else {
           showToast(`✅ Benar (${(answerDurationMs / 1000).toFixed(1).replace('.', ',')} dtk) → +${gainedPoints} Poin!`);
           generateQuestion();
@@ -1412,10 +1506,12 @@
         }
       }
 
-      async function endRace() {
+      async function endRace(reasonText) {
         if (st.status === 'ended') return;
         st.status = 'ended';
         if (!st.endedAt) st.endedAt = Date.now();
+
+        document.getElementById('countdown-banner').classList.add('hidden');
 
         if (st.mode === 'host') {
           document.getElementById('lobby-qr-wrap').classList.add('hidden');
@@ -1485,9 +1581,8 @@
         }).join('');
 
         document.getElementById('podium-wrap').innerHTML = podiumHtml;
-        document.getElementById('end-sub').textContent = top3[0]
-          ? `Selamat kepada ${top3[0].name} sebagai Juara 1!`
-          : 'Balapan telah berakhir.';
+        const winnerMsg = top3[0] ? `Selamat kepada ${top3[0].name} sebagai Juara 1!` : 'Balapan telah berakhir.';
+        document.getElementById('end-sub').textContent = reasonText ? `${reasonText} ${winnerMsg}` : winnerMsg;
 
         document.getElementById('final-rank-list').innerHTML = sorted.map((p, i) => {
           const isMe = p.id === st.myId;
@@ -1522,9 +1617,13 @@
         st.status = 'lobby';
         st.startedAt = 0;
         st.endedAt = 0;
+        st.firstFinisherAt = 0;
+        st.firstFinisherName = '';
         st.wrongStreak = 0;
         st.input = '';
         st.celebrated = false;
+
+        document.getElementById('countdown-banner').classList.add('hidden');
 
         const resetPlayers = {};
         Object.keys(st.players || {}).forEach(pid => {
@@ -1563,6 +1662,8 @@
             status: 'lobby',
             startedAt: 0,
             endedAt: 0,
+            firstFinisherAt: 0,
+            firstFinisherName: '',
             players: resetPlayers
           });
           showToast('Lobby & QR Code dibuka kembali dengan PIN sama!');
@@ -1589,70 +1690,62 @@
       function startPolling() {
         clearAllTimers();
 
-        // Loop simulasi Bot menebak soal (aktif di mode Solo dan Host)
+        // Loop simulasi Bot & evaluasi aturan akhir permainan (250ms agar countdown 30 detik presisi)
         const botTick = setInterval(async () => {
           if (st.status !== 'playing') return;
-          if (st.mode !== 'host' && st.mode !== 'solo') return;
 
-          const now = Date.now();
-          let anyUpdated = false;
-          let allFinished = true;
-          const list = Object.values(st.players || {});
+          if (st.mode === 'host' || st.mode === 'solo') {
+            const now = Date.now();
+            let anyUpdated = false;
+            const list = Object.values(st.players || {});
 
-          for (const p of list) {
-            if ((p.score || 0) < st.target) {
-              allFinished = false;
-            }
-            const isBotRunner = Boolean(p.isBot) || String(p.id || '').startsWith('bot_');
-            if (!isBotRunner || (p.score || 0) >= st.target) continue;
+            for (const p of list) {
+              const isBotRunner = Boolean(p.isBot) || String(p.id || '').startsWith('bot_');
+              if (!isBotRunner || (p.score || 0) >= st.target) continue;
 
-            if (!p._nextBotMoveAt) {
-              const initialDelay = (p.botDelayMs || 2000) + Math.floor(Math.random() * 1000);
-              p._lastBotDelay = initialDelay;
-              p._nextBotMoveAt = now + initialDelay;
-            }
-
-            if (now >= p._nextBotMoveAt) {
-              const usedDelay = p._lastBotDelay || 2500;
-              // Bot menebak benar dengan kecepatan bervariasi (+3, +2, atau +1 poin)
-              const gained = usedDelay < 2000 ? 3 : (usedDelay <= 4000 ? 2 : 1);
-
-              const nextDelay = (p.botDelayMs || 2000) + Math.floor(Math.random() * 1600);
-              p._lastBotDelay = nextDelay;
-              p._nextBotMoveAt = now + nextDelay;
-
-              p.score = (p.score || 0) + gained;
-              p.correctCount = (p.correctCount || 0) + 1;
-              if (!p.startedAt) p.startedAt = st.startedAt || now;
-
-              if (p.score >= st.target) {
-                p.finishedAt = now;
-                p.finishDurationMs = Math.max(500, now - p.startedAt);
+              if (!p._nextBotMoveAt) {
+                const initialDelay = (p.botDelayMs || 2000) + Math.floor(Math.random() * 1000);
+                p._lastBotDelay = initialDelay;
+                p._nextBotMoveAt = now + initialDelay;
               }
-              anyUpdated = true;
 
-              if (st.mode === 'host') {
-                await fbPatch(`balap_hitung/${st.pin}/players/${p.id}`, {
-                  score: p.score,
-                  correctCount: p.correctCount,
-                  startedAt: p.startedAt,
-                  finishedAt: p.finishedAt || null,
-                  finishDurationMs: p.finishDurationMs || null
-                });
+              if (now >= p._nextBotMoveAt) {
+                const usedDelay = p._lastBotDelay || 2500;
+                const gained = usedDelay < 2000 ? 3 : (usedDelay <= 4000 ? 2 : 1);
+
+                const nextDelay = (p.botDelayMs || 2000) + Math.floor(Math.random() * 1600);
+                p._lastBotDelay = nextDelay;
+                p._nextBotMoveAt = now + nextDelay;
+
+                p.score = (p.score || 0) + gained;
+                p.correctCount = (p.correctCount || 0) + 1;
+                if (!p.startedAt) p.startedAt = st.startedAt || now;
+
+                if (p.score >= st.target) {
+                  p.finishedAt = now;
+                  p.finishDurationMs = Math.max(500, now - p.startedAt);
+                }
+                anyUpdated = true;
+
+                if (st.mode === 'host') {
+                  await fbPatch(`balap_hitung/${st.pin}/players/${p.id}`, {
+                    score: p.score,
+                    correctCount: p.correctCount,
+                    startedAt: p.startedAt,
+                    finishedAt: p.finishedAt || null,
+                    finishDurationMs: p.finishDurationMs || null
+                  });
+                }
               }
             }
+
+            if (anyUpdated) {
+              renderTrackAndRank();
+            }
           }
 
-          if (anyUpdated) {
-            renderTrackAndRank();
-          }
-
-          const finishedCount = list.filter(pl => (pl.score || 0) >= st.target).length;
-          const neededFinishers = Math.min(3, list.length);
-          if (list.length > 0 && (finishedCount >= neededFinishers || allFinished)) {
-            await endRace();
-          }
-        }, 350);
+          await evaluateRaceEndConditions();
+        }, 250);
         st.timers.push(botTick);
 
         // Sinkronisasi Firebase untuk mode Host & Player
@@ -1660,7 +1753,6 @@
           if (st.mode === 'host' && st.pin) {
             const room = await fbGet(`balap_hitung/${st.pin}`);
             if (room && room.players) {
-              // Pertahankan jadwal langkah bot lokal agar tidak tertimpa saat polling Firebase
               const merged = { ...room.players };
               Object.keys(merged).forEach(pid => {
                 const localP = st.players[pid];
@@ -1682,12 +1774,7 @@
                 renderLobbyPlayers();
               } else if (st.status === 'playing') {
                 renderTrackAndRank();
-                const list = Object.values(st.players || {});
-                const finishedCount = list.filter(pl => (pl.score || 0) >= st.target).length;
-                const neededFinishers = Math.min(3, list.length);
-                if (list.length > 0 && finishedCount >= neededFinishers) {
-                  await endRace();
-                }
+                await evaluateRaceEndConditions();
               }
             }
           } else if (st.mode === 'player' && st.pin) {
@@ -1697,6 +1784,10 @@
               st.diff = room.diff || st.diff;
               if (room.startedAt) st.startedAt = room.startedAt;
               if (room.endedAt) st.endedAt = room.endedAt;
+              if (room.firstFinisherAt && !st.firstFinisherAt) {
+                st.firstFinisherAt = room.firstFinisherAt;
+                st.firstFinisherName = room.firstFinisherName || 'Juara 1';
+              }
 
               if (room.players) {
                 const localMe = st.players[st.myId];
@@ -1712,9 +1803,12 @@
                 if (st.status !== 'lobby') {
                   st.status = 'lobby';
                   st.endedAt = 0;
+                  st.firstFinisherAt = 0;
+                  st.firstFinisherName = '';
                   st.wrongStreak = 0;
                   st.input = '';
                   st.celebrated = false;
+                  document.getElementById('countdown-banner').classList.add('hidden');
                   document.getElementById('end-box').classList.add('hidden');
                   document.getElementById('race-area').classList.add('hidden');
                   document.getElementById('player-wait').classList.remove('hidden');
@@ -1739,6 +1833,7 @@
                   generateQuestion();
                 }
                 renderTrackAndRank();
+                await evaluateRaceEndConditions();
               } else if (room.status === 'ended' && st.status !== 'ended') {
                 if (!st.endedAt) st.endedAt = room.endedAt || Date.now();
                 await endRace();
@@ -1804,8 +1899,12 @@
           st.diff = document.getElementById('solo-diff').value;
           st.startedAt = Date.now();
           st.endedAt = 0;
+          st.firstFinisherAt = 0;
+          st.firstFinisherName = '';
           st.wrongStreak = 0;
           st.celebrated = false;
+
+          document.getElementById('countdown-banner').classList.add('hidden');
 
           st.players = {};
           st.players[st.myId] = {
@@ -1862,6 +1961,8 @@
           st.diff = document.getElementById('host-diff').value;
           st.status = 'lobby';
           st.endedAt = 0;
+          st.firstFinisherAt = 0;
+          st.firstFinisherName = '';
           st.players = {};
           st.celebrated = false;
 
@@ -1882,6 +1983,8 @@
             status: 'lobby',
             startedAt: 0,
             endedAt: 0,
+            firstFinisherAt: 0,
+            firstFinisherName: '',
             players: {}
           });
 
@@ -1926,6 +2029,10 @@
           st.status = 'playing';
           st.startedAt = Date.now();
           st.endedAt = 0;
+          st.firstFinisherAt = 0;
+          st.firstFinisherName = '';
+
+          document.getElementById('countdown-banner').classList.add('hidden');
 
           const cleanPlayersPayload = {};
           Object.values(st.players).forEach(pl => {
@@ -1970,6 +2077,8 @@
             status: 'playing',
             startedAt: st.startedAt,
             endedAt: 0,
+            firstFinisherAt: 0,
+            firstFinisherName: '',
             players: cleanPlayersPayload
           });
 
@@ -1977,7 +2086,10 @@
           startPolling();
         });
 
-        document.getElementById('btn-host-end').addEventListener('click', () => endRace());
+        // Syarat 1: Host menekan tombol Akhiri Balapan
+        document.getElementById('btn-host-end').addEventListener('click', () => {
+          endRace('Balapan diakhiri oleh Host.');
+        });
 
         // JOIN
         document.getElementById('btn-join-room').addEventListener('click', async () => {
@@ -1998,6 +2110,8 @@
           st.status = room.status || 'lobby';
           st.startedAt = room.startedAt || Date.now();
           st.endedAt = 0;
+          st.firstFinisherAt = room.firstFinisherAt || 0;
+          st.firstFinisherName = room.firstFinisherName || '';
           st.wrongStreak = 0;
           st.celebrated = false;
 
