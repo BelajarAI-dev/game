@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Balap Hitung Stickman</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <title>Tebak Angka Posisi Benar</title>
   <style>
     :root {
       --bg: #0f172a;
@@ -71,6 +70,15 @@
     .hidden { display: none !important; }
     h1 { font-size: clamp(1.35rem, 3vw, 1.9rem); margin-bottom: 4px; }
     .sub { color: var(--muted); font-size: 0.92rem; margin-bottom: 16px; }
+    .rules {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.28);
+      border-radius: 14px;
+      padding: 12px 15px;
+      font-size: 0.88rem;
+      line-height: 1.55;
+      margin-bottom: 16px;
+    }
     .tabs {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -139,38 +147,69 @@
     }
     .qr-card {
       background: #ffffff;
-      padding: 14px;
+      padding: 12px;
       border-radius: 16px;
       box-shadow: 0 10px 26px rgba(0,0,0,0.45);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-width: 288px;
-      min-height: 310px;
     }
-    #lobby-qr-box {
+    .qr-card img {
       width: 260px;
       height: 260px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #ffffff;
-    }
-    #lobby-qr-box img, #lobby-qr-box canvas {
-      width: 260px !important;
-      height: 260px !important;
       display: block;
+      border-radius: 8px;
     }
     .qr-caption {
       color: #0f172a;
-      font-size: 0.84rem;
+      font-size: 0.82rem;
       font-weight: 800;
-      margin-top: 10px;
+      margin-top: 8px;
       letter-spacing: 0.3px;
     }
 
-    /* Lobby Participants Grid */
+    /* Peek Secret Controls (Host Only) */
+    .peek-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-peek {
+      padding: 7px 14px;
+      border-radius: 10px;
+      border: 1px solid rgba(251,191,36,0.45);
+      background: rgba(245,158,11,0.18);
+      color: #fde047;
+      font-weight: 800;
+      font-size: 0.84rem;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+    }
+    .btn-peek:active {
+      background: rgba(245,158,11,0.35);
+      transform: scale(0.98);
+    }
+    .secret-peek-box {
+      padding: 5px 12px;
+      border-radius: 8px;
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(255,255,255,0.16);
+      font-family: monospace;
+      font-size: 1.15rem;
+      font-weight: 900;
+      letter-spacing: 4px;
+      color: #fde047;
+      min-width: 96px;
+      text-align: center;
+    }
+
+    /* Lobby Joined Players Grid */
     .lobby-players-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -213,131 +252,75 @@
       color: #fcd34d;
     }
 
+    /* Session Banner */
+    .session-banner {
+      background: var(--panel-dark);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 18px;
+      margin-bottom: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .session-phase-guessing { border-color: var(--blue); }
+    .session-phase-break { border-color: var(--amber); background: rgba(245,158,11,0.1); }
+    .timer-pill {
+      font-size: 1.35rem;
+      font-weight: 900;
+      padding: 6px 14px;
+      border-radius: 12px;
+      background: rgba(59,130,246,0.2);
+      color: #60a5fa;
+    }
+    .session-phase-break .timer-pill {
+      background: rgba(245,158,11,0.25);
+      color: #fbbf24;
+    }
+
+    .arena-grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 16px;
+    }
+    @media (max-width: 860px) { .arena-grid { grid-template-columns: 1fr; } }
+
     .box {
       background: var(--panel-dark);
       border: 1px solid var(--border);
       border-radius: 16px;
       padding: 15px;
-      margin-bottom: 14px;
     }
-
-    /* Penukaran Posisi: Layar Host vs Layar HP Peserta */
-    .race-sections {
+    .digit-slots {
       display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-    .race-sections .box { margin-bottom: 0; }
-    .race-sections.player-layout #rank-box { order: 1; }
-    .race-sections.player-layout #track-box { order: 2; }
-
-    /* Track & Stickman Running Animation */
-    .track-list {
-      display: flex;
-      flex-direction: column;
+      justify-content: center;
       gap: 10px;
-      margin-top: 10px;
+      margin: 12px 0 14px;
     }
-    .lane {
-      background: var(--panel);
-      border: 1px solid var(--border);
+    .slot {
+      width: 52px;
+      height: 60px;
       border-radius: 12px;
-      padding: 10px 12px;
-    }
-    .lane-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.86rem;
-      margin-bottom: 8px;
-      gap: 6px;
-    }
-    .road {
-      position: relative;
-      height: 44px;
-      background: linear-gradient(90deg, rgba(59,130,246,0.12), rgba(16,185,129,0.15));
-      border-radius: 10px;
-      border-bottom: 3px dashed rgba(255,255,255,0.22);
-      overflow: hidden;
-    }
-    .finish-flag {
-      position: absolute;
-      right: 8px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 1.35rem;
-    }
-    .runner {
-      position: absolute;
-      bottom: 2px;
-      left: 0%;
-      transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .stickman-svg {
-      width: 30px;
-      height: 36px;
-      overflow: visible;
-    }
-    @keyframes legSwingA {
-      0%, 100% { transform: rotate(-28deg); }
-      50% { transform: rotate(28deg); }
-    }
-    @keyframes legSwingB {
-      0%, 100% { transform: rotate(28deg); }
-      50% { transform: rotate(-28deg); }
-    }
-    @keyframes bodyBob {
-      0%, 100% { transform: translateY(0px); }
-      50% { transform: translateY(-3px); }
-    }
-    .runner.running .stick-body { animation: bodyBob 0.28s infinite ease-in-out; }
-    .runner.running .leg-1 { transform-origin: 15px 21px; animation: legSwingA 0.28s infinite ease-in-out; }
-    .runner.running .leg-2 { transform-origin: 15px 21px; animation: legSwingB 0.28s infinite ease-in-out; }
-    .runner.running .arm-1 { transform-origin: 15px 12px; animation: legSwingB 0.28s infinite ease-in-out; }
-    .runner.running .arm-2 { transform-origin: 15px 12px; animation: legSwingA 0.28s infinite ease-in-out; }
-
-    /* Math Question & Keypad */
-    .q-box {
-      text-align: center;
-      padding: 14px;
       background: var(--panel);
-      border-radius: 14px;
-      border: 1px solid rgba(59,130,246,0.35);
-      margin-bottom: 12px;
-    }
-    .q-text {
-      font-size: clamp(1.7rem, 4.5vw, 2.4rem);
-      font-weight: 900;
-      letter-spacing: 2px;
-      color: #fde047;
-    }
-    .ans-display {
-      margin: 10px auto 0;
-      max-width: 240px;
-      height: 48px;
-      border-radius: 11px;
-      background: var(--panel-dark);
       border: 2px solid var(--blue);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.65rem;
+      font-size: 1.8rem;
       font-weight: 900;
-      letter-spacing: 3px;
     }
     .keypad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      max-width: 340px;
+      max-width: 320px;
       margin: 0 auto;
     }
     .k-btn {
-      padding: 13px;
-      font-size: 1.2rem;
+      padding: 12px;
+      font-size: 1.15rem;
       font-weight: 800;
       border-radius: 11px;
       border: 1px solid var(--border);
@@ -345,153 +328,144 @@
       color: #fff;
       cursor: pointer;
     }
-    .k-btn:active { transform: scale(0.96); }
+    .k-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .k-btn.del { background: rgba(239,68,68,0.2); color: #fca5a5; }
-    .k-btn.sub { background: var(--green); color: #052e16; }
+    .k-btn.sub { grid-column: span 2; background: var(--green); color: #052e16; }
 
-    /* Ranking & Stats List */
-    .rank-list {
+    .history-list {
+      max-height: 360px;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
       gap: 8px;
       margin-top: 10px;
-      max-height: 360px;
-      overflow-y: auto;
     }
-    .rank-item {
+    .hist-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 12px;
+      padding: 9px 12px;
       background: var(--panel);
       border-radius: 10px;
       font-size: 0.9rem;
       gap: 8px;
       flex-wrap: wrap;
     }
-    .rank-item.is-me {
-      border: 1px solid var(--green);
-      background: rgba(16,185,129,0.14);
-    }
-    .stat-pill {
-      font-size: 0.78rem;
-      padding: 3px 8px;
-      border-radius: 7px;
-      background: rgba(59,130,246,0.18);
-      color: #93c5fd;
-      font-weight: 700;
-    }
-    .stat-pill.time {
-      background: rgba(245,158,11,0.18);
-      color: #fcd34d;
-    }
-    .stat-pill.none {
-      background: rgba(239,68,68,0.18);
-      color: #fca5a5;
-    }
-    .stat-pill.win {
+    .badge-pb {
       background: rgba(16,185,129,0.2);
       color: #34d399;
+      padding: 3px 8px;
+      border-radius: 7px;
+      font-weight: 800;
+      font-size: 0.8rem;
+    }
+    .badge-ps {
+      background: rgba(245,158,11,0.2);
+      color: #fbbf24;
+      padding: 3px 8px;
+      border-radius: 7px;
+      font-weight: 800;
+      font-size: 0.8rem;
+    }
+    .badge-dq {
+      background: rgba(239,68,68,0.22);
+      color: #fca5a5;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 800;
+      font-size: 0.74rem;
+    }
+    .badge-warn {
+      background: rgba(245,158,11,0.22);
+      color: #fcd34d;
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-weight: 700;
+      font-size: 0.74rem;
     }
 
-    /* Player Personal Summary Card */
-    .my-stat-card {
-      background: rgba(59,130,246,0.12);
-      border: 1px solid rgba(59,130,246,0.38);
-      border-radius: 14px;
-      padding: 14px;
-      margin: 12px auto;
-      max-width: 560px;
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+    .status-banner {
+      padding: 12px;
+      border-radius: 12px;
       text-align: center;
+      font-weight: 700;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
     }
-    @media (max-width: 520px) {
-      .my-stat-card { grid-template-columns: 1fr; }
+    .status-locked {
+      background: rgba(59,130,246,0.16);
+      border: 1px solid rgba(59,130,246,0.4);
+      color: #93c5fd;
     }
-    .my-stat-val {
-      font-size: 1.12rem;
-      font-weight: 900;
-      color: #fde047;
+    .status-dq {
+      background: rgba(239,68,68,0.18);
+      border: 1px solid rgba(239,68,68,0.5);
+      color: #fca5a5;
     }
-    .my-stat-lbl {
-      font-size: 0.75rem;
-      color: var(--muted);
-      margin-top: 2px;
+    .status-won {
+      background: rgba(16,185,129,0.2);
+      border: 1px solid rgba(16,185,129,0.5);
+      color: #6ee7b7;
+      animation: popScale 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
 
-    /* Top 3 Podium */
-    .podium-wrap {
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      gap: 12px;
-      max-width: 720px;
-      margin: 20px auto 16px;
-      padding-top: 12px;
-    }
-    .podium-col {
-      flex: 1;
-      max-width: 225px;
+    /* Single Champion Podium Stage */
+    .champion-stage {
       display: flex;
       flex-direction: column;
       align-items: center;
-      text-align: center;
+      justify-content: center;
+      max-width: 340px;
+      margin: 18px auto 16px;
+      padding: 16px 14px 0;
     }
-    .podium-avatar {
-      margin-bottom: 8px;
-      animation: avatarBounce 0.9s infinite alternate ease-in-out;
+    .champion-avatar {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 10px;
+      animation: avatarCelebrate 0.8s infinite alternate ease-in-out;
     }
-    @keyframes avatarBounce {
-      from { transform: translateY(0); }
-      to { transform: translateY(-8px); }
+    @keyframes avatarCelebrate {
+      from { transform: translateY(0) scale(1); }
+      to { transform: translateY(-10px) scale(1.07); }
     }
     @keyframes popScale {
       from { transform: scale(0.82); opacity: 0; }
       to { transform: scale(1); opacity: 1; }
     }
-    .podium-name {
+    .champion-crown { font-size: 2.8rem; line-height: 1.1; }
+    .champion-name {
       font-weight: 900;
-      font-size: 1rem;
+      font-size: 1.25rem;
       color: #fff;
+      margin-top: 4px;
       word-break: break-word;
     }
-    .podium-time {
-      font-size: 0.82rem;
-      font-weight: 800;
+    .champion-detail {
+      font-size: 0.85rem;
       color: #fde047;
-      margin-top: 4px;
-    }
-    .podium-avg {
-      font-size: 0.75rem;
-      color: #93c5fd;
+      font-weight: 700;
       margin-top: 2px;
     }
-    .podium-step {
+    .champion-pedestal {
       width: 100%;
-      border-radius: 14px 14px 6px 6px;
+      height: 112px;
+      border-radius: 16px 16px 6px 6px;
+      background: linear-gradient(180deg, #fde047 0%, #f59e0b 100%);
+      box-shadow: 0 0 28px rgba(250,204,21,0.45);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      font-weight: 900;
       color: #0f172a;
-      padding: 8px;
+      font-weight: 900;
+      transform-origin: bottom;
+      animation: risePodium 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
-    .podium-1 .podium-step {
-      height: 124px;
-      background: linear-gradient(180deg, #fde047 0%, #f59e0b 100%);
-      box-shadow: 0 0 24px rgba(250,204,21,0.4);
-    }
-    .podium-2 .podium-step {
-      height: 96px;
-      background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 100%);
-    }
-    .podium-3 .podium-step {
-      height: 78px;
-      background: linear-gradient(180deg, #fdba74 0%, #c2410c 100%);
-      color: #fff;
+    @keyframes risePodium {
+      from { transform: scaleY(0); opacity: 0; }
+      to { transform: scaleY(1); opacity: 1; }
     }
 
     .end-actions {
@@ -500,9 +474,12 @@
       justify-content: center;
       flex-wrap: wrap;
       max-width: 520px;
-      margin: 14px auto 0;
+      margin: 12px auto 0;
     }
-    .end-actions .btn { flex: 1; min-width: 200px; }
+    .end-actions .btn {
+      flex: 1;
+      min-width: 200px;
+    }
 
     #confetti-canvas {
       position: fixed;
@@ -539,8 +516,17 @@
   <div class="card">
     <!-- HOME -->
     <div id="view-home">
-      <h1>🏃‍♂️ Balap Hitung Stickman</h1>
-      <p class="sub">Jawab soal hitung cepat untuk memacu pelari Stickman Anda hingga garis finish!</p>
+      <h1>🔢 Tebak Angka Posisi Benar</h1>
+      <p class="sub">Pecahkan kode rahasia digit unik menggunakan petunjuk <strong>Posisi Benar</strong> &amp; <strong>Posisi Salah</strong>!</p>
+
+      <div class="rules">
+        <strong>Aturan Permainan &amp; Petunjuk:</strong><br>
+        • <strong>Posisi Benar</strong> = angka ada di kode rahasia dan letak/posisinya sudah tepat.<br>
+        • <strong>Posisi Salah</strong> = angka ada di kode rahasia, namun letak/posisinya masih salah.<br>
+        • Setiap sesi berdurasi <strong>15 detik</strong> (1 kali tebakan per sesi). Jika belum ada yang benar, sesi berikutnya otomatis berjalan setelah jeda <strong>5 detik</strong>.<br>
+        • Peserta <strong>pertama &amp; tercepat</strong> yang berhasil menebak semua digit dengan tepat langsung menjadi <strong>Pemenang Tunggal</strong>.<br>
+        • Peserta yang <strong>tidak menjawab 2 kali sesi berturut-turut</strong> otomatis <strong>didiskualifikasi</strong>.
+      </div>
 
       <div class="tabs">
         <button class="tab-btn active" data-tab="solo">Main Lawan Bot</button>
@@ -552,23 +538,23 @@
       <div id="tab-solo">
         <div class="form-row">
           <div class="fg">
-            <label>Target Soal Finish</label>
-            <select id="solo-target">
-              <option value="10" selected>10 Soal</option>
-              <option value="15">15 Soal</option>
-              <option value="20">20 Soal</option>
+            <label>Jumlah Digit Kode</label>
+            <select id="solo-digits">
+              <option value="3">3 Digit</option>
+              <option value="4" selected>4 Digit</option>
+              <option value="5">5 Digit</option>
             </select>
           </div>
           <div class="fg">
-            <label>Tingkat Kesulitan</label>
-            <select id="solo-diff">
-              <option value="easy" selected>Mudah (+ / -)</option>
-              <option value="medium">Sedang (+ / - / ×)</option>
-              <option value="hard">Sulit (+ / - / × / ÷)</option>
+            <label>Jumlah Lawan Bot</label>
+            <select id="solo-bots">
+              <option value="1">1 Bot</option>
+              <option value="2" selected>2 Bot</option>
+              <option value="3">3 Bot</option>
             </select>
           </div>
         </div>
-        <button id="btn-start-solo" class="btn btn-blue">Mulai Balapan Solo</button>
+        <button id="btn-start-solo" class="btn btn-blue">Mulai Tantangan Solo</button>
       </div>
 
       <!-- HOST -->
@@ -585,23 +571,13 @@
         </div>
 
         <div id="host-unlocked-controls" class="hidden">
-          <div class="form-row">
-            <div class="fg">
-              <label>Target Soal Finish</label>
-              <select id="host-target">
-                <option value="10" selected>10 Soal</option>
-                <option value="15">15 Soal</option>
-                <option value="20">20 Soal</option>
-              </select>
-            </div>
-            <div class="fg">
-              <label>Tingkat Kesulitan</label>
-              <select id="host-diff">
-                <option value="easy" selected>Mudah (+ / -)</option>
-                <option value="medium">Sedang (+ / - / ×)</option>
-                <option value="hard">Sulit (+ / - / × / ÷)</option>
-              </select>
-            </div>
+          <div class="fg">
+            <label>Jumlah Digit Kode Rahasia</label>
+            <select id="host-digits">
+              <option value="3">3 Digit</option>
+              <option value="4" selected>4 Digit</option>
+              <option value="5">5 Digit</option>
+            </select>
           </div>
           <button id="btn-create-room" class="btn btn-green">Buat Room Multiplayer</button>
         </div>
@@ -617,7 +593,7 @@
           <label>PIN Room (6 Digit)</label>
           <input type="text" id="join-pin" placeholder="Contoh: 123456" maxlength="6" inputmode="numeric" />
         </div>
-        <button id="btn-join-room" class="btn btn-blue">Gabung Balapan</button>
+        <button id="btn-join-room" class="btn btn-blue">Gabung Permainan</button>
       </div>
     </div>
 
@@ -627,33 +603,40 @@
         <div class="host-lobby-header">
           <!-- QR CODE BESAR UNTUK SCAN PESERTA DI LOBBY -->
           <div id="lobby-qr-wrap" class="qr-card">
-            <div id="lobby-qr-box"></div>
+            <img id="lobby-qr-img" src="" alt="QR Code Gabung Room" />
             <div class="qr-caption">📷 Scan untuk Langsung Masuk Room</div>
           </div>
 
           <div>
             <div style="font-size:0.85rem;color:var(--muted);font-weight:700;">PIN ROOM PESERTA</div>
             <div class="pin-val" id="display-pin">000000</div>
-            <div style="font-size:0.82rem;color:#94a3b8;margin-top:4px;max-width:270px;">
+            <div style="font-size:0.8rem;color:#94a3b8;margin-top:4px;max-width:260px;">
               Peserta dapat langsung memindai QR Code di samping atau memasukkan PIN secara manual.
+            </div>
+
+            <!-- TOMBOL INTIP KODE RAHASIA SEKILAS (MAKSIMAL 1 DETIK SAAT DITEKAN) -->
+            <div class="peek-wrap">
+              <button type="button" id="btn-peek-secret" class="btn-peek">👁️ Intip Kode (Tahan ≤ 1 dtk)</button>
+              <span id="host-secret-display" class="secret-peek-box">••••</span>
             </div>
           </div>
         </div>
 
-        <div style="display:flex;gap:8px;max-width:620px;margin:14px auto 0;flex-wrap:wrap;">
+        <div style="display:flex;gap:8px;max-width:660px;margin:14px auto 0;flex-wrap:wrap;">
           <button id="btn-add-bot" class="btn btn-amber" style="flex:1;">+ Tambah Bot</button>
-          <button id="btn-host-start" class="btn btn-green" style="flex:1;">▶ Mulai Balapan</button>
-          <button id="btn-host-end" class="btn btn-red hidden" style="flex:1;">🛑 Akhiri Balapan</button>
+          <button id="btn-host-start" class="btn btn-green" style="flex:1;">▶ Mulai Game</button>
+          <button id="btn-next-session" class="btn btn-amber hidden" style="flex:1;">⏭ Lanjut Sesi Berikutnya</button>
+          <button id="btn-host-end" class="btn btn-red hidden" style="flex:1;">🛑 Akhiri Game</button>
         </div>
       </div>
 
       <div id="player-wait" class="pin-box hidden">
         <h3>⏳ Berhasil Masuk Lobby!</h3>
-        <p style="color:var(--muted);margin-top:6px;">Menunggu Host memulai balapan...</p>
+        <p style="color:var(--muted);margin-top:6px;">Menunggu Host memulai permainan...</p>
       </div>
 
       <!-- LOBBY PARTICIPANTS LIST -->
-      <div id="lobby-box" class="box hidden">
+      <div id="lobby-box" class="box hidden" style="margin-bottom:14px;">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
           <h3>👥 Peserta yang Sudah Bergabung</h3>
           <span class="conn-badge" id="lobby-count-badge">0 Peserta</span>
@@ -661,18 +644,26 @@
         <div id="lobby-players-grid" class="lobby-players-grid"></div>
       </div>
 
-      <!-- ACTIVE RACE AREA -->
-      <div id="race-area" class="hidden">
-        <!-- INPUT KEYPAD (PLAYER & SOLO) -->
-        <div class="box" id="solve-box">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:0.86rem;color:var(--muted);">
-            <span>Progres: <strong id="lbl-my-prog" style="color:#34d399;">0 / 10</strong></span>
-            <span>Rata-rata Benar: <strong id="lbl-my-avg" style="color:#fde047;">Tidak ada jawaban benar</strong></span>
+      <!-- SESSION STATUS BAR -->
+      <div id="session-banner" class="session-banner session-phase-guessing hidden">
+        <div>
+          <div style="font-size:0.8rem;color:var(--muted);font-weight:700;">STATUS SESI TEBAKAN</div>
+          <div id="session-title" style="font-size:1.15rem;font-weight:900;">Sesi #1 — Silakan Kirim 1 Tebakan!</div>
+        </div>
+        <div class="timer-pill" id="session-timer">15 dtk</div>
+      </div>
+
+      <div class="arena-grid hidden" id="arena-grid">
+        <!-- INPUT PANEL (PLAYER & SOLO) -->
+        <div class="box" id="guess-box">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <strong>Masukkan Tebakan (<span id="lbl-digits">4</span> Digit Unik)</strong>
+            <span style="font-size:0.82rem;color:var(--muted);">Sesi Dijawab: <strong id="lbl-attempts">0</strong></span>
           </div>
-          <div class="q-box">
-            <div class="q-text" id="q-text">5 + 7 = ?</div>
-            <div class="ans-display" id="ans-display"></div>
-          </div>
+
+          <div id="player-session-status" class="status-banner status-locked hidden" style="margin-top:10px;"></div>
+
+          <div class="digit-slots" id="digit-slots"></div>
           <div class="keypad">
             <button class="k-btn" data-d="1">1</button>
             <button class="k-btn" data-d="2">2</button>
@@ -683,67 +674,37 @@
             <button class="k-btn" data-d="7">7</button>
             <button class="k-btn" data-d="8">8</button>
             <button class="k-btn" data-d="9">9</button>
-            <button class="k-btn del" id="btn-del">⌫</button>
             <button class="k-btn" data-d="0">0</button>
-            <button class="k-btn sub" id="btn-submit">OK</button>
+            <button class="k-btn del" id="btn-del">⌫</button>
+            <button class="k-btn sub" id="btn-guess">KIRIM TEBAKAN SESI INI</button>
           </div>
+          <div class="history-list" id="my-history"></div>
         </div>
 
-        <!-- WRAPPER UNTUK PERTUKARAN POSISI PERINGKAT & ANIMASI BERLARI DI HP PESERTA -->
-        <div id="race-sections" class="race-sections">
-          <!-- ANIMASI BERLARI STICKMAN -->
-          <div class="box" id="track-box">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <h4>🏁 Lintasan Animasi Berlari</h4>
-              <span style="font-size:0.8rem;color:var(--muted);" id="lbl-target-info">Target: 10 Soal</span>
-            </div>
-            <div class="track-list" id="track-list"></div>
+        <!-- HOST GLOBAL GUESSES & HINTS LOG -->
+        <div class="box hidden" id="host-feed-box">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <h4>📜 Histori Tebakan &amp; Petunjuk Peserta</h4>
+            <span style="font-size:0.78rem;color:var(--muted);" id="total-guesses-lbl">0 Tebakan</span>
           </div>
+          <div class="history-list" id="host-global-history" style="max-height:420px;"></div>
+        </div>
 
-          <!-- PERINGKAT & RATA-RATA WAKTU -->
-          <div class="box" id="rank-box">
-            <div style="display:flex;justify-content:space-between;align-items:center;">
-              <h4>🏆 Peringkat &amp; Kecepatan</h4>
-              <span style="font-size:0.8rem;color:var(--muted);" id="lbl-player-count">0 Peserta</span>
-            </div>
-            <div class="rank-list" id="rank-list"></div>
+        <!-- LEADERBOARD TOP 10 -->
+        <div class="box">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <h4>🏆 Klasemen Peserta (Top 10)</h4>
+            <span style="font-size:0.78rem;color:var(--muted);" id="active-count-lbl">0 Aktif</span>
           </div>
+          <div class="history-list" id="leaderboard-list" style="max-height:420px;"></div>
         </div>
       </div>
 
-      <!-- END GAME & PODIUM SCREEN -->
-      <div id="end-box" class="pin-box hidden" style="border-color:var(--green);margin-top:14px;">
-        <h2 id="end-title">🏁 Balapan Selesai!</h2>
-        <p id="end-sub" style="font-size:0.92rem;color:var(--muted);margin-top:4px;"></p>
-
-        <!-- STATISTIK PRIBADI PESERTA (JUARA MAUPUN TIDAK) -->
-        <div id="my-end-stats" class="my-stat-card hidden">
-          <div>
-            <div class="my-stat-val" id="stat-my-rank">-</div>
-            <div class="my-stat-lbl">Peringkat Akhir</div>
-          </div>
-          <div>
-            <div class="my-stat-val" id="stat-my-avg">Tidak ada jawaban benar</div>
-            <div class="my-stat-lbl">Rata-rata Jawab Benar</div>
-          </div>
-          <div>
-            <div class="my-stat-val" id="stat-my-finish">-</div>
-            <div class="my-stat-lbl">Waktu Finish / Skor</div>
-          </div>
-        </div>
-
-        <!-- PODIUM JUARA 1, 2, 3 DENGAN WAKTU FINISH -->
-        <div class="podium-wrap" id="podium-wrap"></div>
-
-        <!-- DAFTAR LENGKAP RATA-RATA WAKTU SELURUH PESERTA -->
-        <div class="box" style="text-align:left;margin-top:14px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <h4>📊 Rekap Waktu Finish &amp; Rata-rata Jawab Benar</h4>
-            <span style="font-size:0.78rem;color:var(--muted);">Semua Peserta</span>
-          </div>
-          <div class="rank-list" id="final-rank-list"></div>
-        </div>
-
+      <!-- END GAME & SINGLE CHAMPION ANIMATION SCREEN -->
+      <div id="end-box" class="pin-box hidden" style="border-color:var(--green);margin-top:16px;">
+        <h2 id="end-title">🎉 Permainan Selesai!</h2>
+        <div id="final-summary" style="font-size:0.95rem;color:var(--muted);margin:8px 0;"></div>
+        <div class="champion-stage" id="winner-podium"></div>
         <div class="end-actions">
           <button id="btn-play-again" class="btn btn-green hidden">🔄 Main Lagi (PIN Sama)</button>
           <button id="btn-reload" class="btn btn-blue">Kembali ke Awal</button>
@@ -757,23 +718,31 @@
   <script>
     (function () {
       const DB_URL = "https://game-math-7361f-default-rtdb.asia-southeast1.firebasedatabase.app";
-      const RUNNER_COLORS = ['#38bdf8', '#34d399', '#fbbf24', '#f472b6', '#a78bfa', '#fb923c', '#2dd4bf', '#f87171'];
+      const SESSION_GUESS_MS = 15000;
+      const SESSION_BREAK_MS = 5000;
 
       let st = {
         mode: 'solo',
         pin: '',
         myId: 'p_' + Math.random().toString(36).slice(2, 9),
         myName: 'Anda',
-        target: 10,
-        diff: 'easy',
+        digits: 4,
+        secret: '',
         status: 'lobby',
-        startedAt: 0,
-        endedAt: 0,
-        currentAns: 0,
+        round: 1,
+        sessionNum: 1,
+        phase: 'guessing',
+        phaseEndsAt: 0,
+        lastProcessedSession: 0,
         input: '',
+        myHistory: [],
+        feedMap: {},
         players: {},
+        winnerId: null,
+        botMemory: {},
         confettiRunning: false,
         celebrated: false,
+        peekTimeout: null,
         timers: []
       };
 
@@ -782,53 +751,7 @@
         t.textContent = msg;
         t.classList.remove('hidden');
         clearTimeout(t._id);
-        t._id = setTimeout(() => t.classList.add('hidden'), 2400);
-      }
-
-      function formatDurationSec(ms) {
-        if (!ms || ms <= 0) return '-';
-        const sec = ms / 1000;
-        if (sec < 60) return `${sec.toFixed(1).replace('.', ',')} dtk`;
-        const m = Math.floor(sec / 60);
-        const s = (sec % 60).toFixed(1).replace('.', ',');
-        return `${m}m ${s}d`;
-      }
-
-      function getPlayerAvgStat(p) {
-        const correctCount = (p.correctCount !== undefined) ? p.correctCount : (p.score || 0);
-        if (!correctCount || correctCount <= 0) {
-          return {
-            hasCorrect: false,
-            avgMs: Infinity,
-            label: 'Tidak ada jawaban benar'
-          };
-        }
-
-        const startRef = p.startedAt || st.startedAt || Date.now();
-        const isFinished = (p.score || 0) >= st.target;
-        let numeratorMs = 0;
-
-        if (isFinished) {
-          if (p.finishDurationMs && p.finishDurationMs > 0) {
-            numeratorMs = p.finishDurationMs;
-          } else if (p.finishedAt && p.finishedAt >= startRef) {
-            numeratorMs = Math.max(500, p.finishedAt - startRef);
-          } else {
-            const endRef = (st.status === 'ended' && st.endedAt) ? st.endedAt : Date.now();
-            numeratorMs = Math.max(500, endRef - startRef);
-          }
-        } else {
-          const endRef = (st.status === 'ended' && st.endedAt) ? st.endedAt : Date.now();
-          numeratorMs = Math.max(500, endRef - startRef);
-        }
-
-        const avgMs = numeratorMs / correctCount;
-        const avgSec = avgMs / 1000;
-        return {
-          hasCorrect: true,
-          avgMs,
-          label: `${avgSec.toFixed(2).replace('.', ',')} dtk/soal`
-        };
+        t._id = setTimeout(() => t.classList.add('hidden'), 2500);
       }
 
       function buildJoinUrl(pin) {
@@ -840,38 +763,36 @@
       }
 
       function updateLobbyQrCode(pin) {
-        const qrBox = document.getElementById('lobby-qr-box');
+        const qrImg = document.getElementById('lobby-qr-img');
         const qrWrap = document.getElementById('lobby-qr-wrap');
-        if (!qrBox || !qrWrap || !pin) return;
-
+        if (!qrImg || !qrWrap || !pin) return;
         const targetUrl = buildJoinUrl(pin);
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=2&data=${encodeURIComponent(targetUrl)}`;
         qrWrap.classList.remove('hidden');
-        qrBox.innerHTML = '';
+      }
 
-        // 1. Render langsung di browser menggunakan QRCode.js (instan tanpa internet eksternal)
-        if (typeof window.QRCode === 'function') {
-          try {
-            new window.QRCode(qrBox, {
-              text: targetUrl,
-              width: 260,
-              height: 260,
-              colorDark: '#0f172a',
-              colorLight: '#ffffff',
-              correctLevel: window.QRCode.CorrectLevel.M
-            });
-            return;
-          } catch (e) {}
+      function maskDots() {
+        return '•'.repeat(st.digits || 4);
+      }
+
+      function hidePeekSecret() {
+        if (st.peekTimeout) {
+          clearTimeout(st.peekTimeout);
+          st.peekTimeout = null;
         }
+        const el = document.getElementById('host-secret-display');
+        if (el) el.textContent = maskDots();
+      }
 
-        // 2. Fallback otomatis jika script CDN belum termuat
-        const img = document.createElement('img');
-        img.alt = 'QR Code Gabung Room';
-        img.src = `https://quickchart.io/qr?size=260&margin=1&text=${encodeURIComponent(targetUrl)}`;
-        img.onerror = function () {
-          this.onerror = null;
-          this.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=2&data=${encodeURIComponent(targetUrl)}`;
-        };
-        qrBox.appendChild(img);
+      function showPeekSecretBriefly() {
+        if (st.mode !== 'host' || !st.secret) return;
+        const el = document.getElementById('host-secret-display');
+        if (!el) return;
+        el.textContent = st.secret;
+        if (st.peekTimeout) clearTimeout(st.peekTimeout);
+        st.peekTimeout = setTimeout(() => {
+          hidePeekSecret();
+        }, 1000);
       }
 
       function launchConfetti(durationMs) {
@@ -883,7 +804,7 @@
         canvas.height = window.innerHeight;
 
         const confettiColors = ['#fde047', '#34d399', '#60a5fa', '#f472b6', '#fb923c', '#a78bfa'];
-        const pieces = Array.from({ length: 130 }, () => ({
+        const pieces = Array.from({ length: 135 }, () => ({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height - canvas.height,
           w: Math.random() * 10 + 6,
@@ -967,6 +888,12 @@
         } catch (e) {}
       }
 
+      async function fbDelete(path) {
+        try {
+          await fetch(`${DB_URL}/${path}.json`, { method: 'DELETE' });
+        } catch (e) {}
+      }
+
       async function fbGet(path) {
         try {
           const r = await fetch(`${DB_URL}/${path}.json`);
@@ -975,81 +902,59 @@
         } catch (e) { return null; }
       }
 
-      function stickmanSvg(color) {
-        return `
-          <svg class="stickman-svg" viewBox="0 0 30 36" fill="none" stroke="${color}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-            <g class="stick-body">
-              <circle cx="15" cy="6" r="3.6" fill="${color}" stroke="none"/>
-              <line x1="15" y1="10" x2="15" y2="21"/>
-              <line class="arm-1" x1="15" y1="12" x2="21" y2="17"/>
-              <line class="arm-2" x1="15" y1="12" x2="9" y2="17"/>
-              <line class="leg-1" x1="15" y1="21" x2="21" y2="32"/>
-              <line class="leg-2" x1="15" y1="21" x2="9" y2="32"/>
-            </g>
-          </svg>
-        `;
+      function generateSecret(len) {
+        const pool = ['0','1','2','3','4','5','6','7','8','9'];
+        for (let i = pool.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        return pool.slice(0, len).join('');
       }
 
-      function generateQuestion() {
-        const diff = st.diff || 'easy';
-        let a, b, op, ans;
-        if (diff === 'easy') {
-          op = Math.random() < 0.5 ? '+' : '-';
-          a = Math.floor(Math.random() * 20) + 1;
-          b = Math.floor(Math.random() * 20) + 1;
-          if (op === '-' && b > a) [a, b] = [b, a];
-          ans = op === '+' ? a + b : a - b;
-        } else if (diff === 'medium') {
-          const ops = ['+', '-', '×'];
-          op = ops[Math.floor(Math.random() * ops.length)];
-          if (op === '×') {
-            a = Math.floor(Math.random() * 11) + 2;
-            b = Math.floor(Math.random() * 11) + 2;
-            ans = a * b;
-          } else {
-            a = Math.floor(Math.random() * 45) + 5;
-            b = Math.floor(Math.random() * 45) + 5;
-            if (op === '-' && b > a) [a, b] = [b, a];
-            ans = op === '+' ? a + b : a - b;
-          }
-        } else {
-          const ops = ['+', '-', '×', '÷'];
-          op = ops[Math.floor(Math.random() * ops.length)];
-          if (op === '÷') {
-            b = Math.floor(Math.random() * 11) + 2;
-            ans = Math.floor(Math.random() * 12) + 2;
-            a = b * ans;
-          } else if (op === '×') {
-            a = Math.floor(Math.random() * 14) + 3;
-            b = Math.floor(Math.random() * 12) + 3;
-            ans = a * b;
-          } else {
-            a = Math.floor(Math.random() * 80) + 10;
-            b = Math.floor(Math.random() * 80) + 10;
-            if (op === '-' && b > a) [a, b] = [b, a];
-            ans = op === '+' ? a + b : a - b;
+      function evaluateGuess(secret, guess) {
+        let posisiBenar = 0;
+        let posisiSalah = 0;
+        for (let i = 0; i < secret.length; i++) {
+          if (guess[i] === secret[i]) {
+            posisiBenar++;
+          } else if (secret.includes(guess[i])) {
+            posisiSalah++;
           }
         }
-        st.currentAns = ans;
-        st.input = '';
-        document.getElementById('q-text').textContent = `${a} ${op} ${b} = ?`;
-        document.getElementById('ans-display').textContent = '';
+        return { posisiBenar, posisiSalah };
       }
 
-      function getSortedPlayers() {
-        const list = Object.values(st.players || {});
-        return list.sort((a, b) => {
-          const aDone = (a.score || 0) >= st.target;
-          const bDone = (b.score || 0) >= st.target;
-          if (aDone && !bDone) return -1;
-          if (!aDone && bDone) return 1;
-          if (aDone && bDone) {
-            const aFinish = a.finishDurationMs || (a.finishedAt ? (a.finishedAt - (a.startedAt || st.startedAt)) : 999999999);
-            const bFinish = b.finishDurationMs || (b.finishedAt ? (b.finishedAt - (b.startedAt || st.startedAt)) : 999999999);
-            return aFinish - bFinish;
+      function buildAllCandidates(len) {
+        const res = [];
+        function dfs(curr) {
+          if (curr.length === len) {
+            res.push(curr);
+            return;
           }
-          if ((b.score || 0) !== (a.score || 0)) return (b.score || 0) - (a.score || 0);
-          return getPlayerAvgStat(a).avgMs - getPlayerAvgStat(b).avgMs;
+          for (let d = 0; d <= 9; d++) {
+            const ch = String(d);
+            if (!curr.includes(ch)) dfs(curr + ch);
+          }
+        }
+        dfs('');
+        return res;
+      }
+
+      function pickBotGuess(botId, len) {
+        if (!st.botMemory[botId]) {
+          st.botMemory[botId] = buildAllCandidates(len);
+        }
+        const pool = st.botMemory[botId];
+        if (!pool.length) return generateSecret(len);
+        return pool[Math.floor(Math.random() * pool.length)];
+      }
+
+      function refineBotMemory(botId, guess, res) {
+        if (!st.botMemory[botId]) return;
+        st.botMemory[botId] = st.botMemory[botId].filter(cand => {
+          if (cand === guess) return false;
+          const sim = evaluateGuess(cand, guess);
+          return sim.posisiBenar === res.posisiBenar && sim.posisiSalah === res.posisiSalah;
         });
       }
 
@@ -1083,233 +988,571 @@
         }).join('');
       }
 
-      function renderTrackAndRank() {
-        const sorted = getSortedPlayers();
-        const me = st.players[st.myId];
+      function renderSlots() {
+        const wrap = document.getElementById('digit-slots');
+        wrap.innerHTML = '';
+        for (let i = 0; i < st.digits; i++) {
+          const d = document.createElement('div');
+          d.className = 'slot';
+          d.textContent = st.input[i] || '';
+          wrap.appendChild(d);
+        }
+      }
 
-        if (me && st.mode !== 'host') {
-          const myAvg = getPlayerAvgStat(me);
-          document.getElementById('lbl-my-prog').textContent = `${me.score || 0} / ${st.target}`;
-          document.getElementById('lbl-my-avg').textContent = myAvg.label;
+      function setKeypadEnabled(enabled) {
+        document.querySelectorAll('#guess-box .k-btn').forEach(btn => {
+          btn.disabled = !enabled;
+        });
+      }
+
+      function updatePlayerInputState() {
+        if (st.mode === 'host') return;
+        const me = st.players[st.myId];
+        const statusEl = document.getElementById('player-session-status');
+
+        if (!me || st.status !== 'playing') {
+          setKeypadEnabled(false);
+          statusEl.classList.add('hidden');
+          return;
         }
 
-        document.getElementById('lbl-target-info').textContent = `Target: ${st.target} Soal`;
-        document.getElementById('lbl-player-count').textContent = `${sorted.length} Peserta`;
+        if (me.disqualified) {
+          setKeypadEnabled(false);
+          statusEl.className = 'status-banner status-dq';
+          statusEl.textContent = '❌ Anda didiskualifikasi karena tidak menjawab 2 sesi berturut-turut.';
+          statusEl.classList.remove('hidden');
+          return;
+        }
 
-        document.getElementById('rank-list').innerHTML = sorted.map((p, idx) => {
-          const isMe = p.id === st.myId;
-          const done = (p.score || 0) >= st.target;
-          const avgStat = getPlayerAvgStat(p);
-          const finishTxt = done
-            ? `<span class="stat-pill win">🏁 ${formatDurationSec(p.finishDurationMs)}</span>`
-            : `<span class="stat-pill">${p.score || 0}/${st.target}</span>`;
-          const avgBadge = avgStat.hasCorrect
-            ? `<span class="stat-pill time" title="Rata-rata waktu jawab benar">⚡ ${avgStat.label}</span>`
-            : `<span class="stat-pill none">Tidak ada jawaban benar</span>`;
+        if (me.won) {
+          setKeypadEnabled(false);
+          statusEl.className = 'status-banner status-won';
+          statusEl.textContent = `🎉 Selamat! Anda adalah Pemenang Tercepat pada Sesi #${me.wonSession || st.sessionNum}!`;
+          statusEl.classList.remove('hidden');
+          return;
+        }
 
+        if (st.phase === 'break') {
+          setKeypadEnabled(false);
+          statusEl.className = 'status-banner status-locked';
+          statusEl.textContent = `⏳ Sesi #${st.sessionNum} selesai. Menunggu sesi berikutnya dimulai...`;
+          statusEl.classList.remove('hidden');
+          return;
+        }
+
+        if (me.lastAnsweredSession === st.sessionNum) {
+          setKeypadEnabled(false);
+          statusEl.className = 'status-banner status-locked';
+          statusEl.textContent = `✅ Tebakan Sesi #${st.sessionNum} (${me.lastGuess}) terkirim! Menunggu sesi berakhir...`;
+          statusEl.classList.remove('hidden');
+          return;
+        }
+
+        setKeypadEnabled(true);
+        if ((me.missedStreak || 0) === 1) {
+          statusEl.className = 'status-banner status-dq';
+          statusEl.textContent = '⚠️ Peringatan: Sesi lalu Anda tidak menjawab (1/2). Wajib jawab sesi ini agar tidak didiskualifikasi!';
+          statusEl.classList.remove('hidden');
+        } else {
+          statusEl.classList.add('hidden');
+        }
+      }
+
+      function renderSessionBanner() {
+        const banner = document.getElementById('session-banner');
+        const titleEl = document.getElementById('session-title');
+        const timerEl = document.getElementById('session-timer');
+        const nextBtn = document.getElementById('btn-next-session');
+
+        if (st.status !== 'playing') {
+          banner.classList.add('hidden');
+          if (nextBtn) nextBtn.classList.add('hidden');
+          return;
+        }
+
+        banner.classList.remove('hidden');
+        const remSec = Math.max(0, Math.ceil((st.phaseEndsAt - Date.now()) / 1000));
+        timerEl.textContent = `${remSec} dtk`;
+
+        if (st.phase === 'guessing') {
+          banner.className = 'session-banner session-phase-guessing';
+          titleEl.textContent = `Sesi #${st.sessionNum} — Kirim 1 Tebakan (15 Detik)`;
+          if (st.mode === 'host' && nextBtn) nextBtn.classList.add('hidden');
+        } else {
+          banner.className = 'session-banner session-phase-break';
+          titleEl.textContent = `Jeda Transisi Sesi #${st.sessionNum} — Lanjut ke Sesi #${st.sessionNum + 1}`;
+          if (st.mode === 'host' && nextBtn) nextBtn.classList.remove('hidden');
+        }
+      }
+
+      function renderHostGlobalHistory() {
+        if (st.mode !== 'host') return;
+        const mergedMap = { ...(st.feedMap || {}) };
+
+        Object.values(st.players || {}).forEach(p => {
+          const histList = Array.isArray(p.history)
+            ? p.history
+            : (p.history && typeof p.history === 'object' ? Object.values(p.history) : []);
+
+          histList.forEach(h => {
+            if (!h || !h.guess) return;
+            const sNum = h.session || 1;
+            const key = `${sNum}_${p.id}`;
+            if (!mergedMap[key]) {
+              mergedMap[key] = {
+                id: key,
+                playerId: p.id,
+                playerName: p.name,
+                session: sNum,
+                guess: h.guess,
+                posisiBenar: h.posisiBenar || 0,
+                posisiSalah: (h.posisiSalah !== undefined) ? h.posisiSalah : (h.angkaBenar || 0),
+                ts: h.ts || 0
+              };
+            }
+          });
+        });
+
+        st.feedMap = mergedMap;
+        const allEntries = Object.values(mergedMap);
+
+        allEntries.sort((a, b) => {
+          if ((b.session || 1) !== (a.session || 1)) return (b.session || 1) - (a.session || 1);
+          return (b.ts || 0) - (a.ts || 0);
+        });
+
+        document.getElementById('total-guesses-lbl').textContent = `${allEntries.length} Tebakan`;
+        const box = document.getElementById('host-global-history');
+        if (allEntries.length === 0) {
+          box.innerHTML = `<div style="color:var(--muted);font-size:0.86rem;text-align:center;padding:18px 8px;">Belum ada tebakan yang masuk...</div>`;
+          return;
+        }
+
+        box.innerHTML = allEntries.map(item => {
+          const psCount = (item.posisiSalah !== undefined) ? item.posisiSalah : (item.angkaBenar || 0);
           return `
-            <div class="rank-item ${isMe ? 'is-me' : ''}">
-              <span><strong>#${idx + 1}</strong> ${p.name}${isMe ? ' (Kamu)' : ''}</span>
-              <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-                ${avgBadge}
-                ${finishTxt}
-              </span>
-            </div>
-          `;
-        }).join('');
-
-        document.getElementById('track-list').innerHTML = sorted.map((p, idx) => {
-          const pct = Math.min(88, Math.round(((p.score || 0) / st.target) * 88));
-          const color = p.color || RUNNER_COLORS[idx % RUNNER_COLORS.length];
-          const isRunning = st.status === 'playing' && (p.score || 0) < st.target;
-          const done = (p.score || 0) >= st.target;
-          return `
-            <div class="lane">
-              <div class="lane-head">
-                <span><strong>#${idx + 1}</strong> ${p.name}</span>
-                <span style="color:${done ? '#34d399' : '#94a3b8'};font-weight:700;">
-                  ${done ? `FINISH (${formatDurationSec(p.finishDurationMs)})` : `${p.score || 0}/${st.target}`}
-                </span>
+            <div class="hist-item">
+              <div>
+                <span style="font-size:0.76rem;color:#94a3b8;">Sesi #${item.session || 1}</span> •
+                <strong>${item.playerName}</strong>:
+                <span style="letter-spacing:3px;font-weight:900;color:#fde047;">${item.guess}</span>
               </div>
-              <div class="road">
-                <span class="finish-flag">🏁</span>
-                <div class="runner ${isRunning ? 'running' : ''}" style="left:${pct}%;">
-                  ${stickmanSvg(color)}
-                </div>
+              <div>
+                <span class="badge-pb">${item.posisiBenar} Posisi Benar</span>
+                <span class="badge-ps">${psCount} Posisi Salah</span>
               </div>
             </div>
           `;
         }).join('');
       }
 
-      async function handleCorrectAnswer() {
-        if (st.status !== 'playing' || st.mode === 'host') return;
-        const me = st.players[st.myId];
-        if (!me || (me.score || 0) >= st.target) return;
+      function getSortedPlayers() {
+        const list = Object.values(st.players || {});
+        return list.sort((a, b) => {
+          if (a.disqualified && !b.disqualified) return 1;
+          if (!a.disqualified && b.disqualified) return -1;
+          if (a.won && !b.won) return -1;
+          if (!a.won && b.won) return 1;
+          if (a.won && b.won) return (a.wonAt || 0) - (b.wonAt || 0);
+          if ((b.bestPB || 0) !== (a.bestPB || 0)) return (b.bestPB || 0) - (a.bestPB || 0);
+          const bPS = (b.bestPS !== undefined) ? b.bestPS : (b.bestAB || 0);
+          const aPS = (a.bestPS !== undefined) ? a.bestPS : (a.bestAB || 0);
+          if (bPS !== aPS) return bPS - aPS;
+          return (a.attempts || 0) - (b.attempts || 0);
+        });
+      }
 
-        const now = Date.now();
-        me.score = (me.score || 0) + 1;
-        me.correctCount = (me.correctCount || 0) + 1;
+      function renderLeaderboard() {
+        const list = getSortedPlayers();
+        const activeCount = list.filter(p => !p.disqualified && !p.won).length;
+        document.getElementById('active-count-lbl').textContent = `${activeCount} Aktif / ${list.length} Total`;
 
-        if (!me.startedAt) {
-          me.startedAt = st.startedAt || now;
+        document.getElementById('leaderboard-list').innerHTML = list.slice(0, 10).map((p, i) => {
+          let statusBadge = '';
+          const psVal = (p.bestPS !== undefined) ? p.bestPS : (p.bestAB || 0);
+          if (p.disqualified) {
+            statusBadge = `<span class="badge-dq">DISKUALIFIKASI</span>`;
+          } else if (p.won) {
+            statusBadge = `<span class="badge-pb">👑 JUARA (Sesi #${p.wonSession || p.attempts})</span>`;
+          } else {
+            const warn = (p.missedStreak === 1) ? `<span class="badge-warn" title="1x tidak menjawab">⚠️ 1/2</span> ` : '';
+            const answeredNow = (st.status === 'playing' && st.phase === 'guessing' && p.lastAnsweredSession === st.sessionNum) ? ' ✓' : '';
+            statusBadge = `${warn}<span class="badge-pb">${p.bestPB || 0} Posisi Benar</span> <span class="badge-ps">${psVal} Posisi Salah</span> <span style="color:#94a3b8;font-size:0.78rem;">(${p.attempts || 0}x${answeredNow})</span>`;
+          }
+          return `
+            <div class="hist-item" style="${p.disqualified ? 'opacity:0.58;' : ''}">
+              <span><strong>#${i + 1}</strong> ${p.name}</span>
+              <span>${statusBadge}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      async function runBotTurnsForSession(sessionNumber) {
+        if (st.status !== 'playing') return;
+        const list = Object.values(st.players || {});
+        for (const p of list) {
+          if (st.status !== 'playing') break;
+          if (!p.isBot || p.disqualified || p.won) continue;
+          if (p.lastAnsweredSession === sessionNumber) continue;
+
+          const guess = pickBotGuess(p.id, st.digits);
+          const res = evaluateGuess(st.secret, guess);
+          refineBotMemory(p.id, guess, res);
+
+          const nowTs = Date.now();
+          p.attempts = (p.attempts || 0) + 1;
+          p.lastAnsweredSession = sessionNumber;
+          p.lastGuess = guess;
+          p.missedStreak = 0;
+          if (res.posisiBenar > (p.bestPB || 0)) p.bestPB = res.posisiBenar;
+          if (res.posisiSalah > (p.bestPS || 0)) p.bestPS = res.posisiSalah;
+
+          const feedKey = `${sessionNumber}_${p.id}`;
+          const feedEntry = {
+            id: feedKey,
+            playerId: p.id,
+            playerName: p.name,
+            session: sessionNumber,
+            guess,
+            posisiBenar: res.posisiBenar,
+            posisiSalah: res.posisiSalah,
+            ts: nowTs
+          };
+          st.feedMap[feedKey] = feedEntry;
+
+          const histList = Array.isArray(p.history) ? p.history : [];
+          histList.unshift({
+            session: sessionNumber,
+            guess,
+            posisiBenar: res.posisiBenar,
+            posisiSalah: res.posisiSalah,
+            ts: nowTs
+          });
+          p.history = histList;
+
+          if (res.posisiBenar === st.digits) {
+            p.won = true;
+            p.wonAt = nowTs;
+            p.wonSession = sessionNumber;
+            st.winnerId = p.id;
+          }
+
+          if (st.mode === 'host') {
+            await fbPut(`tebak_angka/${st.pin}/feed/${feedKey}`, feedEntry);
+            await fbPatch(`tebak_angka/${st.pin}/players/${p.id}`, {
+              attempts: p.attempts,
+              lastAnsweredSession: p.lastAnsweredSession,
+              lastGuess: p.lastGuess,
+              missedStreak: 0,
+              bestPB: p.bestPB,
+              bestPS: p.bestPS,
+              won: !!p.won,
+              wonAt: p.wonAt || null,
+              wonSession: p.wonSession || null,
+              history: p.history
+            });
+          }
+
+          if (p.won) {
+            renderHostGlobalHistory();
+            renderLeaderboard();
+            await endGame(p.id);
+            return;
+          }
+        }
+        renderHostGlobalHistory();
+      }
+
+      async function evaluateSessionEnd(sessionNumber) {
+        if (st.status !== 'playing') return;
+        if (st.lastProcessedSession >= sessionNumber) return;
+        st.lastProcessedSession = sessionNumber;
+
+        await runBotTurnsForSession(sessionNumber);
+        if (st.status !== 'playing') return;
+
+        if (st.mode === 'host' && st.pin) {
+          const room = await fbGet(`tebak_angka/${st.pin}`);
+          if (room) {
+            if (room.players) st.players = room.players;
+            if (room.feed) st.feedMap = { ...st.feedMap, ...room.feed };
+            renderHostGlobalHistory();
+            const winnerPlayer = Object.values(st.players).find(pl => pl.won);
+            if (winnerPlayer) {
+              await endGame(winnerPlayer.id);
+              return;
+            }
+          }
         }
 
-        if (me.score >= st.target) {
-          me.finishedAt = now;
-          me.finishDurationMs = Math.max(500, now - me.startedAt);
+        const list = Object.values(st.players || {});
+        let activeRemaining = 0;
+        let newlyDisqualified = [];
+
+        for (const p of list) {
+          if (p.disqualified || p.won) continue;
+
+          if (p.lastAnsweredSession !== sessionNumber) {
+            p.missedStreak = (p.missedStreak || 0) + 1;
+            if (p.missedStreak >= 2) {
+              p.disqualified = true;
+              newlyDisqualified.push(p.name);
+            }
+          } else {
+            p.missedStreak = 0;
+          }
+
+          if (!p.disqualified && !p.won) {
+            activeRemaining++;
+          }
+
+          if (st.mode === 'host') {
+            await fbPatch(`tebak_angka/${st.pin}/players/${p.id}`, {
+              missedStreak: p.missedStreak,
+              disqualified: !!p.disqualified
+            });
+          }
         }
 
-        if (st.mode === 'player') {
-          await fbPatch(`balap_hitung/${st.pin}/players/${st.myId}`, {
-            score: me.score,
-            correctCount: me.correctCount,
-            startedAt: me.startedAt,
-            finishedAt: me.finishedAt || null,
-            finishDurationMs: me.finishDurationMs || null
+        if (newlyDisqualified.length > 0) {
+          showToast(`Diskualifikasi (2x tidak jawab): ${newlyDisqualified.join(', ')}`);
+        }
+
+        if (list.length > 0 && activeRemaining === 0) {
+          await endGame(null);
+          return;
+        }
+
+        st.phase = 'break';
+        st.phaseEndsAt = Date.now() + SESSION_BREAK_MS;
+        if (st.mode === 'host') {
+          await fbPatch(`tebak_angka/${st.pin}`, {
+            phase: 'break',
+            phaseEndsAt: st.phaseEndsAt
           });
         }
 
-        renderTrackAndRank();
+        renderSessionBanner();
+        updatePlayerInputState();
+        renderHostGlobalHistory();
+        renderLeaderboard();
+      }
 
-        if (me.score >= st.target) {
-          showToast(`🏁 FINISH! Waktu tempuh: ${formatDurationSec(me.finishDurationMs)}`);
-          if (st.mode === 'solo') {
-            await endRace();
-          } else {
-            document.getElementById('q-text').textContent = '🏁 GARIS FINISH!';
-            document.getElementById('ans-display').textContent = formatDurationSec(me.finishDurationMs);
+      async function startNextSession() {
+        if (st.status !== 'playing') return;
+        st.sessionNum += 1;
+        st.phase = 'guessing';
+        st.phaseEndsAt = Date.now() + SESSION_GUESS_MS;
+
+        if (st.mode === 'host') {
+          await fbPatch(`tebak_angka/${st.pin}`, {
+            sessionNum: st.sessionNum,
+            phase: 'guessing',
+            phaseEndsAt: st.phaseEndsAt
+          });
+        }
+
+        const botDelay = 2500 + Math.floor(Math.random() * 4500);
+        setTimeout(() => {
+          if (st.status === 'playing' && st.phase === 'guessing') {
+            runBotTurnsForSession(st.sessionNum).then(renderLeaderboard);
           }
-        } else {
-          generateQuestion();
-        }
+        }, botDelay);
+
+        renderSessionBanner();
+        updatePlayerInputState();
+        renderLeaderboard();
       }
 
-      function checkAnswerInput() {
+      async function submitGuess() {
         if (st.status !== 'playing' || st.mode === 'host') return;
-        if (!st.input.length) return;
-        const val = parseInt(st.input, 10);
-        if (val === st.currentAns) {
-          handleCorrectAnswer();
-        } else if (st.input.length >= String(st.currentAns).length) {
-          showToast('Jawaban kurang tepat, coba lagi!');
-          st.input = '';
-          document.getElementById('ans-display').textContent = '';
+        const me = st.players[st.myId];
+        if (!me || me.disqualified || me.won) return;
+
+        if (st.phase !== 'guessing') {
+          return showToast('Tunggu sesi berikutnya dimulai!');
+        }
+        if (me.lastAnsweredSession === st.sessionNum) {
+          return showToast('Anda sudah mengirim tebakan pada sesi ini!');
+        }
+        if (st.input.length !== st.digits) {
+          return showToast(`Masukkan ${st.digits} digit angka unik!`);
+        }
+
+        const guess = st.input;
+        st.input = '';
+        renderSlots();
+
+        const nowTs = Date.now();
+        const currentSession = st.sessionNum;
+        const res = evaluateGuess(st.secret, guess);
+        const entry = {
+          session: currentSession,
+          guess,
+          posisiBenar: res.posisiBenar,
+          posisiSalah: res.posisiSalah,
+          ts: nowTs
+        };
+        st.myHistory.unshift(entry);
+        document.getElementById('lbl-attempts').textContent = st.myHistory.length;
+
+        document.getElementById('my-history').innerHTML = st.myHistory.map((h) => `
+          <div class="hist-item">
+            <span><strong>Sesi #${h.session}</strong> • <span style="letter-spacing:3px;font-weight:900;">${h.guess}</span></span>
+            <span>
+              <span class="badge-pb">${h.posisiBenar} Posisi Benar</span>
+              <span class="badge-ps">${h.posisiSalah} Posisi Salah</span>
+            </span>
+          </div>
+        `).join('');
+
+        me.attempts = st.myHistory.length;
+        me.lastAnsweredSession = currentSession;
+        me.lastGuess = guess;
+        me.missedStreak = 0;
+        me.history = st.myHistory;
+        if (res.posisiBenar > (me.bestPB || 0)) me.bestPB = res.posisiBenar;
+        if (res.posisiSalah > (me.bestPS || 0)) me.bestPS = res.posisiSalah;
+
+        const isCorrectAll = (res.posisiBenar === st.digits);
+        if (isCorrectAll) {
+          me.won = true;
+          me.wonAt = nowTs;
+          me.wonSession = currentSession;
+          st.winnerId = st.myId;
+        }
+
+        const feedKey = `${currentSession}_${st.myId}`;
+        const feedEntry = {
+          id: feedKey,
+          playerId: st.myId,
+          playerName: st.myName,
+          session: currentSession,
+          guess,
+          posisiBenar: res.posisiBenar,
+          posisiSalah: res.posisiSalah,
+          ts: nowTs
+        };
+        st.feedMap[feedKey] = feedEntry;
+
+        if (st.mode === 'player') {
+          await fbPut(`tebak_angka/${st.pin}/feed/${feedKey}`, feedEntry);
+          await fbPatch(`tebak_angka/${st.pin}/players/${st.myId}`, {
+            attempts: me.attempts,
+            lastAnsweredSession: me.lastAnsweredSession,
+            lastGuess: me.lastGuess,
+            missedStreak: 0,
+            bestPB: me.bestPB,
+            bestPS: me.bestPS,
+            won: !!me.won,
+            wonAt: me.wonAt || null,
+            wonSession: me.wonSession || null,
+            history: st.myHistory
+          });
+
+          if (isCorrectAll) {
+            await fbPatch(`tebak_angka/${st.pin}`, {
+              status: 'ended',
+              winnerId: st.myId
+            });
+          }
+        }
+
+        if (isCorrectAll) {
+          showToast('🎉 SELAMAT! Kamu memecahkan kode paling cepat!');
+          await endGame(st.myId);
+        } else {
+          showToast(`Tebakan Sesi #${currentSession} terkirim!`);
+          updatePlayerInputState();
+          renderLeaderboard();
         }
       }
 
-      async function endRace() {
+      async function endGame(explicitWinnerId) {
         if (st.status === 'ended') return;
         st.status = 'ended';
-        if (!st.endedAt) st.endedAt = Date.now();
+        hidePeekSecret();
+
+        const list = getSortedPlayers();
+        const champion = (explicitWinnerId && st.players[explicitWinnerId])
+          ? st.players[explicitWinnerId]
+          : list.find(p => p.won) || null;
+
+        if (champion) {
+          st.winnerId = champion.id;
+        }
 
         if (st.mode === 'host') {
           document.getElementById('lobby-qr-wrap').classList.add('hidden');
           document.getElementById('btn-host-end').classList.add('hidden');
+          document.getElementById('btn-next-session').classList.add('hidden');
           document.getElementById('btn-play-again').classList.remove('hidden');
-          await fbPatch(`balap_hitung/${st.pin}`, {
+          await fbPatch(`tebak_angka/${st.pin}`, {
             status: 'ended',
-            endedAt: st.endedAt
+            winnerId: champion ? champion.id : null
           });
         } else if (st.mode === 'solo') {
           document.getElementById('btn-play-again').classList.remove('hidden');
         }
 
         document.getElementById('lobby-box').classList.add('hidden');
-        document.getElementById('race-area').classList.add('hidden');
+        document.getElementById('session-banner').classList.add('hidden');
+        document.getElementById('guess-box').classList.add('hidden');
         document.getElementById('end-box').classList.remove('hidden');
 
-        const sorted = getSortedPlayers();
+        const dqCount = list.filter(p => p.disqualified).length;
+        const podiumEl = document.getElementById('winner-podium');
 
-        if (st.mode !== 'host' && st.players[st.myId]) {
-          const me = st.players[st.myId];
-          const myRankIdx = sorted.findIndex(p => p.id === st.myId);
-          const myDone = (me.score || 0) >= st.target;
-          const myAvg = getPlayerAvgStat(me);
-          document.getElementById('my-end-stats').classList.remove('hidden');
-          document.getElementById('stat-my-rank').textContent = myRankIdx >= 0 ? `#${myRankIdx + 1}` : '-';
-          document.getElementById('stat-my-avg').textContent = myAvg.label;
-          document.getElementById('stat-my-finish').textContent = myDone
-            ? formatDurationSec(me.finishDurationMs)
-            : `${me.score || 0}/${st.target} Soal`;
+        if (champion) {
+          const isMe = (champion.id === st.myId) ? ' (Kamu!)' : '';
+          document.getElementById('end-title').textContent = '👑 PEMENANG TERCEPAT DITEMUKAN!';
+          document.getElementById('final-summary').textContent =
+            `${champion.name} berhasil menebak kode rahasia pada Sesi #${champion.wonSession || champion.attempts}!`;
+
+          podiumEl.innerHTML = `
+            <div class="champion-avatar">
+              <div class="champion-crown">👑🏆</div>
+              <div class="champion-name">${champion.name}${isMe}</div>
+              <div class="champion-detail">Terpecahkan pada Sesi #${champion.wonSession || champion.attempts}</div>
+            </div>
+            <div class="champion-pedestal">
+              <div style="font-size:1.5rem;">JUARA 1</div>
+              <div style="font-size:0.8rem;opacity:0.85;">Tercepat &amp; Tepat</div>
+            </div>
+          `;
+
+          if (!st.celebrated) {
+            st.celebrated = true;
+            playVictorySound();
+          }
+          launchConfetti(7000);
         } else {
-          document.getElementById('my-end-stats').classList.add('hidden');
+          document.getElementById('end-title').textContent = '🎉 Permainan Dihentikan!';
+          document.getElementById('final-summary').textContent =
+            `Tidak ada peserta yang memecahkan kode rahasia (${dqCount} peserta didiskualifikasi).`;
+          podiumEl.innerHTML = '';
         }
 
-        const top3 = sorted.slice(0, 3);
-        const podiumOrder = [
-          { idx: 1, medal: '🥈', label: 'JUARA 2', cls: 'podium-2' },
-          { idx: 0, medal: '👑🥇', label: 'JUARA 1', cls: 'podium-1' },
-          { idx: 2, medal: '🥉', label: 'JUARA 3', cls: 'podium-3' }
-        ];
-
-        const podiumHtml = podiumOrder.map(slot => {
-          const p = top3[slot.idx];
-          if (!p) return '';
-          const done = (p.score || 0) >= st.target;
-          const finishTimeTxt = done
-            ? `⏱️ Waktu Finish: ${formatDurationSec(p.finishDurationMs)}`
-            : `Skor: ${p.score || 0}/${st.target} soal`;
-          const avgStat = getPlayerAvgStat(p);
-          const avgTimeTxt = avgStat.hasCorrect
-            ? `⚡ Rata-rata: ${avgStat.label}`
-            : `Tidak ada jawaban benar`;
-
-          return `
-            <div class="podium-col ${slot.cls}">
-              <div class="podium-avatar">
-                <div style="font-size:2.1rem;line-height:1.1;">${slot.medal}</div>
-                <div class="podium-name">${p.name}</div>
-                <div class="podium-time">${finishTimeTxt}</div>
-                <div class="podium-avg">${avgTimeTxt}</div>
-              </div>
-              <div class="podium-step">
-                <div style="font-size:1.1rem;">${slot.label}</div>
-              </div>
-            </div>
-          `;
-        }).join('');
-
-        document.getElementById('podium-wrap').innerHTML = podiumHtml;
-        document.getElementById('end-sub').textContent = top3[0]
-          ? `Selamat kepada ${top3[0].name} sebagai Juara 1!`
-          : 'Balapan telah berakhir.';
-
-        document.getElementById('final-rank-list').innerHTML = sorted.map((p, i) => {
-          const isMe = p.id === st.myId;
-          const done = (p.score || 0) >= st.target;
-          const avgStat = getPlayerAvgStat(p);
-          const finishBadge = done
-            ? `<span class="stat-pill win">⏱️ Finish: ${formatDurationSec(p.finishDurationMs)}</span>`
-            : `<span class="stat-pill">Progres: ${p.score || 0}/${st.target}</span>`;
-          const avgBadge = avgStat.hasCorrect
-            ? `<span class="stat-pill time">⚡ Rata-rata Benar: ${avgStat.label}</span>`
-            : `<span class="stat-pill none">Tidak ada jawaban benar</span>`;
-
-          return `
-            <div class="rank-item ${isMe ? 'is-me' : ''}">
-              <span><strong>#${i + 1}</strong> ${p.name}${isMe ? ' (Kamu)' : ''}</span>
-              <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
-                ${avgBadge}
-                ${finishBadge}
-              </span>
-            </div>
-          `;
-        }).join('');
-
-        if (!st.celebrated && top3.length > 0) {
-          st.celebrated = true;
-          playVictorySound();
-          launchConfetti(6500);
-        }
+        renderHostGlobalHistory();
+        renderLeaderboard();
       }
 
       async function resetToLobbySamePin() {
+        hidePeekSecret();
         st.status = 'lobby';
-        st.startedAt = 0;
-        st.endedAt = 0;
+        st.round = (st.round || 1) + 1;
+        st.sessionNum = 1;
+        st.phase = 'guessing';
+        st.phaseEndsAt = 0;
+        st.lastProcessedSession = 0;
         st.input = '';
+        st.myHistory = [];
+        st.feedMap = {};
+        st.winnerId = null;
+        st.botMemory = {};
         st.celebrated = false;
+        st.secret = generateSecret(st.digits);
 
         const resetPlayers = {};
         Object.keys(st.players || {}).forEach(pid => {
@@ -1317,139 +1560,137 @@
           resetPlayers[pid] = {
             id: p.id,
             name: p.name,
-            color: p.color || RUNNER_COLORS[0],
             joinedAt: p.joinedAt || Date.now(),
-            score: 0,
-            correctCount: 0,
-            startedAt: 0,
-            finishedAt: null,
-            finishDurationMs: null,
-            ...(p.isBot ? { isBot: true, botDelayMs: p.botDelayMs || 3200 } : {})
+            attempts: 0,
+            lastAnsweredSession: 0,
+            lastGuess: '',
+            bestPB: 0,
+            bestPS: 0,
+            missedStreak: 0,
+            disqualified: false,
+            won: false,
+            wonAt: null,
+            wonSession: null,
+            history: [],
+            ...(p.isBot ? { isBot: true } : {})
           };
         });
         st.players = resetPlayers;
 
         document.getElementById('end-box').classList.add('hidden');
-        document.getElementById('my-end-stats').classList.add('hidden');
+        document.getElementById('winner-podium').innerHTML = '';
+        document.getElementById('my-history').innerHTML = '';
+        document.getElementById('host-global-history').innerHTML = '';
+        document.getElementById('total-guesses-lbl').textContent = '0 Tebakan';
+        document.getElementById('lbl-attempts').textContent = '0';
 
         if (st.mode === 'host') {
           updateLobbyQrCode(st.pin);
           document.getElementById('btn-add-bot').classList.remove('hidden');
           document.getElementById('btn-host-start').classList.remove('hidden');
           document.getElementById('btn-host-end').classList.add('hidden');
-          document.getElementById('race-area').classList.add('hidden');
+          document.getElementById('btn-next-session').classList.add('hidden');
+
+          document.getElementById('arena-grid').classList.add('hidden');
           document.getElementById('lobby-box').classList.remove('hidden');
           renderLobbyPlayers();
 
-          await fbPut(`balap_hitung/${st.pin}`, {
+          await fbDelete(`tebak_angka/${st.pin}/feed`);
+          await fbPut(`tebak_angka/${st.pin}`, {
             pin: st.pin,
-            target: st.target,
-            diff: st.diff,
+            digits: st.digits,
+            secret: st.secret,
             status: 'lobby',
-            startedAt: 0,
-            endedAt: 0,
+            round: st.round,
+            sessionNum: 1,
+            phase: 'guessing',
+            phaseEndsAt: 0,
+            winnerId: null,
+            feed: null,
             players: resetPlayers
           });
-          showToast('Lobby & QR Code dibuka kembali dengan PIN sama!');
+          showToast('Lobby & QR Code dibuka kembali! Histori ronde lalu telah dihapus.');
         } else if (st.mode === 'solo') {
           st.status = 'playing';
-          st.startedAt = Date.now();
-          Object.values(st.players).forEach(pl => { pl.startedAt = st.startedAt; });
-          document.getElementById('race-area').classList.remove('hidden');
-          document.getElementById('race-sections').classList.add('player-layout');
-          generateQuestion();
-          renderTrackAndRank();
-          showToast('Balapan baru dimulai!');
+          st.phaseEndsAt = Date.now() + SESSION_GUESS_MS;
+          document.getElementById('guess-box').classList.remove('hidden');
+          renderSlots();
+          renderSessionBanner();
+          updatePlayerInputState();
+          setTimeout(() => {
+            if (st.status === 'playing' && st.phase === 'guessing') {
+              runBotTurnsForSession(1).then(renderLeaderboard);
+            }
+          }, 3000);
+          showToast('Ronde baru dimulai dengan kode rahasia baru!');
         }
+
+        renderHostGlobalHistory();
+        renderLeaderboard();
       }
 
       function startPolling() {
-        const botTick = setInterval(async () => {
+        const tickId = setInterval(() => {
           if (st.status !== 'playing') return;
-          if (st.mode !== 'host' && st.mode !== 'solo') return;
+          renderSessionBanner();
 
-          const now = Date.now();
-          let anyUpdated = false;
-          let allFinished = true;
-          const list = Object.values(st.players || {});
-
-          for (const p of list) {
-            if ((p.score || 0) < st.target) {
-              allFinished = false;
-            }
-            if (!p.isBot || (p.score || 0) >= st.target) continue;
-
-            if (!p._nextBotMoveAt) {
-              p._nextBotMoveAt = now + (p.botDelayMs || 3000) + Math.floor(Math.random() * 1400);
-            }
-            if (now >= p._nextBotMoveAt) {
-              p._nextBotMoveAt = now + (p.botDelayMs || 3000) + Math.floor(Math.random() * 1400);
-
-              p.score = (p.score || 0) + 1;
-              p.correctCount = (p.correctCount || 0) + 1;
-              if (!p.startedAt) p.startedAt = st.startedAt || now;
-
-              if (p.score >= st.target) {
-                p.finishedAt = now;
-                p.finishDurationMs = Math.max(500, now - p.startedAt);
-              }
-              anyUpdated = true;
-
-              if (st.mode === 'host') {
-                await fbPatch(`balap_hitung/${st.pin}/players/${p.id}`, {
-                  score: p.score,
-                  correctCount: p.correctCount,
-                  startedAt: p.startedAt,
-                  finishedAt: p.finishedAt || null,
-                  finishDurationMs: p.finishDurationMs || null
-                });
-              }
+          if (st.mode === 'host' || st.mode === 'solo') {
+            const now = Date.now();
+            if (st.phase === 'guessing' && now >= st.phaseEndsAt) {
+              evaluateSessionEnd(st.sessionNum);
+            } else if (st.phase === 'break' && now >= st.phaseEndsAt) {
+              startNextSession();
             }
           }
+        }, 250);
+        st.timers.push(tickId);
 
-          if (anyUpdated) {
-            renderTrackAndRank();
-          }
-
-          const finishedCount = list.filter(pl => (pl.score || 0) >= st.target).length;
-          const neededFinishers = Math.min(3, list.length);
-          if (list.length > 0 && (finishedCount >= neededFinishers || allFinished)) {
-            await endRace();
-          }
-        }, 450);
-        st.timers.push(botTick);
-
-        const fbTick = setInterval(async () => {
+        const fbId = setInterval(async () => {
           if (st.mode === 'host' && st.pin) {
-            const room = await fbGet(`balap_hitung/${st.pin}`);
-            if (room && room.players) {
-              st.players = room.players;
+            const room = await fbGet(`tebak_angka/${st.pin}`);
+            if (room) {
+              if (room.players) {
+                st.players = room.players;
+              }
               if (st.status === 'lobby') {
+                st.feedMap = {};
                 renderLobbyPlayers();
-              } else if (st.status === 'playing') {
-                renderTrackAndRank();
-                const list = Object.values(st.players || {});
-                const finishedCount = list.filter(pl => (pl.score || 0) >= st.target).length;
-                const neededFinishers = Math.min(3, list.length);
-                if (list.length > 0 && finishedCount >= neededFinishers) {
-                  await endRace();
+              } else {
+                if (room.feed) {
+                  st.feedMap = { ...st.feedMap, ...room.feed };
+                }
+                renderHostGlobalHistory();
+                renderLeaderboard();
+              }
+
+              if (st.status === 'playing') {
+                const winnerPlayer = (room.winnerId && st.players[room.winnerId])
+                  ? st.players[room.winnerId]
+                  : Object.values(st.players).find(p => p.won);
+                if (room.status === 'ended' || winnerPlayer) {
+                  await endGame(winnerPlayer ? winnerPlayer.id : room.winnerId);
                 }
               }
             }
           } else if (st.mode === 'player' && st.pin) {
-            const room = await fbGet(`balap_hitung/${st.pin}`);
+            const room = await fbGet(`tebak_angka/${st.pin}`);
             if (room) {
-              st.target = room.target || st.target;
-              st.diff = room.diff || st.diff;
-              if (room.startedAt) st.startedAt = room.startedAt;
-              if (room.endedAt) st.endedAt = room.endedAt;
+              st.digits = room.digits || st.digits;
+              st.secret = room.secret || st.secret;
+              document.getElementById('lbl-digits').textContent = st.digits;
 
               if (room.players) {
                 const localMe = st.players[st.myId];
                 st.players = room.players;
                 if (localMe && st.players[st.myId] && room.status === 'playing') {
-                  if ((localMe.score || 0) > (st.players[st.myId].score || 0)) {
-                    st.players[st.myId] = { ...st.players[st.myId], ...localMe };
+                  if ((localMe.lastAnsweredSession || 0) > (st.players[st.myId].lastAnsweredSession || 0)) {
+                    st.players[st.myId].lastAnsweredSession = localMe.lastAnsweredSession;
+                    st.players[st.myId].lastGuess = localMe.lastGuess;
+                    st.players[st.myId].attempts = localMe.attempts;
+                    st.players[st.myId].bestPB = Math.max(localMe.bestPB || 0, st.players[st.myId].bestPB || 0);
+                    st.players[st.myId].bestPS = Math.max(localMe.bestPS || 0, st.players[st.myId].bestPS || 0);
+                    st.players[st.myId].won = localMe.won || st.players[st.myId].won;
+                    st.players[st.myId].wonSession = localMe.wonSession || st.players[st.myId].wonSession;
                   }
                 }
               }
@@ -1457,40 +1698,59 @@
               if (room.status === 'lobby') {
                 if (st.status !== 'lobby') {
                   st.status = 'lobby';
-                  st.endedAt = 0;
+                  st.sessionNum = 1;
+                  st.phase = 'guessing';
                   st.input = '';
+                  st.myHistory = [];
+                  st.feedMap = {};
+                  st.winnerId = null;
                   st.celebrated = false;
+                  document.getElementById('my-history').innerHTML = '';
+                  document.getElementById('lbl-attempts').textContent = '0';
                   document.getElementById('end-box').classList.add('hidden');
-                  document.getElementById('race-area').classList.add('hidden');
+                  document.getElementById('arena-grid').classList.add('hidden');
                   document.getElementById('player-wait').classList.remove('hidden');
                   document.getElementById('lobby-box').classList.remove('hidden');
-                  showToast('Host membuka balapan baru! Bersiap...');
+                  showToast('Host membuka ronde baru! Bersiap menunggu dimulai...');
                 }
                 renderLobbyPlayers();
               } else if (room.status === 'playing') {
                 if (st.status === 'lobby') {
                   st.status = 'playing';
-                  st.startedAt = room.startedAt || Date.now();
-                  if (st.players[st.myId]) {
-                    st.players[st.myId].startedAt = st.startedAt;
-                  }
                   document.getElementById('player-wait').classList.add('hidden');
                   document.getElementById('lobby-box').classList.add('hidden');
                   document.getElementById('end-box').classList.add('hidden');
-                  document.getElementById('race-area').classList.remove('hidden');
-                  document.getElementById('solve-box').classList.remove('hidden');
-                  document.getElementById('race-sections').classList.add('player-layout');
-                  generateQuestion();
+                  document.getElementById('arena-grid').classList.remove('hidden');
+                  document.getElementById('guess-box').classList.remove('hidden');
+                  renderSlots();
                 }
-                renderTrackAndRank();
+                const prevSession = st.sessionNum;
+                const prevPhase = st.phase;
+                st.sessionNum = room.sessionNum || 1;
+                st.phase = room.phase || 'guessing';
+                st.phaseEndsAt = room.phaseEndsAt || Date.now();
+
+                if (st.sessionNum !== prevSession && st.phase === 'guessing') {
+                  st.input = '';
+                  renderSlots();
+                  showToast(`Sesi #${st.sessionNum} dimulai! Kirim 1 tebakan (15 detik).`);
+                }
+                if (st.phase !== prevPhase || st.sessionNum !== prevSession) {
+                  updatePlayerInputState();
+                }
+                renderSessionBanner();
+                updatePlayerInputState();
+                renderLeaderboard();
               } else if (room.status === 'ended' && st.status !== 'ended') {
-                if (!st.endedAt) st.endedAt = room.endedAt || Date.now();
-                await endRace();
+                const winnerPlayer = (room.winnerId && st.players[room.winnerId])
+                  ? st.players[room.winnerId]
+                  : Object.values(st.players).find(p => p.won);
+                await endGame(winnerPlayer ? winnerPlayer.id : room.winnerId);
               }
             }
           }
-        }, 700);
-        st.timers.push(fbTick);
+        }, 800);
+        st.timers.push(fbId);
       }
 
       function switchHomeTab(tab) {
@@ -1511,6 +1771,7 @@
           unlockedEl.classList.toggle("hidden", !isHostAllowed);
         }
 
+        // Deteksi parameter ?pin=XXXXXX dari hasil scan QR Code peserta
         const urlParams = new URLSearchParams(window.location.search);
         const scannedPin = (urlParams.get('pin') || '').replace(/\D/g, '').slice(0, 6);
         if (scannedPin.length === 6) {
@@ -1522,60 +1783,88 @@
           showToast(`PIN Room ${scannedPin} terdeteksi dari QR Code! Masukkan nama Anda.`);
         }
 
+        // Event tekan-tahan tombol Intip Kode Rahasia (maksimal 1 detik)
+        const peekBtn = document.getElementById('btn-peek-secret');
+        if (peekBtn) {
+          peekBtn.addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            showPeekSecretBriefly();
+          });
+          peekBtn.addEventListener('pointerup', hidePeekSecret);
+          peekBtn.addEventListener('pointerleave', hidePeekSecret);
+          peekBtn.addEventListener('pointercancel', hidePeekSecret);
+        }
+
         document.querySelectorAll('.tab-btn').forEach(b => {
-          b.addEventListener('click', () => switchHomeTab(b.getAttribute('data-tab')));
+          b.addEventListener('click', () => {
+            switchHomeTab(b.getAttribute('data-tab'));
+          });
         });
 
         // SOLO
         document.getElementById('btn-start-solo').addEventListener('click', () => {
           st.mode = 'solo';
           st.status = 'playing';
-          st.target = parseInt(document.getElementById('solo-target').value, 10);
-          st.diff = document.getElementById('solo-diff').value;
-          st.startedAt = Date.now();
-          st.endedAt = 0;
+          st.digits = parseInt(document.getElementById('solo-digits').value, 10);
+          const botCount = parseInt(document.getElementById('solo-bots').value, 10);
+          st.secret = generateSecret(st.digits);
+          st.sessionNum = 1;
+          st.phase = 'guessing';
+          st.phaseEndsAt = Date.now() + SESSION_GUESS_MS;
+          st.lastProcessedSession = 0;
+          st.feedMap = {};
+          st.winnerId = null;
+          st.botMemory = {};
           st.celebrated = false;
 
           st.players = {};
           st.players[st.myId] = {
             id: st.myId,
             name: 'Anda',
-            color: RUNNER_COLORS[0],
             joinedAt: Date.now(),
-            startedAt: st.startedAt,
-            score: 0,
-            correctCount: 0
+            attempts: 0,
+            bestPB: 0,
+            bestPS: 0,
+            missedStreak: 0,
+            disqualified: false,
+            won: false,
+            history: []
           };
 
-          const bots = [
-            { name: 'Raka [BOT]', delay: 2600 },
-            { name: 'Nadia [BOT]', delay: 3300 },
-            { name: 'Fajar [BOT]', delay: 4000 }
-          ];
-          bots.forEach((b, i) => {
+          const botNames = ['Raka [BOT]', 'Nadia [BOT]', 'Fajar [BOT]'];
+          for (let i = 0; i < botCount; i++) {
             const bid = 'bot_' + i;
             st.players[bid] = {
               id: bid,
-              name: b.name,
-              color: RUNNER_COLORS[i + 1],
+              name: botNames[i] || `Bot #${i + 1}`,
               joinedAt: Date.now() + i + 1,
-              startedAt: st.startedAt,
               isBot: true,
-              botDelayMs: b.delay,
-              score: 0,
-              correctCount: 0
+              attempts: 0,
+              bestPB: 0,
+              bestPS: 0,
+              missedStreak: 0,
+              disqualified: false,
+              won: false,
+              history: []
             };
-          });
+          }
 
+          document.getElementById('lbl-digits').textContent = st.digits;
           document.getElementById('view-home').classList.add('hidden');
           document.getElementById('view-arena').classList.remove('hidden');
           document.getElementById('lobby-box').classList.add('hidden');
-          document.getElementById('race-area').classList.remove('hidden');
-          document.getElementById('solve-box').classList.remove('hidden');
-          document.getElementById('race-sections').classList.add('player-layout');
+          document.getElementById('arena-grid').classList.remove('hidden');
+          renderSlots();
+          renderSessionBanner();
+          updatePlayerInputState();
+          renderLeaderboard();
 
-          generateQuestion();
-          renderTrackAndRank();
+          setTimeout(() => {
+            if (st.status === 'playing' && st.phase === 'guessing') {
+              runBotTurnsForSession(1).then(renderLeaderboard);
+            }
+          }, 3000);
+
           startPolling();
         });
 
@@ -1584,32 +1873,43 @@
           if (sessionStorage.getItem("arena_host_verified") !== "true") return showToast("Akses Host terkunci!");
           st.mode = 'host';
           st.pin = String(Math.floor(100000 + Math.random() * 900000));
-          st.target = parseInt(document.getElementById('host-target').value, 10);
-          st.diff = document.getElementById('host-diff').value;
+          st.digits = parseInt(document.getElementById('host-digits').value, 10);
+          st.secret = generateSecret(st.digits);
           st.status = 'lobby';
-          st.endedAt = 0;
+          st.round = 1;
+          st.sessionNum = 1;
+          st.phase = 'guessing';
+          st.lastProcessedSession = 0;
           st.players = {};
+          st.feedMap = {};
+          st.winnerId = null;
+          st.botMemory = {};
           st.celebrated = false;
 
+          await fbPut(`tebak_angka/${st.pin}`, {
+            pin: st.pin,
+            digits: st.digits,
+            secret: st.secret,
+            status: 'lobby',
+            round: 1,
+            sessionNum: 1,
+            phase: 'guessing',
+            phaseEndsAt: 0,
+            winnerId: null,
+            feed: null,
+            players: {}
+          });
+
           document.getElementById('display-pin').textContent = st.pin;
+          updateLobbyQrCode(st.pin);
+          hidePeekSecret();
+          document.getElementById('lbl-digits').textContent = st.digits;
           document.getElementById('view-home').classList.add('hidden');
           document.getElementById('view-arena').classList.remove('hidden');
           document.getElementById('host-bar').classList.remove('hidden');
           document.getElementById('lobby-box').classList.remove('hidden');
-          document.getElementById('race-area').classList.add('hidden');
-          updateLobbyQrCode(st.pin);
+          document.getElementById('arena-grid').classList.add('hidden');
           renderLobbyPlayers();
-
-          await fbPut(`balap_hitung/${st.pin}`, {
-            pin: st.pin,
-            target: st.target,
-            diff: st.diff,
-            status: 'lobby',
-            startedAt: 0,
-            endedAt: 0,
-            players: {}
-          });
-
           startPolling();
         });
 
@@ -1620,57 +1920,70 @@
           const botObj = {
             id: bid,
             name: 'Bot #' + (count + 1),
-            color: RUNNER_COLORS[count % RUNNER_COLORS.length],
             joinedAt: Date.now(),
             isBot: true,
-            botDelayMs: 2800 + Math.floor(Math.random() * 1400),
-            score: 0,
-            correctCount: 0
+            attempts: 0,
+            bestPB: 0,
+            bestPS: 0,
+            missedStreak: 0,
+            disqualified: false,
+            won: false,
+            history: []
           };
           st.players[bid] = botObj;
-          await fbPut(`balap_hitung/${st.pin}/players/${bid}`, botObj);
+          await fbPut(`tebak_angka/${st.pin}/players/${bid}`, botObj);
           renderLobbyPlayers();
+          renderLeaderboard();
           showToast(`${botObj.name} ditambahkan ke lobby!`);
         });
 
-        // START RACE (HOST)
         document.getElementById('btn-host-start').addEventListener('click', async () => {
           if (Object.keys(st.players || {}).length === 0) {
             return showToast('Minimal ada 1 peserta atau Bot untuk memulai!');
           }
           st.status = 'playing';
-          st.startedAt = Date.now();
-          st.endedAt = 0;
+          st.sessionNum = 1;
+          st.phase = 'guessing';
+          st.phaseEndsAt = Date.now() + SESSION_GUESS_MS;
+          st.lastProcessedSession = 0;
 
-          Object.values(st.players).forEach(pl => {
-            pl.startedAt = st.startedAt;
-            pl.score = 0;
-            pl.correctCount = 0;
-            pl.finishedAt = null;
-            pl.finishDurationMs = null;
-          });
-
+          hidePeekSecret();
           document.getElementById('lobby-qr-wrap').classList.add('hidden');
           document.getElementById('btn-add-bot').classList.add('hidden');
           document.getElementById('btn-host-start').classList.add('hidden');
           document.getElementById('btn-host-end').classList.remove('hidden');
 
           document.getElementById('lobby-box').classList.add('hidden');
-          document.getElementById('race-area').classList.remove('hidden');
-          document.getElementById('solve-box').classList.add('hidden');
-          document.getElementById('race-sections').classList.remove('player-layout');
+          document.getElementById('arena-grid').classList.remove('hidden');
+          document.getElementById('guess-box').classList.add('hidden');
+          document.getElementById('host-feed-box').classList.remove('hidden');
 
-          await fbPatch(`balap_hitung/${st.pin}`, {
+          await fbPatch(`tebak_angka/${st.pin}`, {
             status: 'playing',
-            startedAt: st.startedAt,
-            endedAt: 0,
-            players: st.players
+            sessionNum: 1,
+            phase: 'guessing',
+            phaseEndsAt: st.phaseEndsAt
           });
 
-          renderTrackAndRank();
+          setTimeout(() => {
+            if (st.status === 'playing' && st.phase === 'guessing') {
+              runBotTurnsForSession(1).then(renderLeaderboard);
+            }
+          }, 3000);
+
+          renderSessionBanner();
+          renderHostGlobalHistory();
+          renderLeaderboard();
         });
 
-        document.getElementById('btn-host-end').addEventListener('click', () => endRace());
+        document.getElementById('btn-next-session').addEventListener('click', () => {
+          if (st.mode === 'host' && st.status === 'playing' && st.phase === 'break') {
+            startNextSession();
+            showToast(`Sesi #${st.sessionNum} dimulai secara manual oleh Host!`);
+          }
+        });
+
+        document.getElementById('btn-host-end').addEventListener('click', () => endGame(null));
 
         // JOIN
         document.getElementById('btn-join-room').addEventListener('click', async () => {
@@ -1679,48 +1992,52 @@
           if (!name) return showToast('Masukkan nama Anda!');
           if (pin.length !== 6) return showToast('PIN harus 6 digit!');
 
-          const room = await fbGet(`balap_hitung/${pin}`);
+          const room = await fbGet(`tebak_angka/${pin}`);
           if (!room) return showToast('Room PIN tidak ditemukan!');
-          if (room.status === 'ended') return showToast('Balapan untuk PIN ini sudah berakhir!');
+          if (room.status === 'ended') return showToast('Permainan untuk PIN ini sudah berakhir!');
 
           st.mode = 'player';
           st.pin = pin;
           st.myName = name;
-          st.target = room.target || 10;
-          st.diff = room.diff || 'easy';
+          st.digits = room.digits || 4;
+          st.secret = room.secret;
           st.status = room.status || 'lobby';
-          st.startedAt = room.startedAt || Date.now();
-          st.endedAt = 0;
+          st.sessionNum = room.sessionNum || 1;
+          st.phase = room.phase || 'guessing';
+          st.phaseEndsAt = room.phaseEndsAt || Date.now();
           st.celebrated = false;
 
-          const existingCount = Object.keys(room.players || {}).length;
           const meObj = {
             id: st.myId,
             name: st.myName,
-            color: RUNNER_COLORS[existingCount % RUNNER_COLORS.length],
             joinedAt: Date.now(),
-            startedAt: st.status === 'playing' ? st.startedAt : 0,
-            score: 0,
-            correctCount: 0
+            attempts: 0,
+            bestPB: 0,
+            bestPS: 0,
+            missedStreak: 0,
+            disqualified: false,
+            won: false,
+            history: []
           };
           st.players = room.players || {};
           st.players[st.myId] = meObj;
-          await fbPut(`balap_hitung/${st.pin}/players/${st.myId}`, meObj);
+          await fbPut(`tebak_angka/${st.pin}/players/${st.myId}`, meObj);
 
+          document.getElementById('lbl-digits').textContent = st.digits;
           document.getElementById('view-home').classList.add('hidden');
           document.getElementById('view-arena').classList.remove('hidden');
 
           if (st.status === 'playing') {
             document.getElementById('lobby-box').classList.add('hidden');
-            document.getElementById('race-area').classList.remove('hidden');
-            document.getElementById('solve-box').classList.remove('hidden');
-            document.getElementById('race-sections').classList.add('player-layout');
-            generateQuestion();
-            renderTrackAndRank();
+            document.getElementById('arena-grid').classList.remove('hidden');
+            renderSlots();
+            renderSessionBanner();
+            updatePlayerInputState();
+            renderLeaderboard();
           } else {
             document.getElementById('player-wait').classList.remove('hidden');
             document.getElementById('lobby-box').classList.remove('hidden');
-            document.getElementById('race-area').classList.add('hidden');
+            document.getElementById('arena-grid').classList.add('hidden');
             renderLobbyPlayers();
           }
           startPolling();
@@ -1729,37 +2046,37 @@
         // KEYPAD
         document.querySelectorAll('.k-btn[data-d]').forEach(btn => {
           btn.addEventListener('click', () => {
-            if (st.input.length < 5) {
-              st.input += btn.getAttribute('data-d');
-              document.getElementById('ans-display').textContent = st.input;
-              checkAnswerInput();
+            const d = btn.getAttribute('data-d');
+            if (st.input.includes(d)) return showToast('Angka harus unik (tidak boleh kembar)!');
+            if (st.input.length < st.digits) {
+              st.input += d;
+              renderSlots();
             }
           });
         });
 
         document.getElementById('btn-del').addEventListener('click', () => {
           st.input = st.input.slice(0, -1);
-          document.getElementById('ans-display').textContent = st.input;
+          renderSlots();
         });
 
-        document.getElementById('btn-submit').addEventListener('click', () => {
-          checkAnswerInput();
-        });
+        document.getElementById('btn-guess').addEventListener('click', submitGuess);
 
         document.addEventListener('keydown', (e) => {
-          if (document.getElementById('race-area').classList.contains('hidden')) return;
-          if (document.getElementById('solve-box').classList.contains('hidden')) return;
+          if (document.getElementById('arena-grid').classList.contains('hidden')) return;
+          if (document.getElementById('guess-box').classList.contains('hidden')) return;
+          if (document.getElementById('btn-guess').disabled) return;
           if (e.key >= '0' && e.key <= '9') {
-            if (st.input.length < 5) {
+            if (st.input.includes(e.key)) return showToast('Angka harus unik!');
+            if (st.input.length < st.digits) {
               st.input += e.key;
-              document.getElementById('ans-display').textContent = st.input;
-              checkAnswerInput();
+              renderSlots();
             }
           } else if (e.key === 'Backspace') {
             st.input = st.input.slice(0, -1);
-            document.getElementById('ans-display').textContent = st.input;
+            renderSlots();
           } else if (e.key === 'Enter') {
-            checkAnswerInput();
+            submitGuess();
           }
         });
 
