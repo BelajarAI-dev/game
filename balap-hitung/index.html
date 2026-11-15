@@ -243,76 +243,125 @@
     .race-sections.player-layout #rank-box { order: 1; }
     .race-sections.player-layout #track-box { order: 2; }
 
-    /* Single Marathon Track & Stickman Running Animation */
-    .marathon-road {
+    /* ============================================================
+       LINTASAN MARATON SUDUT ELEVASI KAMERA 45 DERAJAT (ISOMETRIK)
+       ============================================================ */
+    .marathon-stage {
       position: relative;
-      height: 112px;
+      height: 230px;
       margin-top: 10px;
-      background: linear-gradient(180deg, rgba(30,41,59,0.75) 0%, rgba(15,23,42,0.95) 72%, rgba(51,65,85,0.6) 100%);
-      border: 1px solid var(--border);
-      border-radius: 14px;
+      border-radius: 16px;
       overflow: hidden;
+      background: linear-gradient(180deg, #070d19 0%, #111c33 34%, #1e293b 100%);
+      border: 1px solid rgba(255,255,255,0.14);
+      box-shadow: inset 0 18px 36px rgba(0,0,0,0.55);
     }
-    .marathon-lane-line {
+    /* Tribun / Latar cakrawala atas */
+    .stadium-horizon {
       position: absolute;
+      top: 0;
       left: 0;
       right: 0;
-      bottom: 22px;
-      border-bottom: 3px dashed rgba(255,255,255,0.24);
-      pointer-events: none;
-    }
-    .marathon-ground {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 22px;
-      background: linear-gradient(90deg, rgba(59,130,246,0.18), rgba(16,185,129,0.22));
-      pointer-events: none;
-    }
-    .start-marker {
-      position: absolute;
-      left: 10px;
-      bottom: 4px;
-      font-size: 0.68rem;
-      font-weight: 800;
+      height: 44px;
+      background: linear-gradient(180deg, rgba(59,130,246,0.16) 0%, rgba(15,23,42,0.05) 100%);
+      border-bottom: 2px solid rgba(148,163,184,0.28);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 14px;
+      font-size: 0.72rem;
       color: var(--muted);
+      font-weight: 700;
       letter-spacing: 0.5px;
     }
-    .finish-line {
+    /* Permukaan jalan lintasan miring 45 derajat */
+    .marathon-surface {
       position: absolute;
-      right: 34px;
-      top: 0;
+      left: -4%;
+      right: -4%;
+      top: 40px;
+      bottom: 0;
+      background:
+        repeating-linear-gradient(
+          180deg,
+          rgba(255,255,255,0.03) 0px,
+          rgba(255,255,255,0.03) 26px,
+          rgba(255,255,255,0.09) 27px,
+          rgba(255,255,255,0.03) 28px
+        ),
+        linear-gradient(180deg, #1d2b44 0%, #263754 55%, #1a263c 100%);
+      transform: perspective(560px) rotateX(36deg);
+      transform-origin: center bottom;
+      border-top: 2px solid rgba(255,255,255,0.22);
+    }
+    /* Garis Start Miring 45° */
+    .start-line-45 {
+      position: absolute;
+      left: 46px;
+      top: 42px;
       bottom: 0;
       width: 4px;
+      background: rgba(255,255,255,0.45);
+      transform: skewX(-18deg);
+      pointer-events: none;
+    }
+    .start-badge {
+      position: absolute;
+      left: 12px;
+      bottom: 8px;
+      font-size: 0.7rem;
+      font-weight: 900;
+      color: #cbd5e1;
+      background: rgba(15,23,42,0.75);
+      padding: 2px 7px;
+      border-radius: 6px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
+    /* Garis Finish Kotak-Kotak Miring 45° */
+    .finish-line-45 {
+      position: absolute;
+      right: 44px;
+      top: 42px;
+      bottom: 0;
+      width: 10px;
       background: repeating-linear-gradient(
         180deg,
         #ffffff 0px,
-        #ffffff 6px,
-        #0f172a 6px,
-        #0f172a 12px
+        #ffffff 8px,
+        #0f172a 8px,
+        #0f172a 16px
       );
-      opacity: 0.75;
+      transform: skewX(-18deg);
+      box-shadow: 0 0 14px rgba(255,255,255,0.35);
+      pointer-events: none;
     }
     .finish-flag {
       position: absolute;
-      right: 8px;
-      top: 50%;
+      right: 12px;
+      top: 52%;
       transform: translateY(-50%);
-      font-size: 1.45rem;
+      font-size: 1.55rem;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.6));
+      z-index: 5;
     }
+
+    /* Pelari dengan Perspektif Kedalaman 45° */
     .runner {
       position: absolute;
-      bottom: 14px;
-      left: 1%;
+      left: 2%;
       transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1);
       display: flex;
       flex-direction: column;
       align-items: center;
-      transform: translateX(-10%);
+      transform-origin: bottom center;
     }
-    .runner.is-me {
-      z-index: 30;
+    .runner-shadow {
+      width: 24px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.55);
+      margin-top: -4px;
+      filter: blur(1.5px);
     }
     .runner-tag {
       font-size: 0.7rem;
@@ -320,14 +369,14 @@
       padding: 2px 7px;
       border-radius: 999px;
       background: rgba(15,23,42,0.92);
-      border: 1px solid rgba(255,255,255,0.24);
+      border: 1px solid rgba(255,255,255,0.28);
       color: #f8fafc;
       white-space: nowrap;
-      max-width: 110px;
+      max-width: 112px;
       overflow: hidden;
       text-overflow: ellipsis;
       margin-bottom: 2px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.55);
     }
     .runner.is-me .runner-tag {
       background: var(--green);
@@ -768,17 +817,21 @@
 
         <!-- WRAPPER UNTUK PERTUKARAN POSISI PERINGKAT & ANIMASI BERLARI DI HP PESERTA -->
         <div id="race-sections" class="race-sections">
-          <!-- LINTASAN TUNGGAL MARATON STICKMAN -->
+          <!-- LINTASAN TUNGGAL MARATON SUDUT ELEVASI 45 DERAJAT -->
           <div class="box" id="track-box">
             <div style="display:flex;justify-content:space-between;align-items:center;">
-              <h4>🏃‍♂️ Lintasan Maraton Stickman</h4>
+              <h4>🏃‍♂️ Lintasan Maraton Stickman (Sudut Kamera 45°)</h4>
               <span style="font-size:0.8rem;color:var(--muted);" id="lbl-target-info">Target Finish: 50 Poin</span>
             </div>
-            <div class="marathon-road" id="marathon-road">
-              <div class="marathon-ground"></div>
-              <div class="marathon-lane-line"></div>
-              <span class="start-marker">START</span>
-              <div class="finish-line"></div>
+            <div class="marathon-stage" id="marathon-stage">
+              <div class="stadium-horizon">
+                <span>🏟️ ARENA MARATON</span>
+                <span>FINISH LINE →</span>
+              </div>
+              <div class="marathon-surface"></div>
+              <div class="start-line-45"></div>
+              <span class="start-badge">START</span>
+              <div class="finish-line-45"></div>
               <span class="finish-flag">🏁</span>
               <div id="marathon-runners"></div>
             </div>
@@ -863,6 +916,11 @@
         celebrated: false,
         timers: []
       };
+
+      function clearAllTimers() {
+        (st.timers || []).forEach(id => clearInterval(id));
+        st.timers = [];
+      }
 
       function showToast(msg) {
         const t = document.getElementById('toast');
@@ -1223,20 +1281,30 @@
           `;
         }).join('');
 
-        // Render 1 Lintasan Maraton:
-        // - Layar Host: tampilkan label nama di atas setiap karakter peserta
-        // - Layar HP Peserta / Solo: hanya karakter peserta sendiri yang berlabel nama, peserta lain hanya karakter orangnya saja
+        // Render 1 Lintasan Maraton Sudut Elevasi Kamera 45°:
+        // Setiap pelari ditempatkan pada jalur kedalaman (depthSlot) dari atas (jauh) ke bawah (dekat)
+        // sehingga semua pelari terlihat jelas tanpa saling menutupi.
         const runnersContainer = document.getElementById('marathon-runners');
         if (runnersContainer) {
           const joinOrderList = Object.values(st.players || {}).sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
+          const total = Math.max(1, joinOrderList.length);
+
           runnersContainer.innerHTML = joinOrderList.map((p, idx) => {
             const isMe = p.id === st.myId;
             const ratio = Math.min(1, Math.max(0, (p.score || 0) / st.target));
-            const pct = (2 + ratio * 84).toFixed(1);
+
+            // Distribusi kedalaman vertikal (depthFraction 0 = sisi atas lintasan, 1 = sisi bawah lintasan)
+            const depthFraction = total === 1 ? 0.5 : (idx / (total - 1));
+            const bottomPx = Math.round(14 + (1 - depthFraction) * 118);
+
+            // Efek perspektif 45 derajat: pelari di bawah tampak sedikit lebih besar & bergeser sedikit ke kiri
+            const scaleVal = (0.82 + depthFraction * 0.24).toFixed(2);
+            const perspectiveSkewOffset = (1 - depthFraction) * 3.2;
+            const leftPct = (3 + perspectiveSkewOffset + ratio * 80).toFixed(1);
+
             const color = p.color || RUNNER_COLORS[idx % RUNNER_COLORS.length];
             const isRunning = st.status === 'playing' && (p.score || 0) < st.target;
-            const bottomOffset = 14 + (idx % 3) * 4;
-            const zIndex = isMe ? 40 : (10 + idx);
+            const zIndex = isMe ? 80 : (10 + Math.round(depthFraction * 50));
 
             const showNameTag = (st.mode === 'host') || isMe;
             const tagText = (st.mode !== 'host' && isMe) ? `Kamu (${p.name})` : p.name;
@@ -1244,9 +1312,10 @@
 
             return `
               <div class="runner ${isRunning ? 'running' : ''} ${isMe ? 'is-me' : ''}"
-                   style="left:${pct}%; bottom:${bottomOffset}px; z-index:${zIndex};">
+                   style="left:${leftPct}%; bottom:${bottomPx}px; transform: scale(${scaleVal}); z-index:${zIndex};">
                 ${tagHtml}
                 ${stickmanSvg(color)}
+                <div class="runner-shadow"></div>
               </div>
             `;
           }).join('');
@@ -1329,7 +1398,6 @@
           showToast('⚠️ Jawaban salah! Soal diganti otomatis (1× lagi salah: -1 poin)');
         }
 
-        // Soal otomatis berubah acak setiap kali salah menjawab
         generateQuestion();
       }
 
@@ -1471,7 +1539,7 @@
             startedAt: 0,
             finishedAt: null,
             finishDurationMs: null,
-            ...(p.isBot ? { isBot: true, botDelayMs: p.botDelayMs || 3000 } : {})
+            ...(p.isBot ? { isBot: true, botDelayMs: p.botDelayMs || 2200 } : {})
           };
         });
         st.players = resetPlayers;
@@ -1501,16 +1569,27 @@
         } else if (st.mode === 'solo') {
           st.status = 'playing';
           st.startedAt = Date.now();
-          Object.values(st.players).forEach(pl => { pl.startedAt = st.startedAt; });
+          Object.values(st.players).forEach(pl => {
+            pl.startedAt = st.startedAt;
+            if (pl.isBot) {
+              const firstDelay = (pl.botDelayMs || 2000) + Math.floor(Math.random() * 900);
+              pl._lastBotDelay = firstDelay;
+              pl._nextBotMoveAt = st.startedAt + firstDelay;
+            }
+          });
           document.getElementById('race-area').classList.remove('hidden');
           document.getElementById('race-sections').classList.add('player-layout');
           generateQuestion();
           renderTrackAndRank();
+          startPolling();
           showToast('Balapan baru dimulai!');
         }
       }
 
       function startPolling() {
+        clearAllTimers();
+
+        // Loop simulasi Bot menebak soal (aktif di mode Solo dan Host)
         const botTick = setInterval(async () => {
           if (st.status !== 'playing') return;
           if (st.mode !== 'host' && st.mode !== 'solo') return;
@@ -1524,18 +1603,21 @@
             if ((p.score || 0) < st.target) {
               allFinished = false;
             }
-            if (!p.isBot || (p.score || 0) >= st.target) continue;
+            const isBotRunner = Boolean(p.isBot) || String(p.id || '').startsWith('bot_');
+            if (!isBotRunner || (p.score || 0) >= st.target) continue;
 
             if (!p._nextBotMoveAt) {
-              const delay = (p.botDelayMs || 2800) + Math.floor(Math.random() * 1800);
-              p._lastBotDelay = delay;
-              p._nextBotMoveAt = now + delay;
+              const initialDelay = (p.botDelayMs || 2000) + Math.floor(Math.random() * 1000);
+              p._lastBotDelay = initialDelay;
+              p._nextBotMoveAt = now + initialDelay;
             }
+
             if (now >= p._nextBotMoveAt) {
-              const usedDelay = p._lastBotDelay || 3000;
+              const usedDelay = p._lastBotDelay || 2500;
+              // Bot menebak benar dengan kecepatan bervariasi (+3, +2, atau +1 poin)
               const gained = usedDelay < 2000 ? 3 : (usedDelay <= 4000 ? 2 : 1);
 
-              const nextDelay = (p.botDelayMs || 2800) + Math.floor(Math.random() * 1800);
+              const nextDelay = (p.botDelayMs || 2000) + Math.floor(Math.random() * 1600);
               p._lastBotDelay = nextDelay;
               p._nextBotMoveAt = now + nextDelay;
 
@@ -1570,14 +1652,32 @@
           if (list.length > 0 && (finishedCount >= neededFinishers || allFinished)) {
             await endRace();
           }
-        }, 450);
+        }, 350);
         st.timers.push(botTick);
 
+        // Sinkronisasi Firebase untuk mode Host & Player
         const fbTick = setInterval(async () => {
           if (st.mode === 'host' && st.pin) {
             const room = await fbGet(`balap_hitung/${st.pin}`);
             if (room && room.players) {
-              st.players = room.players;
+              // Pertahankan jadwal langkah bot lokal agar tidak tertimpa saat polling Firebase
+              const merged = { ...room.players };
+              Object.keys(merged).forEach(pid => {
+                const localP = st.players[pid];
+                if (localP && (localP.isBot || String(pid).startsWith('bot_'))) {
+                  merged[pid] = {
+                    ...merged[pid],
+                    score: Math.max(merged[pid].score || 0, localP.score || 0),
+                    correctCount: Math.max(merged[pid].correctCount || 0, localP.correctCount || 0),
+                    finishedAt: localP.finishedAt || merged[pid].finishedAt || null,
+                    finishDurationMs: localP.finishDurationMs || merged[pid].finishDurationMs || null,
+                    _nextBotMoveAt: localP._nextBotMoveAt,
+                    _lastBotDelay: localP._lastBotDelay
+                  };
+                }
+              });
+              st.players = merged;
+
               if (st.status === 'lobby') {
                 renderLobbyPlayers();
               } else if (st.status === 'playing') {
@@ -1719,12 +1819,13 @@
           };
 
           const bots = [
-            { name: 'Raka [BOT]', delay: 1700 },
-            { name: 'Nadia [BOT]', delay: 2500 },
-            { name: 'Fajar [BOT]', delay: 3400 }
+            { name: 'Raka [BOT]', delay: 1600 },
+            { name: 'Nadia [BOT]', delay: 2300 },
+            { name: 'Fajar [BOT]', delay: 3100 }
           ];
           bots.forEach((b, i) => {
             const bid = 'bot_' + i;
+            const firstMove = b.delay + Math.floor(Math.random() * 800);
             st.players[bid] = {
               id: bid,
               name: b.name,
@@ -1733,6 +1834,8 @@
               startedAt: st.startedAt,
               isBot: true,
               botDelayMs: b.delay,
+              _lastBotDelay: firstMove,
+              _nextBotMoveAt: st.startedAt + firstMove,
               score: 0,
               correctCount: 0
             };
@@ -1789,18 +1892,28 @@
         document.getElementById('btn-add-bot').addEventListener('click', async () => {
           const count = Object.keys(st.players || {}).length;
           const bid = 'bot_' + Date.now() + '_' + Math.floor(Math.random() * 100);
+          const baseDelay = 1700 + Math.floor(Math.random() * 1600);
           const botObj = {
             id: bid,
             name: 'Bot #' + (count + 1),
             color: RUNNER_COLORS[count % RUNNER_COLORS.length],
             joinedAt: Date.now(),
             isBot: true,
-            botDelayMs: 1800 + Math.floor(Math.random() * 1800),
+            botDelayMs: baseDelay,
             score: 0,
             correctCount: 0
           };
           st.players[bid] = botObj;
-          await fbPut(`balap_hitung/${st.pin}/players/${bid}`, botObj);
+          await fbPut(`balap_hitung/${st.pin}/players/${bid}`, {
+            id: botObj.id,
+            name: botObj.name,
+            color: botObj.color,
+            joinedAt: botObj.joinedAt,
+            isBot: true,
+            botDelayMs: botObj.botDelayMs,
+            score: 0,
+            correctCount: 0
+          });
           renderLobbyPlayers();
           showToast(`${botObj.name} ditambahkan ke lobby!`);
         });
@@ -1814,12 +1927,33 @@
           st.startedAt = Date.now();
           st.endedAt = 0;
 
+          const cleanPlayersPayload = {};
           Object.values(st.players).forEach(pl => {
             pl.startedAt = st.startedAt;
             pl.score = 0;
             pl.correctCount = 0;
             pl.finishedAt = null;
             pl.finishDurationMs = null;
+
+            const isBotRunner = Boolean(pl.isBot) || String(pl.id || '').startsWith('bot_');
+            if (isBotRunner) {
+              const firstMove = (pl.botDelayMs || 2000) + Math.floor(Math.random() * 900);
+              pl._lastBotDelay = firstMove;
+              pl._nextBotMoveAt = st.startedAt + firstMove;
+            }
+
+            cleanPlayersPayload[pl.id] = {
+              id: pl.id,
+              name: pl.name,
+              color: pl.color || RUNNER_COLORS[0],
+              joinedAt: pl.joinedAt || st.startedAt,
+              startedAt: st.startedAt,
+              score: 0,
+              correctCount: 0,
+              finishedAt: null,
+              finishDurationMs: null,
+              ...(isBotRunner ? { isBot: true, botDelayMs: pl.botDelayMs || 2200 } : {})
+            };
           });
 
           document.getElementById('lobby-qr-wrap').classList.add('hidden');
@@ -1836,10 +1970,11 @@
             status: 'playing',
             startedAt: st.startedAt,
             endedAt: 0,
-            players: st.players
+            players: cleanPlayersPayload
           });
 
           renderTrackAndRank();
+          startPolling();
         });
 
         document.getElementById('btn-host-end').addEventListener('click', () => endRace());
