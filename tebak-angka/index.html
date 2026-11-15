@@ -154,7 +154,7 @@
     }
     .qr-caption {
       color: #0f172a;
-      font-size: 0.82rem;
+      font-size: 0.84rem;
       font-weight: 800;
       margin-top: 8px;
       letter-spacing: 0.3px;
@@ -211,7 +211,7 @@
       margin-bottom: 14px;
     }
 
-    /* Arena Layout: Default Host/Solo vs Player Swapped Order */
+    /* Penukaran Posisi: Layar Host (Track di atas, Peringkat di bawah) vs Layar HP Peserta (Peringkat di atas, Track di bawah) */
     .race-sections {
       display: flex;
       flex-direction: column;
@@ -391,14 +391,17 @@
       border-radius: 14px;
       padding: 14px;
       margin: 12px auto;
-      max-width: 520px;
+      max-width: 560px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
       text-align: center;
     }
+    @media (max-width: 520px) {
+      .my-stat-card { grid-template-columns: 1fr; }
+    }
     .my-stat-val {
-      font-size: 1.15rem;
+      font-size: 1.12rem;
       font-weight: 900;
       color: #fde047;
     }
@@ -414,13 +417,13 @@
       align-items: flex-end;
       justify-content: center;
       gap: 12px;
-      max-width: 680px;
+      max-width: 720px;
       margin: 20px auto 16px;
       padding-top: 12px;
     }
     .podium-col {
       flex: 1;
-      max-width: 210px;
+      max-width: 225px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -445,15 +448,15 @@
       word-break: break-word;
     }
     .podium-time {
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       font-weight: 800;
       color: #fde047;
-      margin-top: 3px;
+      margin-top: 4px;
     }
     .podium-avg {
-      font-size: 0.74rem;
+      font-size: 0.75rem;
       color: #93c5fd;
-      margin-top: 1px;
+      margin-top: 2px;
     }
     .podium-step {
       width: 100%;
@@ -782,10 +785,10 @@
       }
 
       /*
-       * Perhitungan Rata-rata Waktu Mengisi Soal Benar:
-       * 1. Untuk yang tidak pernah menjawab benar (correctCount === 0): "Tidak ada jawaban benar"
-       * 2. Untuk para juara / peserta yang sudah finish: waktu saat mengunci status juara/finish dibagi jumlah soal benar
-       * 3. Untuk yang belum finish: durasi permainan dibagi jumlah soal benar
+       * Rumus Waktu Rata-rata Mengisi Soal Benar:
+       * - Tidak pernah menjawab benar (correctCount === 0): "Tidak ada jawaban benar"
+       * - Juara / sudah finish (score >= target): waktu saat mengunci status finish/juara dibagi jumlah soal benar
+       * - Belum finish (score < target): total durasi permainan dibagi jumlah soal benar
        */
       function getPlayerAvgStat(p) {
         const correctCount = (p.correctCount !== undefined) ? p.correctCount : (p.score || 0);
@@ -1219,7 +1222,7 @@
           if (!p) return '';
           const done = (p.score || 0) >= st.target;
           const finishTimeTxt = done
-            ? `⏱️ Finish: ${formatDurationSec(p.finishDurationMs)}`
+            ? `⏱️ Waktu Finish: ${formatDurationSec(p.finishDurationMs)}`
             : `Skor: ${p.score || 0}/${st.target} soal`;
           const avgStat = getPlayerAvgStat(p);
           const avgTimeTxt = avgStat.hasCorrect
@@ -1328,6 +1331,7 @@
           st.startedAt = Date.now();
           Object.values(st.players).forEach(pl => { pl.startedAt = st.startedAt; });
           document.getElementById('race-area').classList.remove('hidden');
+          document.getElementById('race-sections').classList.add('player-layout');
           generateQuestion();
           renderTrackAndRank();
           showToast('Balapan baru dimulai!');
