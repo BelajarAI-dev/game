@@ -806,7 +806,7 @@
               Rentang Awal: 1 – 100 • Waktu: 10+5
             </div>
             <div style="font-size:0.82rem;color:#94a3b8;margin-top:4px;max-width:290px;">
-              Peserta hanya dapat masuk selama berada di ruang tunggu sebelum game dimulai.
+              Peserta dapat memindai QR Code di samping atau memasukkan PIN secara manual.
             </div>
           </div>
         </div>
@@ -986,9 +986,9 @@
         roundNum: 1,
         sessionNum: 1,
         timingPreset: '10+5',
-        guessDurationMs: 10000,
-        waitDurationMs: 5000,
-        phase: 'guessing',
+        guessDurationMs: 10000, // 0 = off (manual Host)
+        waitDurationMs: 5000,   // 0 = off (manual Host)
+        phase: 'guessing',      // 'guessing' | 'waiting'
         phaseStartedAt: 0,
         emptySessionsStreak: 0,
         lastSummary: 'Kirim 1 angka pilihanmu sebelum waktu sesi berakhir!',
@@ -1011,7 +1011,7 @@
         t.textContent = msg;
         t.classList.remove('hidden');
         clearTimeout(t._id);
-        t._id = setTimeout(() => t.classList.add('hidden'), 2800);
+        t._id = setTimeout(() => t.classList.add('hidden'), 2600);
       }
 
       function randInt(min, max) {
@@ -1232,7 +1232,9 @@
           btnStart.classList.add('hidden');
           btnEnd.classList.remove('hidden');
 
+          // Jika fase menebak tanpa batas waktu (off+off), tampilkan tombol Evaluasi Hasil Sesi
           const showEvalBtn = (st.phase === 'guessing' && st.guessDurationMs === 0);
+          // Jika fase tunggu tanpa timer otomatis (10+off atau off+off), tampilkan tombol Lanjut Sesi
           const showNextBtn = (st.phase === 'waiting' && st.waitDurationMs === 0);
 
           btnEval.classList.toggle('hidden', !showEvalBtn);
@@ -1308,6 +1310,7 @@
         const bombEl = document.getElementById('bomb-icon');
         if (bombEl) bombEl.classList.toggle('danger', spanSize <= 10 && !isWaiting);
 
+        // Panel Input Peserta (Solo & Player)
         if (st.mode !== 'host') {
           const me = st.players[st.myId];
           if (me) {
@@ -1373,6 +1376,7 @@
           }
         }
 
+        // Daftar Peringkat (Maksimal 10 peserta teratas di layar Host)
         const sorted = getSortedPlayers();
         const visibleList = st.mode === 'host' ? sorted.slice(0, 10) : sorted;
         document.getElementById('lbl-rank-title').textContent = st.mode === 'host'
@@ -1879,6 +1883,7 @@
       function startPolling() {
         clearAllTimers();
 
+        // Timer Presisi 120ms: Mendukung 10+5, 15+5, 10+off, dan off+off
         const fastTick = setInterval(async () => {
           if (st.status !== 'playing') return;
 
@@ -1899,6 +1904,7 @@
                 return;
               }
             } else {
+              // Mode off+off: waktu tebak tanpa countdown
               if (timerEl) {
                 timerEl.textContent = `♾️ Tebak Bebas (${(elapsed / 1000).toFixed(1)} dtk)`;
                 timerEl.classList.remove('waiting', 'urgent');
@@ -1906,6 +1912,7 @@
               }
             }
 
+            // Simulasi Bot menjawab
             if (st.mode === 'host' || st.mode === 'solo') {
               let botChanged = false;
               const botMaxDelay = st.guessDurationMs > 0 ? Math.max(1800, st.guessDurationMs - 2200) : 4200;
@@ -1956,6 +1963,7 @@
                 await startNextGuessingSession();
               }
             } else {
+              // Mode 10+off atau off+off: fase tunggu manual oleh Host
               if (timerEl) {
                 timerEl.textContent = `⏸️ Menunggu Host Lanjut`;
                 timerEl.classList.remove('urgent', 'waiting');
@@ -1966,6 +1974,7 @@
         }, 120);
         st.timers.push(fastTick);
 
+        // Sinkronisasi Firebase untuk Host & Player
         const fbTick = setInterval(async () => {
           if (st.mode === 'host' && st.pin) {
             const room = await fbGet(`angka_boom/${st.pin}`);
@@ -2096,7 +2105,7 @@
           b.addEventListener('click', () => switchHomeTab(b.getAttribute('data-tab')));
         });
 
-        // SOLO
+        // SOLO (10+5)
         document.getElementById('btn-start-solo').addEventListener('click', () => {
           const maxVal = parseInt(document.getElementById('solo-range').value, 10) || 100;
           const botCount = parseInt(document.getElementById('solo-bots').value, 10) || 8;
@@ -2228,7 +2237,6 @@
 
         // + TAMBAH BOT (HOST)
         document.getElementById('btn-add-bot').addEventListener('click', async () => {
-          if (st.status !== 'lobby') return showToast('Bot hanya dapat ditambahkan di ruang tunggu!');
           const count = Object.keys(st.players || {}).length;
           const bid = 'bot_' + Date.now() + '_' + Math.floor(Math.random() * 100);
           const botObj = {
@@ -2281,10 +2289,12 @@
           startPolling();
         });
 
+        // HOST EVALUASI HASIL SESI (Mode off+off)
         document.getElementById('btn-host-eval').addEventListener('click', async () => {
           await evaluateGuessingPhaseEnd();
         });
 
+        // HOST LANJUT SESI BERIKUTNYA (Mode 10+off & off+off)
         document.getElementById('btn-host-next').addEventListener('click', async () => {
           await startNextGuessingSession();
         });
@@ -2293,7 +2303,7 @@
           endGame('Permainan diakhiri oleh Host.');
         });
 
-        // JOIN ROOM — KUNCI KETAT HANYA SAAT status === 'lobby'
+        // JOIN ROOM
         document.getElementById('btn-join-room').addEventListener('click', async () => {
           const name = document.getElementById('join-name').value.trim();
           const pin = document.getElementById('join-pin').value.trim();
@@ -2302,12 +2312,7 @@
 
           const room = await fbGet(`angka_boom/${pin}`);
           if (!room) return showToast('Room PIN tidak ditemukan!');
-          if (room.status === 'playing') {
-            return showToast('🔒 Permainan sedang berlangsung! Tidak bisa bergabung di tengah permainan.');
-          }
-          if (room.status !== 'lobby') {
-            return showToast('Permainan untuk PIN ini sudah selesai!');
-          }
+          if (room.status === 'ended') return showToast('Permainan untuk PIN ini sudah selesai!');
 
           st.mode = 'player';
           st.pin = pin;
@@ -2324,7 +2329,7 @@
           st.phase = room.phase || 'guessing';
           st.phaseStartedAt = room.phaseStartedAt || Date.now();
           st.lastSummary = room.lastSummary || st.lastSummary;
-          st.status = 'lobby';
+          st.status = room.status || 'lobby';
           st.celebrated = false;
 
           const meObj = {
@@ -2347,10 +2352,18 @@
 
           document.getElementById('view-home').classList.add('hidden');
           document.getElementById('view-arena').classList.remove('hidden');
-          document.getElementById('player-wait').classList.remove('hidden');
-          document.getElementById('lobby-box').classList.remove('hidden');
-          document.getElementById('game-area').classList.add('hidden');
-          renderLobbyPlayers();
+
+          if (st.status === 'playing') {
+            document.getElementById('lobby-box').classList.add('hidden');
+            document.getElementById('game-area').classList.remove('hidden');
+            document.getElementById('solve-box').classList.remove('hidden');
+            renderGameUi();
+          } else {
+            document.getElementById('player-wait').classList.remove('hidden');
+            document.getElementById('lobby-box').classList.remove('hidden');
+            document.getElementById('game-area').classList.add('hidden');
+            renderLobbyPlayers();
+          }
           startPolling();
         });
 
