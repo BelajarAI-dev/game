@@ -243,50 +243,96 @@
     .race-sections.player-layout #rank-box { order: 1; }
     .race-sections.player-layout #track-box { order: 2; }
 
-    /* Track & Stickman Running Animation */
-    .track-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 10px;
-    }
-    .lane {
-      background: var(--panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px 12px;
-    }
-    .lane-head {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 0.86rem;
-      margin-bottom: 8px;
-      gap: 6px;
-    }
-    .road {
+    /* Single Marathon Track & Stickman Running Animation */
+    .marathon-road {
       position: relative;
-      height: 44px;
-      background: linear-gradient(90deg, rgba(59,130,246,0.12), rgba(16,185,129,0.15));
-      border-radius: 10px;
-      border-bottom: 3px dashed rgba(255,255,255,0.22);
+      height: 112px;
+      margin-top: 10px;
+      background: linear-gradient(180deg, rgba(30,41,59,0.75) 0%, rgba(15,23,42,0.95) 72%, rgba(51,65,85,0.6) 100%);
+      border: 1px solid var(--border);
+      border-radius: 14px;
       overflow: hidden;
+    }
+    .marathon-lane-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 22px;
+      border-bottom: 3px dashed rgba(255,255,255,0.24);
+      pointer-events: none;
+    }
+    .marathon-ground {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: 22px;
+      background: linear-gradient(90deg, rgba(59,130,246,0.18), rgba(16,185,129,0.22));
+      pointer-events: none;
+    }
+    .start-marker {
+      position: absolute;
+      left: 10px;
+      bottom: 4px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+    .finish-line {
+      position: absolute;
+      right: 34px;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+      background: repeating-linear-gradient(
+        180deg,
+        #ffffff 0px,
+        #ffffff 6px,
+        #0f172a 6px,
+        #0f172a 12px
+      );
+      opacity: 0.75;
     }
     .finish-flag {
       position: absolute;
       right: 8px;
       top: 50%;
       transform: translateY(-50%);
-      font-size: 1.35rem;
+      font-size: 1.45rem;
     }
     .runner {
       position: absolute;
-      bottom: 2px;
-      left: 0%;
+      bottom: 14px;
+      left: 1%;
       transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1);
       display: flex;
       flex-direction: column;
       align-items: center;
+      transform: translateX(-10%);
+    }
+    .runner.is-me {
+      z-index: 30;
+    }
+    .runner-tag {
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.92);
+      border: 1px solid rgba(255,255,255,0.24);
+      color: #f8fafc;
+      white-space: nowrap;
+      max-width: 110px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.45);
+    }
+    .runner.is-me .runner-tag {
+      background: var(--green);
+      color: #052e16;
+      border-color: #a7f3d0;
     }
     .stickman-svg {
       width: 30px;
@@ -564,7 +610,7 @@
         Jawab benar <strong>&lt; 2 detik = +3 poin</strong> •
         Jawab benar <strong>2 – 4 detik = +2 poin</strong> •
         Jawab benar <strong>&gt; 4 detik = +1 poin</strong> •
-        Salah <strong>2× berturut-turut = -1 poin</strong>.
+        Salah <strong>2× berturut-turut = -1 poin</strong> (soal langsung berganti acak saat salah).
       </div>
 
       <div class="tabs">
@@ -722,13 +768,20 @@
 
         <!-- WRAPPER UNTUK PERTUKARAN POSISI PERINGKAT & ANIMASI BERLARI DI HP PESERTA -->
         <div id="race-sections" class="race-sections">
-          <!-- ANIMASI BERLARI STICKMAN -->
+          <!-- LINTASAN TUNGGAL MARATON STICKMAN -->
           <div class="box" id="track-box">
             <div style="display:flex;justify-content:space-between;align-items:center;">
-              <h4>🏁 Lintasan Animasi Berlari</h4>
+              <h4>🏃‍♂️ Lintasan Maraton Stickman</h4>
               <span style="font-size:0.8rem;color:var(--muted);" id="lbl-target-info">Target Finish: 50 Poin</span>
             </div>
-            <div class="track-list" id="track-list"></div>
+            <div class="marathon-road" id="marathon-road">
+              <div class="marathon-ground"></div>
+              <div class="marathon-lane-line"></div>
+              <span class="start-marker">START</span>
+              <div class="finish-line"></div>
+              <span class="finish-flag">🏁</span>
+              <div id="marathon-runners"></div>
+            </div>
           </div>
 
           <!-- PERINGKAT & RATA-RATA WAKTU -->
@@ -802,6 +855,7 @@
         endedAt: 0,
         questionShownAt: 0,
         wrongStreak: 0,
+        lastQuestionKey: '',
         currentAns: 0,
         input: '',
         players: {},
@@ -827,12 +881,6 @@
         return `${m}m ${s}d`;
       }
 
-      /*
-       * Rumus Rata-rata Waktu Mengisi Soal Benar:
-       * 1. Tidak pernah menjawab benar (correctCount === 0): "Tidak ada jawaban benar"
-       * 2. Juara / sudah finish (score >= target): waktu saat mengunci status finish/juara dibagi jumlah soal benar
-       * 3. Belum finish (score < target): durasi permainan dibagi jumlah soal benar
-       */
       function getPlayerAvgStat(p) {
         const correctCount = p.correctCount || 0;
         if (correctCount <= 0) {
@@ -1038,44 +1086,52 @@
 
       function generateQuestion() {
         const diff = st.diff || 'easy';
-        let a, b, op, ans;
-        if (diff === 'easy') {
-          op = Math.random() < 0.5 ? '+' : '-';
-          a = Math.floor(Math.random() * 20) + 1;
-          b = Math.floor(Math.random() * 20) + 1;
-          if (op === '-' && b > a) [a, b] = [b, a];
-          ans = op === '+' ? a + b : a - b;
-        } else if (diff === 'medium') {
-          const ops = ['+', '-', '×'];
-          op = ops[Math.floor(Math.random() * ops.length)];
-          if (op === '×') {
-            a = Math.floor(Math.random() * 11) + 2;
-            b = Math.floor(Math.random() * 11) + 2;
-            ans = a * b;
-          } else {
-            a = Math.floor(Math.random() * 45) + 5;
-            b = Math.floor(Math.random() * 45) + 5;
+        let a, b, op, ans, key;
+        let guard = 0;
+
+        do {
+          guard++;
+          if (diff === 'easy') {
+            op = Math.random() < 0.5 ? '+' : '-';
+            a = Math.floor(Math.random() * 20) + 1;
+            b = Math.floor(Math.random() * 20) + 1;
             if (op === '-' && b > a) [a, b] = [b, a];
             ans = op === '+' ? a + b : a - b;
-          }
-        } else {
-          const ops = ['+', '-', '×', '÷'];
-          op = ops[Math.floor(Math.random() * ops.length)];
-          if (op === '÷') {
-            b = Math.floor(Math.random() * 11) + 2;
-            ans = Math.floor(Math.random() * 12) + 2;
-            a = b * ans;
-          } else if (op === '×') {
-            a = Math.floor(Math.random() * 14) + 3;
-            b = Math.floor(Math.random() * 12) + 3;
-            ans = a * b;
+          } else if (diff === 'medium') {
+            const ops = ['+', '-', '×'];
+            op = ops[Math.floor(Math.random() * ops.length)];
+            if (op === '×') {
+              a = Math.floor(Math.random() * 11) + 2;
+              b = Math.floor(Math.random() * 11) + 2;
+              ans = a * b;
+            } else {
+              a = Math.floor(Math.random() * 45) + 5;
+              b = Math.floor(Math.random() * 45) + 5;
+              if (op === '-' && b > a) [a, b] = [b, a];
+              ans = op === '+' ? a + b : a - b;
+            }
           } else {
-            a = Math.floor(Math.random() * 80) + 10;
-            b = Math.floor(Math.random() * 80) + 10;
-            if (op === '-' && b > a) [a, b] = [b, a];
-            ans = op === '+' ? a + b : a - b;
+            const ops = ['+', '-', '×', '÷'];
+            op = ops[Math.floor(Math.random() * ops.length)];
+            if (op === '÷') {
+              b = Math.floor(Math.random() * 11) + 2;
+              ans = Math.floor(Math.random() * 12) + 2;
+              a = b * ans;
+            } else if (op === '×') {
+              a = Math.floor(Math.random() * 14) + 3;
+              b = Math.floor(Math.random() * 12) + 3;
+              ans = a * b;
+            } else {
+              a = Math.floor(Math.random() * 80) + 10;
+              b = Math.floor(Math.random() * 80) + 10;
+              if (op === '-' && b > a) [a, b] = [b, a];
+              ans = op === '+' ? a + b : a - b;
+            }
           }
-        }
+          key = `${a}${op}${b}`;
+        } while (key === st.lastQuestionKey && guard < 10);
+
+        st.lastQuestionKey = key;
         st.currentAns = ans;
         st.input = '';
         st.questionShownAt = Date.now();
@@ -1144,6 +1200,7 @@
         document.getElementById('lbl-target-info').textContent = `Target Finish: ${st.target} Poin`;
         document.getElementById('lbl-player-count').textContent = `${sorted.length} Peserta`;
 
+        // Render Daftar Peringkat
         document.getElementById('rank-list').innerHTML = sorted.map((p, idx) => {
           const isMe = p.id === st.myId;
           const done = (p.score || 0) >= st.target;
@@ -1166,28 +1223,34 @@
           `;
         }).join('');
 
-        document.getElementById('track-list').innerHTML = sorted.map((p, idx) => {
-          const pct = Math.min(88, Math.round(((p.score || 0) / st.target) * 88));
-          const color = p.color || RUNNER_COLORS[idx % RUNNER_COLORS.length];
-          const isRunning = st.status === 'playing' && (p.score || 0) < st.target;
-          const done = (p.score || 0) >= st.target;
-          return `
-            <div class="lane">
-              <div class="lane-head">
-                <span><strong>#${idx + 1}</strong> ${p.name}</span>
-                <span style="color:${done ? '#34d399' : '#94a3b8'};font-weight:700;">
-                  ${done ? `FINISH (${formatDurationSec(p.finishDurationMs)})` : `${p.score || 0}/${st.target} Poin`}
-                </span>
+        // Render 1 Lintasan Maraton:
+        // - Layar Host: tampilkan label nama di atas setiap karakter peserta
+        // - Layar HP Peserta / Solo: hanya karakter peserta sendiri yang berlabel nama, peserta lain hanya karakter orangnya saja
+        const runnersContainer = document.getElementById('marathon-runners');
+        if (runnersContainer) {
+          const joinOrderList = Object.values(st.players || {}).sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
+          runnersContainer.innerHTML = joinOrderList.map((p, idx) => {
+            const isMe = p.id === st.myId;
+            const ratio = Math.min(1, Math.max(0, (p.score || 0) / st.target));
+            const pct = (2 + ratio * 84).toFixed(1);
+            const color = p.color || RUNNER_COLORS[idx % RUNNER_COLORS.length];
+            const isRunning = st.status === 'playing' && (p.score || 0) < st.target;
+            const bottomOffset = 14 + (idx % 3) * 4;
+            const zIndex = isMe ? 40 : (10 + idx);
+
+            const showNameTag = (st.mode === 'host') || isMe;
+            const tagText = (st.mode !== 'host' && isMe) ? `Kamu (${p.name})` : p.name;
+            const tagHtml = showNameTag ? `<div class="runner-tag">${tagText}</div>` : '';
+
+            return `
+              <div class="runner ${isRunning ? 'running' : ''} ${isMe ? 'is-me' : ''}"
+                   style="left:${pct}%; bottom:${bottomOffset}px; z-index:${zIndex};">
+                ${tagHtml}
+                ${stickmanSvg(color)}
               </div>
-              <div class="road">
-                <span class="finish-flag">🏁</span>
-                <div class="runner ${isRunning ? 'running' : ''}" style="left:${pct}%;">
-                  ${stickmanSvg(color)}
-                </div>
-              </div>
-            </div>
-          `;
-        }).join('');
+            `;
+          }).join('');
+        }
       }
 
       async function handleCorrectAnswer() {
@@ -1198,8 +1261,6 @@
         const now = Date.now();
         const answerDurationMs = Math.max(100, now - (st.questionShownAt || now));
 
-        // Sistem Poin berdasarkan kecepatan menjawab:
-        // < 2 detik = +3 poin | 2 - 4 detik = +2 poin | > 4 detik = +1 poin
         let gainedPoints = 1;
         if (answerDurationMs < 2000) {
           gainedPoints = 3;
@@ -1263,10 +1324,13 @@
             }
             renderTrackAndRank();
           }
-          showToast('❌ Salah 2× berturut-turut! Skor -1 Poin');
+          showToast('❌ Salah 2× berturut-turut! Skor -1 Poin & soal diganti');
         } else {
-          showToast('⚠️ Jawaban salah! (1× lagi salah berturut-turut: -1 poin)');
+          showToast('⚠️ Jawaban salah! Soal diganti otomatis (1× lagi salah: -1 poin)');
         }
+
+        // Soal otomatis berubah acak setiap kali salah menjawab
+        generateQuestion();
       }
 
       async function checkAnswerInput() {
