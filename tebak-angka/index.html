@@ -130,11 +130,44 @@
       background: var(--panel-dark);
       border: 2px dashed var(--blue);
       border-radius: 16px;
-      padding: 16px;
+      padding: 18px;
       text-align: center;
       margin-bottom: 14px;
     }
-    .pin-val { font-size: 2.3rem; font-weight: 900; letter-spacing: 6px; color: var(--blue); }
+    .pin-val { font-size: 2.5rem; font-weight: 900; letter-spacing: 6px; color: var(--blue); }
+
+    /* Host Lobby QR Code & PIN Layout */
+    .host-lobby-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .qr-card {
+      background: #ffffff;
+      padding: 12px;
+      border-radius: 16px;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.45);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .qr-card img {
+      width: 260px;
+      height: 260px;
+      display: block;
+      border-radius: 8px;
+    }
+    .qr-caption {
+      color: #0f172a;
+      font-size: 0.82rem;
+      font-weight: 800;
+      margin-top: 8px;
+      letter-spacing: 0.3px;
+    }
 
     /* Peek Secret Controls (Host Only) */
     .peek-wrap {
@@ -567,16 +600,29 @@
     <!-- ARENA -->
     <div id="view-arena" class="hidden">
       <div id="host-bar" class="pin-box hidden">
-        <div style="font-size:0.8rem;color:var(--muted);">PIN ROOM PESERTA</div>
-        <div class="pin-val" id="display-pin">000000</div>
+        <div class="host-lobby-header">
+          <!-- QR CODE BESAR UNTUK SCAN PESERTA DI LOBBY -->
+          <div id="lobby-qr-wrap" class="qr-card">
+            <img id="lobby-qr-img" src="" alt="QR Code Gabung Room" />
+            <div class="qr-caption">📷 Scan untuk Langsung Masuk Room</div>
+          </div>
 
-        <!-- TOMBOL INTIP KODE RAHASIA SEKILAS (MAKSIMAL 1 DETIK SAAT DITEKAN) -->
-        <div class="peek-wrap">
-          <button type="button" id="btn-peek-secret" class="btn-peek">👁️ Intip Kode (Tahan ≤ 1 dtk)</button>
-          <span id="host-secret-display" class="secret-peek-box">••••</span>
+          <div>
+            <div style="font-size:0.85rem;color:var(--muted);font-weight:700;">PIN ROOM PESERTA</div>
+            <div class="pin-val" id="display-pin">000000</div>
+            <div style="font-size:0.8rem;color:#94a3b8;margin-top:4px;max-width:260px;">
+              Peserta dapat langsung memindai QR Code di samping atau memasukkan PIN secara manual.
+            </div>
+
+            <!-- TOMBOL INTIP KODE RAHASIA SEKILAS (MAKSIMAL 1 DETIK SAAT DITEKAN) -->
+            <div class="peek-wrap">
+              <button type="button" id="btn-peek-secret" class="btn-peek">👁️ Intip Kode (Tahan ≤ 1 dtk)</button>
+              <span id="host-secret-display" class="secret-peek-box">••••</span>
+            </div>
+          </div>
         </div>
 
-        <div style="display:flex;gap:8px;max-width:660px;margin:12px auto 0;flex-wrap:wrap;">
+        <div style="display:flex;gap:8px;max-width:660px;margin:14px auto 0;flex-wrap:wrap;">
           <button id="btn-add-bot" class="btn btn-amber" style="flex:1;">+ Tambah Bot</button>
           <button id="btn-host-start" class="btn btn-green" style="flex:1;">▶ Mulai Game</button>
           <button id="btn-next-session" class="btn btn-amber hidden" style="flex:1;">⏭ Lanjut Sesi Berikutnya</button>
@@ -654,7 +700,7 @@
         </div>
       </div>
 
-      <!-- END GAME & SINGLE CHAMPION ANIMATION SCREEN (TANPA MENAMPILKAN KODE RAHASIA) -->
+      <!-- END GAME & SINGLE CHAMPION ANIMATION SCREEN -->
       <div id="end-box" class="pin-box hidden" style="border-color:var(--green);margin-top:16px;">
         <h2 id="end-title">🎉 Permainan Selesai!</h2>
         <div id="final-summary" style="font-size:0.95rem;color:var(--muted);margin:8px 0;"></div>
@@ -708,6 +754,23 @@
         t._id = setTimeout(() => t.classList.add('hidden'), 2500);
       }
 
+      function buildJoinUrl(pin) {
+        const url = new URL(window.location.href);
+        url.search = '';
+        url.hash = '';
+        url.searchParams.set('pin', pin);
+        return url.toString();
+      }
+
+      function updateLobbyQrCode(pin) {
+        const qrImg = document.getElementById('lobby-qr-img');
+        const qrWrap = document.getElementById('lobby-qr-wrap');
+        if (!qrImg || !qrWrap || !pin) return;
+        const targetUrl = buildJoinUrl(pin);
+        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=2&data=${encodeURIComponent(targetUrl)}`;
+        qrWrap.classList.remove('hidden');
+      }
+
       function maskDots() {
         return '•'.repeat(st.digits || 4);
       }
@@ -727,7 +790,6 @@
         if (!el) return;
         el.textContent = st.secret;
         if (st.peekTimeout) clearTimeout(st.peekTimeout);
-        // Maksimal 1 detik (1000ms), lalu otomatis tersembunyi kembali
         st.peekTimeout = setTimeout(() => {
           hidePeekSecret();
         }, 1000);
@@ -908,7 +970,7 @@
 
         if (list.length === 0) {
           grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:22px 10px;font-size:0.9rem;">
-            Menunggu peserta bergabung menggunakan PIN <strong>${st.pin}</strong>...
+            Menunggu peserta memindai QR Code atau memasukkan PIN <strong>${st.pin}</strong>...
           </div>`;
           return;
         }
@@ -1023,12 +1085,10 @@
         }
       }
 
-      /* Sinkronkan & Gabungkan Seluruh Tebakan dari Node Feed Maupun Profil Pemain */
       function renderHostGlobalHistory() {
         if (st.mode !== 'host') return;
         const mergedMap = { ...(st.feedMap || {}) };
 
-        // Ambil juga histori dari setiap objek pemain agar tidak ada satupun yang terlewat
         Object.values(st.players || {}).forEach(p => {
           const histList = Array.isArray(p.history)
             ? p.history
@@ -1424,6 +1484,7 @@
         }
 
         if (st.mode === 'host') {
+          document.getElementById('lobby-qr-wrap').classList.add('hidden');
           document.getElementById('btn-host-end').classList.add('hidden');
           document.getElementById('btn-next-session').classList.add('hidden');
           document.getElementById('btn-play-again').classList.remove('hidden');
@@ -1524,6 +1585,7 @@
         document.getElementById('lbl-attempts').textContent = '0';
 
         if (st.mode === 'host') {
+          updateLobbyQrCode(st.pin);
           document.getElementById('btn-add-bot').classList.remove('hidden');
           document.getElementById('btn-host-start').classList.remove('hidden');
           document.getElementById('btn-host-end').classList.add('hidden');
@@ -1533,7 +1595,6 @@
           document.getElementById('lobby-box').classList.remove('hidden');
           renderLobbyPlayers();
 
-          // Hapus node feed lama & tulis ulang state lobby bersih ke Firebase
           await fbDelete(`tebak_angka/${st.pin}/feed`);
           await fbPut(`tebak_angka/${st.pin}`, {
             pin: st.pin,
@@ -1548,7 +1609,7 @@
             feed: null,
             players: resetPlayers
           });
-          showToast('Lobby dibuka kembali & histori ronde lalu telah dihapus bersih!');
+          showToast('Lobby & QR Code dibuka kembali! Histori ronde lalu telah dihapus.');
         } else if (st.mode === 'solo') {
           st.status = 'playing';
           st.phaseEndsAt = Date.now() + SESSION_GUESS_MS;
@@ -1692,6 +1753,15 @@
         st.timers.push(fbId);
       }
 
+      function switchHomeTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(x => {
+          x.classList.toggle('active', x.getAttribute('data-tab') === tab);
+        });
+        ['solo', 'host', 'join'].forEach(t => {
+          document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
+        });
+      }
+
       document.addEventListener('DOMContentLoaded', () => {
         const isHostAllowed = sessionStorage.getItem("arena_host_verified") === "true";
         const lockedEl = document.getElementById("host-locked-notice");
@@ -1701,7 +1771,19 @@
           unlockedEl.classList.toggle("hidden", !isHostAllowed);
         }
 
-        // Event tekan-tahan tombol Intip Kode Rahasia (maksimal 1 detik, langsung sembunyi saat dilepas)
+        // Deteksi parameter ?pin=XXXXXX dari hasil scan QR Code peserta
+        const urlParams = new URLSearchParams(window.location.search);
+        const scannedPin = (urlParams.get('pin') || '').replace(/\D/g, '').slice(0, 6);
+        if (scannedPin.length === 6) {
+          switchHomeTab('join');
+          const pinInput = document.getElementById('join-pin');
+          const nameInput = document.getElementById('join-name');
+          if (pinInput) pinInput.value = scannedPin;
+          if (nameInput) setTimeout(() => nameInput.focus(), 100);
+          showToast(`PIN Room ${scannedPin} terdeteksi dari QR Code! Masukkan nama Anda.`);
+        }
+
+        // Event tekan-tahan tombol Intip Kode Rahasia (maksimal 1 detik)
         const peekBtn = document.getElementById('btn-peek-secret');
         if (peekBtn) {
           peekBtn.addEventListener('pointerdown', (e) => {
@@ -1715,10 +1797,7 @@
 
         document.querySelectorAll('.tab-btn').forEach(b => {
           b.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
-            b.classList.add('active');
-            const tab = b.getAttribute('data-tab');
-            ['solo', 'host', 'join'].forEach(t => document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab));
+            switchHomeTab(b.getAttribute('data-tab'));
           });
         });
 
@@ -1822,6 +1901,7 @@
           });
 
           document.getElementById('display-pin').textContent = st.pin;
+          updateLobbyQrCode(st.pin);
           hidePeekSecret();
           document.getElementById('lbl-digits').textContent = st.digits;
           document.getElementById('view-home').classList.add('hidden');
@@ -1868,6 +1948,7 @@
           st.lastProcessedSession = 0;
 
           hidePeekSecret();
+          document.getElementById('lobby-qr-wrap').classList.add('hidden');
           document.getElementById('btn-add-bot').classList.add('hidden');
           document.getElementById('btn-host-start').classList.add('hidden');
           document.getElementById('btn-host-end').classList.remove('hidden');
@@ -2000,7 +2081,11 @@
         });
 
         document.getElementById('btn-play-again').addEventListener('click', resetToLobbySamePin);
-        document.getElementById('btn-reload').addEventListener('click', () => location.reload());
+        document.getElementById('btn-reload').addEventListener('click', () => {
+          const cleanUrl = new URL(window.location.href);
+          cleanUrl.search = '';
+          window.location.href = cleanUrl.toString();
+        });
       });
     })();
   </script>
