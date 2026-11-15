@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Turnamen Cup Matematika - Tarik Tambang 1 vs 1</title>
+  <title>Turnamen Cup Matematika - Duel Stickman Ninja 1 vs 1</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
@@ -17,7 +17,6 @@
       --green: #10b981;
       --amber: #f59e0b;
       --red: #ef4444;
-      --purple: #8b5cf6;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
     body {
@@ -101,8 +100,6 @@
       cursor: pointer;
     }
     .tab-btn.active { background: var(--amber); color: #1c1917; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
-    @media (max-width: 640px) { .form-row { grid-template-columns: 1fr; } }
     .fg { margin-bottom: 12px; }
     label { display: block; font-size: 0.84rem; color: var(--muted); margin-bottom: 5px; font-weight: 600; }
     input, select {
@@ -126,7 +123,6 @@
     .btn-blue { background: var(--blue); color: #fff; }
     .btn-green { background: var(--green); color: #052e16; }
     .btn-amber { background: var(--amber); color: #1c1917; }
-    .btn-red { background: var(--red); color: #fff; }
 
     /* Lobby QR & Chips */
     .lobby-grid {
@@ -183,10 +179,7 @@
       gap: 10px;
       margin-bottom: 14px;
     }
-    .bracket-scroll {
-      overflow-x: auto;
-      padding-bottom: 12px;
-    }
+    .bracket-scroll { overflow-x: auto; padding-bottom: 12px; }
     .bracket-board {
       display: flex;
       gap: 22px;
@@ -217,7 +210,6 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 8px;
-      position: relative;
     }
     .match-card.active-match {
       border-color: var(--amber);
@@ -245,73 +237,121 @@
       text-decoration: line-through;
     }
 
-    /* Player Tug-of-War Arena (Tarik Tambang) */
-    .tow-arena {
-      background: linear-gradient(180deg, #172554 0%, #0f172a 65%, #3f2e21 65%, #271c14 100%);
-      border: 2px solid var(--border);
+    /* NINJA DOJO DUEL ARENA (1 vs 1) */
+    .ninja-arena {
+      background: linear-gradient(180deg, #1e1b4b 0%, #0f172a 66%, #292524 66%, #1c1917 100%);
+      border: 2px solid rgba(245,158,11,0.38);
       border-radius: 16px;
       padding: 12px;
       margin-bottom: 12px;
       position: relative;
       overflow: hidden;
     }
-    .tow-scoreboard {
-      display: flex;
-      justify-content: space-between;
+    .ninja-hud {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 8px;
       align-items: center;
-      font-weight: 800;
-      font-size: 0.9rem;
       margin-bottom: 6px;
     }
-    .tow-stage {
+    .hp-wrap { display: flex; flex-direction: column; gap: 3px; }
+    .hp-wrap.right { align-items: flex-end; }
+    .hp-label { font-size: 0.82rem; font-weight: 800; }
+    .hp-bar-bg {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .hp-bar-fill {
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+    .ninja-stage {
       position: relative;
-      height: 112px;
+      height: 118px;
       width: 100%;
     }
-    .center-flag-line {
+    .dojo-moon {
       position: absolute;
+      top: 6px;
       left: 50%;
-      top: 8px;
-      bottom: 4px;
-      width: 3px;
-      background: dashed rgba(255,255,255,0.4);
-      border-left: 2px dashed rgba(255,255,255,0.45);
       transform: translateX(-50%);
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(253,224,71,0.32) 0%, rgba(253,224,71,0) 72%);
+      pointer-events: none;
     }
-    .tow-rig {
+    .ninja-fighter {
       position: absolute;
       bottom: 8px;
-      left: 50%;
-      width: 280px;
-      height: 82px;
-      transform: translateX(-50%);
-      transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
+      width: 74px;
+      height: 86px;
+      transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1), right 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 3;
     }
-    .tow-rope {
+    .ninja-stance {
+      animation: ninjaBreath 0.75s infinite alternate ease-in-out;
+    }
+    @keyframes ninjaBreath {
+      from { transform: translateY(0); }
+      to { transform: translateY(-4px); }
+    }
+    .ninja-attack-dash {
+      animation: slashDash 0.36s ease;
+    }
+    @keyframes slashDash {
+      0% { transform: translateX(0) scale(1); }
+      45% { transform: translateX(34px) scale(1.12); }
+      100% { transform: translateX(0) scale(1); }
+    }
+    .ninja-hit-recoil {
+      animation: hitRecoil 0.32s ease;
+    }
+    @keyframes hitRecoil {
+      0%, 100% { transform: translateX(0); filter: brightness(1); }
+      40% { transform: translateX(-12px) rotate(-8deg); filter: brightness(2); }
+    }
+
+    /* Flying Shuriken & Slash Spark */
+    .shuriken-proj {
       position: absolute;
-      left: 34px;
-      right: 34px;
-      bottom: 30px;
-      height: 6px;
-      background: repeating-linear-gradient(45deg, #d97706 0 8px, #92400e 8px 16px);
-      border-radius: 4px;
-      z-index: 2;
+      bottom: 44px;
+      width: 26px;
+      height: 26px;
+      z-index: 6;
+      pointer-events: none;
+      animation: throwRight 0.42s linear forwards;
     }
-    .tow-ribbon {
+    .shuriken-proj.from-opp {
+      animation: throwLeft 0.42s linear forwards;
+    }
+    @keyframes throwRight {
+      0% { left: 24%; transform: rotate(0deg) scale(0.9); opacity: 1; }
+      90% { left: 74%; transform: rotate(720deg) scale(1.15); opacity: 1; }
+      100% { left: 76%; transform: rotate(800deg) scale(0.4); opacity: 0; }
+    }
+    @keyframes throwLeft {
+      0% { right: 24%; transform: rotate(0deg) scale(0.9); opacity: 1; }
+      90% { right: 74%; transform: rotate(-720deg) scale(1.15); opacity: 1; }
+      100% { right: 76%; transform: rotate(-800deg) scale(0.4); opacity: 0; }
+    }
+    .slash-flash {
       position: absolute;
-      left: 50%;
-      top: -6px;
-      width: 10px;
-      height: 18px;
-      background: var(--red);
-      border-radius: 3px;
-      transform: translateX(-50%);
+      bottom: 24px;
+      font-size: 1.9rem;
+      font-weight: 900;
+      z-index: 8;
+      pointer-events: none;
+      animation: flashPop 0.45s ease-out forwards;
     }
-    .puller-left { transform: rotate(-14deg); z-index: 3; }
-    .puller-right { transform: rotate(14deg) scaleX(-1); z-index: 3; }
+    @keyframes flashPop {
+      0% { transform: scale(0.4) rotate(-15deg); opacity: 1; }
+      70% { transform: scale(1.3) rotate(10deg); opacity: 1; }
+      100% { transform: scale(1.5); opacity: 0; }
+    }
 
     /* Question Panel */
     .question-panel {
@@ -360,7 +400,7 @@
     .k-btn.del { background: rgba(239,68,68,0.2); color: #fca5a5; }
     .k-btn.sub { grid-column: span 3; background: var(--green); color: #052e16; }
 
-    /* Player Round Result Animations (Win Cheer vs Lose Cry) */
+    /* Player Round Result Animations (Ninja Cheer vs Ninja Cry) */
     .result-card {
       border-radius: 18px;
       padding: 22px 16px;
@@ -396,15 +436,12 @@
       from { transform: translateY(0) rotate(-3deg); }
       to { transform: translateY(4px) rotate(3deg); }
     }
-    .tear-drop {
-      animation: tearFall 0.9s infinite linear;
-    }
+    .tear-drop { animation: tearFall 0.9s infinite linear; }
     @keyframes tearFall {
       0% { transform: translateY(0); opacity: 1; }
       100% { transform: translateY(18px); opacity: 0; }
     }
 
-    /* Champion Banner */
     .champion-box {
       background: linear-gradient(135deg, rgba(250,204,21,0.22), rgba(16,185,129,0.22));
       border: 2px solid #fde047;
@@ -447,14 +484,14 @@
   <div class="card">
     <!-- HOME -->
     <div id="view-home">
-      <h1>🏆 Turnamen Cup Matematika</h1>
-      <p class="sub">Sistem Gugur 1 vs 1 Acak — Adu Cepat Hitung &amp; Tarik Tambang!</p>
+      <h1>🥷🏆 Turnamen Cup Matematika Ninja</h1>
+      <p class="sub">Sistem Gugur 1 vs 1 Acak — Duel Jurus Hitung &amp; Shuriken!</p>
 
       <div class="rules">
-        <strong>Aturan Kejuaraan:</strong><br>
-        • Peserta diundi <strong>1 vs 1 secara acak</strong> oleh sistem ke dalam bagan sistem gugur (otomatis ditambah <strong>Bot</strong> jika peserta bukan kelipatan 2, 4, 8, 16, dst).<br>
+        <strong>Aturan Kejuaraan Ninja:</strong><br>
+        • Peserta diundi <strong>1 vs 1 secara acak</strong> ke dalam bagan sistem gugur (otomatis ditambah <strong>Bot Ninja</strong> jika peserta bukan kelipatan 2, 4, 8, 16, dst).<br>
         • Kedua lawan dalam satu duel mendapat <strong>urutan soal yang sama</strong>. Jawab benar <strong>&lt; 2 dtk = +3 poin</strong>, <strong>2–4 dtk = +2 poin</strong>, <strong>&gt; 4 dtk = +1 poin</strong>. Salah 2× berturut-turut = <strong>-1 poin</strong>.<br>
-        • Duel dimenangkan oleh peserta yang lebih dulu mencapai <strong>50 Poin</strong> atau unggul skor saat waktu <strong>60 Detik</strong> habis!
+        • Setiap jawaban benar meluncurkan serangan <strong>Shuriken &amp; Katana</strong>! Pemenang adalah yang mencapai <strong>50 Poin</strong> lebih dulu atau unggul skor saat <strong>60 Detik</strong> habis!
       </div>
 
       <div class="tabs">
@@ -465,14 +502,14 @@
       <!-- JOIN -->
       <div id="tab-join">
         <div class="fg">
-          <label>Nama Peserta</label>
+          <label>Nama Ninja / Peserta</label>
           <input type="text" id="join-name" placeholder="Masukkan nama Anda..." maxlength="16" />
         </div>
         <div class="fg">
           <label>PIN Turnamen (6 Digit)</label>
           <input type="text" id="join-pin" placeholder="Contoh: 123456" maxlength="6" inputmode="numeric" />
         </div>
-        <button id="btn-join-room" class="btn btn-amber">Masuk ke Arena Turnamen</button>
+        <button id="btn-join-room" class="btn btn-amber">Masuk ke Dojo Turnamen</button>
       </div>
 
       <!-- HOST -->
@@ -514,23 +551,21 @@
             <div style="font-size:0.82rem;color:var(--muted);">PIN TURNAMEN</div>
             <div class="pin-val" id="display-pin">000000</div>
             <p style="font-size:0.86rem;color:var(--muted);margin:6px 0 12px;">
-              Sistem akan otomatis mengundi pasangan 1 vs 1 &amp; menambahkan <strong>Bot</strong> secara acak agar bagan genap (2, 4, 8, 16, dst).
+              Sistem akan otomatis mengundi pasangan 1 vs 1 &amp; menambahkan <strong>Bot Ninja</strong> secara acak agar bagan genap (2, 4, 8, 16, dst).
             </p>
-            <div style="display:flex;gap:10px;flex-wrap:wrap;">
-              <button id="btn-start-cup" class="btn btn-green" style="flex:1;">🏆 Mulai Turnamen &amp; Undi Bagan</button>
-            </div>
+            <button id="btn-start-cup" class="btn btn-green">🏆 Mulai Turnamen &amp; Undi Bagan</button>
           </div>
         </div>
       </div>
 
       <div id="player-lobby-panel" class="hidden" style="text-align:center;padding:24px 12px;background:var(--panel-dark);border-radius:16px;border:1px solid var(--border);margin-bottom:14px;">
-        <div style="font-size:2.4rem;margin-bottom:8px;">⏳</div>
+        <div style="font-size:2.4rem;margin-bottom:8px;">🥷⏳</div>
         <h2>Berhasil Terdaftar di Turnamen!</h2>
-        <p style="color:var(--muted);margin-top:6px;">Menunggu Host menekan <strong>Mulai Turnamen</strong> untuk pengundian lawan 1 vs 1...</p>
+        <p style="color:var(--muted);margin-top:6px;">Menunggu Host menekan <strong>Mulai Turnamen</strong> untuk pengundian duel 1 vs 1...</p>
       </div>
 
       <div style="background:var(--panel-dark);border:1px solid var(--border);border-radius:14px;padding:14px;">
-        <strong>👥 Peserta Terdaftar (<span id="lobby-count">0</span> Orang)</strong>
+        <strong>👥 Peserta Terdaftar (<span id="lobby-count">0</span> Ninja)</strong>
         <div class="chip-list" id="lobby-chips"></div>
       </div>
     </div>
@@ -553,9 +588,9 @@
       </div>
 
       <div id="host-champion-box" class="champion-box hidden">
-        <div style="font-size:3.2rem;">👑🏆🎉</div>
-        <h2 style="color:#fde047;margin:6px 0;" id="champion-name">JUARA TURNAMEN: -</h2>
-        <p style="color:#e2e8f0;font-size:0.92rem;margin-bottom:16px;">Selamat kepada sang juara bertahan yang memenangkan seluruh babak sistem gugur!</p>
+        <div style="font-size:3.2rem;">👑🥷🏆</div>
+        <h2 style="color:#fde047;margin:6px 0;" id="champion-name">GRAND MASTER NINJA: -</h2>
+        <p style="color:#e2e8f0;font-size:0.92rem;margin-bottom:16px;">Selamat kepada sang juara bertahan yang memenangkan seluruh duel sistem gugur!</p>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
           <button id="btn-play-again" class="btn btn-green" style="max-width:240px;">🔄 Main Lagi (PIN Sama)</button>
           <button id="btn-reset-all" class="btn btn-blue" style="max-width:220px;">Keluar ke Menu</button>
@@ -563,23 +598,27 @@
       </div>
     </div>
 
-    <!-- PLAYER DUEL VIEW -->
+    <!-- PLAYER NINJA DUEL VIEW -->
     <div id="view-player-cup" class="hidden">
-      <!-- ACTIVE DUEL: TUG OF WAR + KEYPAD -->
+      <!-- ACTIVE NINJA BATTLE -->
       <div id="player-duel-active">
-        <div class="tow-arena">
-          <div class="tow-scoreboard">
-            <span style="color:#34d399;">🔵 <span id="duel-me-name">Kamu</span>: <strong id="duel-me-score">0</strong></span>
-            <span style="color:var(--amber);" id="player-timer">⏱️ 60 dtk</span>
-            <span style="color:#f87171;">🔴 <span id="duel-opp-name">Lawan</span>: <strong id="duel-opp-score">0</strong></span>
-          </div>
-          <div class="tow-stage">
-            <div class="center-flag-line"></div>
-            <div class="tow-rig" id="tow-rig">
-              <div class="puller-left" id="svg-puller-me"></div>
-              <div class="tow-rope"><div class="tow-ribbon"></div></div>
-              <div class="puller-right" id="svg-puller-opp"></div>
+        <div class="ninja-arena" id="ninja-arena-box">
+          <div class="ninja-hud">
+            <div class="hp-wrap">
+              <div class="hp-label" style="color:#34d399;">🥷 <span id="duel-me-name">Kamu</span> (<strong id="duel-me-score">0</strong>/50)</div>
+              <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-me-power" style="width:10%;background:#10b981;"></div></div>
             </div>
+            <div style="text-align:center;font-weight:900;color:var(--amber);font-size:0.95rem;" id="player-timer">⏱️ 60 dtk</div>
+            <div class="hp-wrap right">
+              <div class="hp-label" style="color:#f87171;"><span id="duel-opp-name">Lawan</span> (<strong id="duel-opp-score">0</strong>/50) 👹</div>
+              <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-opp-power" style="width:10%;background:#ef4444;margin-left:auto;"></div></div>
+            </div>
+          </div>
+
+          <div class="ninja-stage" id="ninja-stage">
+            <div class="dojo-moon"></div>
+            <div class="ninja-fighter ninja-stance" id="fighter-me" style="left:12%;"></div>
+            <div class="ninja-fighter ninja-stance" id="fighter-opp" style="right:12%;"></div>
           </div>
         </div>
 
@@ -603,26 +642,26 @@
             <button class="k-btn minus" id="k-minus">± / -</button>
             <button class="k-btn" data-k="0">0</button>
             <button class="k-btn del" id="k-del">⌫</button>
-            <button class="k-btn sub" id="k-submit">JAWAB (ENTER)</button>
+            <button class="k-btn sub" id="k-submit">SERANG! (ENTER)</button>
           </div>
         </div>
       </div>
 
-      <!-- PLAYER WIN CHEER SCREEN -->
+      <!-- PLAYER WIN CHEER SCREEN (NINJA VICTORY) -->
       <div id="player-win-screen" class="result-card win-state hidden">
         <div class="cheer-anim" id="cheer-stickman"></div>
-        <h2 style="color:#fde047;margin:10px 0 4px;" id="win-title">🎉 KAMU MENANG DUEL INI!</h2>
+        <h2 style="color:#fde047;margin:10px 0 4px;" id="win-title">⚔️🎉 KAMU MENANG DUEL NINJA!</h2>
         <p style="color:#e2e8f0;font-size:0.94rem;" id="win-desc">
-          Stickman-mu bersorak gembira! Bersiap melaju ke babak berikutnya setelah pertandingan lain selesai...
+          Ninja-mu mengangkat Katana bersorak gembira! Bersiap melaju ke babak berikutnya setelah duel lain selesai...
         </p>
       </div>
 
-      <!-- PLAYER LOSE CRY SCREEN -->
+      <!-- PLAYER LOSE CRY SCREEN (NINJA DEFEAT) -->
       <div id="player-lose-screen" class="result-card lose-state hidden">
         <div class="cry-anim" id="cry-stickman"></div>
-        <h2 style="color:#fca5a5;margin:10px 0 4px;" id="lose-title">😭 KAMU KALAH DI BABAK INI</h2>
+        <h2 style="color:#fca5a5;margin:10px 0 4px;" id="lose-title">😭 KAMU KALAH DI DUEL INI</h2>
         <p style="color:#cbd5e1;font-size:0.92rem;" id="lose-desc">
-          Perjalananmu terhenti di babak ini. Tetap semangat dan saksikan siapa yang menjadi Juara Turnamen di layar utama!
+          Perjalanan Ninja-mu terhenti di babak ini. Saksikan siapa yang menjadi Grand Master di layar utama!
         </p>
       </div>
     </div>
@@ -634,10 +673,10 @@
     (function () {
       const DB_URL = "https://game-math-7361f-default-rtdb.asia-southeast1.firebasedatabase.app";
       const BOT_NAMES = [
-        "Budi [BOT]", "Siti [BOT]", "Andi [BOT]", "Rina [BOT]",
-        "Dimas [BOT]", "Dewi [BOT]", "Fajar [BOT]", "Nadia [BOT]",
-        "Reza [BOT]", "Putri [BOT]", "Galih [BOT]", "Tari [BOT]",
-        "Ilham [BOT]", "Maya [BOT]", "Bagas [BOT]", "Citra [BOT]"
+        "Ryu [BOT]", "Kenji [BOT]", "Hattori [BOT]", "Sakura [BOT]",
+        "Kaito [BOT]", "Akira [BOT]", "Ren [BOT]", "Yuki [BOT]",
+        "Shinobi [BOT]", "Taro [BOT]", "Haruto [BOT]", "Sora [BOT]",
+        "Daiki [BOT]", "Mei [BOT]", "Riku [BOT]", "Aoi [BOT]"
       ];
 
       let st = {
@@ -652,6 +691,7 @@
         input: '',
         wrongStreak: 0,
         lastCelebratedKey: '',
+        lastOppScore: 0,
         timers: []
       };
 
@@ -695,46 +735,120 @@
         st.timers = [];
       }
 
-      /* SVG Stickman Graphics */
-      function svgPuller(color) {
-        return `<svg width="56" height="72" viewBox="0 0 56 72">
-          <circle cx="26" cy="12" r="7" fill="${color}" />
-          <line x1="26" y1="19" x2="22" y2="44" stroke="${color}" stroke-width="4" stroke-linecap="round"/>
-          <line x1="25" y1="27" x2="46" y2="32" stroke="${color}" stroke-width="3.5" stroke-linecap="round"/>
-          <line x1="24" y1="32" x2="46" y2="35" stroke="${color}" stroke-width="3.5" stroke-linecap="round"/>
-          <line x1="22" y1="44" x2="10" y2="66" stroke="${color}" stroke-width="4" stroke-linecap="round"/>
-          <line x1="22" y1="44" x2="34" y2="66" stroke="${color}" stroke-width="4" stroke-linecap="round"/>
+      /* SVG Stickman Ninja Graphics */
+      function svgNinjaFighter(bodyColor, headbandColor, isRightSide) {
+        const flip = isRightSide ? 'transform="scale(-1, 1) translate(-74, 0)"' : '';
+        return `<svg width="74" height="86" viewBox="0 0 74 86">
+          <g ${flip}>
+            <!-- Flowing Headband Tails -->
+            <path d="M22 15 Q10 10 4 17" stroke="${headbandColor}" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+            <path d="M22 17 Q12 18 7 24" stroke="${headbandColor}" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <!-- Head & Ninja Mask -->
+            <circle cx="30" cy="16" r="8.5" fill="${bodyColor}"/>
+            <rect x="21.5" y="12" width="17" height="4.5" rx="2" fill="${headbandColor}"/>
+            <circle cx="34" cy="15.5" r="1.5" fill="#fff"/>
+            <!-- Katana Sheath on Back -->
+            <line x1="18" y1="22" x2="40" y2="52" stroke="#94a3b8" stroke-width="3.2" stroke-linecap="round"/>
+            <!-- Ninja Body -->
+            <line x1="30" y1="24.5" x2="28" y2="52" stroke="${bodyColor}" stroke-width="4.5" stroke-linecap="round"/>
+            <!-- Arms holding Kunai & Katana -->
+            <line x1="29" y1="31" x2="47" y2="27" stroke="${bodyColor}" stroke-width="3.8" stroke-linecap="round"/>
+            <!-- Katana Blade -->
+            <line x1="47" y1="27" x2="66" y2="11" stroke="#e2e8f0" stroke-width="3" stroke-linecap="round"/>
+            <line x1="44" y1="25" x2="50" y2="29" stroke="#fbbf24" stroke-width="3" stroke-linecap="round"/>
+            <!-- Back Arm with Kunai -->
+            <line x1="29" y1="33" x2="17" y2="41" stroke="${bodyColor}" stroke-width="3.8" stroke-linecap="round"/>
+            <polygon points="17,41 10,45 14,38" fill="#cbd5e1"/>
+            <!-- Ninja Combat Legs -->
+            <line x1="28" y1="52" x2="16" y2="78" stroke="${bodyColor}" stroke-width="4.5" stroke-linecap="round"/>
+            <line x1="28" y1="52" x2="42" y2="78" stroke="${bodyColor}" stroke-width="4.5" stroke-linecap="round"/>
+          </g>
         </svg>`;
       }
 
-      function svgCheerStickman() {
-        return `<svg width="96" height="96" viewBox="0 0 96 96">
-          <circle cx="48" cy="20" r="10" fill="#fde047" />
-          <path d="M43 22 Q48 27 53 22" stroke="#0f172a" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-          <circle cx="44" cy="18" r="1.6" fill="#0f172a"/>
-          <circle cx="52" cy="18" r="1.6" fill="#0f172a"/>
-          <line x1="48" y1="30" x2="48" y2="60" stroke="#34d399" stroke-width="5" stroke-linecap="round"/>
-          <line x1="48" y1="38" x2="24" y2="16" stroke="#34d399" stroke-width="4.5" stroke-linecap="round"/>
-          <line x1="48" y1="38" x2="72" y2="16" stroke="#34d399" stroke-width="4.5" stroke-linecap="round"/>
-          <line x1="48" y1="60" x2="32" y2="86" stroke="#34d399" stroke-width="5" stroke-linecap="round"/>
-          <line x1="48" y1="60" x2="64" y2="86" stroke="#34d399" stroke-width="5" stroke-linecap="round"/>
+      function svgShuriken(color) {
+        return `<svg width="26" height="26" viewBox="0 0 26 26">
+          <polygon points="13,1 16,10 25,13 16,16 13,25 10,16 1,13 10,10" fill="${color}" stroke="#fff" stroke-width="1"/>
+          <circle cx="13" cy="13" r="2.5" fill="#0f172a"/>
         </svg>`;
       }
 
-      function svgCryStickman() {
-        return `<svg width="96" height="96" viewBox="0 0 96 96">
-          <circle cx="48" cy="24" r="10" fill="#94a3b8" />
-          <path d="M43 29 Q48 24 53 29" stroke="#0f172a" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-          <circle cx="44" cy="21" r="1.6" fill="#0f172a"/>
-          <circle cx="52" cy="21" r="1.6" fill="#0f172a"/>
-          <circle class="tear-drop" cx="41" cy="25" r="2.4" fill="#38bdf8"/>
-          <circle class="tear-drop" cx="55" cy="25" r="2.4" fill="#38bdf8"/>
-          <line x1="48" y1="34" x2="48" y2="64" stroke="#64748b" stroke-width="5" stroke-linecap="round"/>
-          <line x1="48" y1="42" x2="34" y2="58" stroke="#64748b" stroke-width="4.5" stroke-linecap="round"/>
-          <line x1="48" y1="42" x2="62" y2="58" stroke="#64748b" stroke-width="4.5" stroke-linecap="round"/>
-          <line x1="48" y1="64" x2="36" y2="88" stroke="#64748b" stroke-width="5" stroke-linecap="round"/>
-          <line x1="48" y1="64" x2="60" y2="88" stroke="#64748b" stroke-width="5" stroke-linecap="round"/>
+      function svgNinjaCheer() {
+        return `<svg width="104" height="104" viewBox="0 0 104 104">
+          <path d="M40 20 Q24 14 16 22" stroke="#fbbf24" stroke-width="4" fill="none" stroke-linecap="round"/>
+          <circle cx="52" cy="22" r="10.5" fill="#34d399"/>
+          <rect x="41.5" y="17" width="21" height="5" rx="2" fill="#fbbf24"/>
+          <path d="M47 24 Q52 29 57 24" stroke="#0f172a" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <line x1="52" y1="32.5" x2="52" y2="64" stroke="#34d399" stroke-width="5" stroke-linecap="round"/>
+          <!-- Raised Katana Arm -->
+          <line x1="52" y1="40" x2="74" y2="20" stroke="#34d399" stroke-width="4.5" stroke-linecap="round"/>
+          <line x1="74" y1="20" x2="92" y2="4" stroke="#fde047" stroke-width="3.5" stroke-linecap="round"/>
+          <!-- Left Victory Fist -->
+          <line x1="52" y1="40" x2="28" y2="20" stroke="#34d399" stroke-width="4.5" stroke-linecap="round"/>
+          <line x1="52" y1="64" x2="36" y2="92" stroke="#34d399" stroke-width="5" stroke-linecap="round"/>
+          <line x1="52" y1="64" x2="68" y2="92" stroke="#34d399" stroke-width="5" stroke-linecap="round"/>
         </svg>`;
+      }
+
+      function svgNinjaCry() {
+        return `<svg width="104" height="104" viewBox="0 0 104 104">
+          <circle cx="52" cy="28" r="10.5" fill="#94a3b8"/>
+          <rect x="41.5" y="23" width="21" height="4.5" rx="2" fill="#64748b"/>
+          <path d="M47 33 Q52 28 57 33" stroke="#0f172a" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          <circle class="tear-drop" cx="44" cy="29" r="2.6" fill="#38bdf8"/>
+          <circle class="tear-drop" cx="60" cy="29" r="2.6" fill="#38bdf8"/>
+          <line x1="52" y1="38.5" x2="52" y2="68" stroke="#64748b" stroke-width="5" stroke-linecap="round"/>
+          <line x1="52" y1="46" x2="36" y2="62" stroke="#64748b" stroke-width="4.5" stroke-linecap="round"/>
+          <line x1="52" y1="46" x2="68" y2="62" stroke="#64748b" stroke-width="4.5" stroke-linecap="round"/>
+          <line x1="52" y1="68" x2="38" y2="92" stroke="#64748b" stroke-width="5" stroke-linecap="round"/>
+          <line x1="52" y1="68" x2="66" y2="92" stroke="#64748b" stroke-width="5" stroke-linecap="round"/>
+        </svg>`;
+      }
+
+      /* Trigger Ninja Attack FX on Screen */
+      function triggerNinjaAttackFX(attackerIsMe) {
+        const stage = document.getElementById('ninja-stage');
+        const meEl = document.getElementById('fighter-me');
+        const oppEl = document.getElementById('fighter-opp');
+        if (!stage || !meEl || !oppEl) return;
+
+        const proj = document.createElement('div');
+        proj.className = 'shuriken-proj' + (attackerIsMe ? '' : ' from-opp');
+        proj.innerHTML = svgShuriken(attackerIsMe ? '#34d399' : '#f87171');
+        stage.appendChild(proj);
+        setTimeout(() => proj.remove(), 450);
+
+        if (attackerIsMe) {
+          meEl.classList.remove('ninja-attack-dash');
+          void meEl.offsetWidth;
+          meEl.classList.add('ninja-attack-dash');
+          setTimeout(() => {
+            oppEl.classList.remove('ninja-hit-recoil');
+            void oppEl.offsetWidth;
+            oppEl.classList.add('ninja-hit-recoil');
+            spawnSlashSpark(stage, false);
+          }, 260);
+        } else {
+          oppEl.classList.remove('ninja-attack-dash');
+          void oppEl.offsetWidth;
+          oppEl.classList.add('ninja-attack-dash');
+          setTimeout(() => {
+            meEl.classList.remove('ninja-hit-recoil');
+            void meEl.offsetWidth;
+            meEl.classList.add('ninja-hit-recoil');
+            spawnSlashSpark(stage, true);
+          }, 260);
+        }
+      }
+
+      function spawnSlashSpark(stage, onLeftSide) {
+        const spark = document.createElement('div');
+        spark.className = 'slash-flash';
+        spark.textContent = '💥⚔️';
+        if (onLeftSide) spark.style.left = '20%';
+        else spark.style.right = '20%';
+        stage.appendChild(spark);
+        setTimeout(() => spark.remove(), 480);
       }
 
       function launchConfetti(durationMs) {
@@ -849,7 +963,6 @@
         }
       }
 
-      /* Build Bracket & Pairings */
       function buildMatchesForRound(contestants, roundIdx) {
         const matches = [];
         for (let i = 0; i < contestants.length; i += 2) {
@@ -870,7 +983,6 @@
         const rawPlayers = Object.values(st.room.players || {}).filter(p => !p.isBot);
         if (rawPlayers.length < 1) return showToast("Minimal 1 peserta bergabung!");
 
-        // Hitung ukuran bagan kelipatan 2 (2, 4, 8, 16, 32...)
         let bracketSize = 2;
         while (bracketSize < rawPlayers.length) bracketSize *= 2;
 
@@ -883,7 +995,6 @@
           allContestants.push({ id: botId, name: botName, isBot: true });
         }
 
-        // Acak penempatan agar Bot & Peserta tersebar random di seluruh bagan
         const shuffled = shuffleArray(allContestants);
         const totalRounds = Math.log2(bracketSize);
         const rounds = [];
@@ -902,19 +1013,17 @@
           rounds.push(emptyMatches);
         }
 
-        const now = Date.now();
         await fbPatch(`turnamen_cup/${st.pin}`, {
           status: 'playing',
           bracketSize,
           totalRounds,
           currentRound: 0,
-          roundStartedAt: now,
+          roundStartedAt: Date.now(),
           rounds,
           champion: null
         });
       }
 
-      /* Host: Evaluate Round & Advance Winners */
       async function advanceHostRoundIfReady(forceEnd) {
         if (st.mode !== 'host' || !st.room || st.room.status !== 'playing') return;
         const rIdx = st.room.currentRound || 0;
@@ -947,14 +1056,12 @@
         if (allDone) {
           const winners = currentMatches.map(m => (m.winnerId === m.p1.id ? m.p1 : m.p2));
           if (rIdx + 1 >= rounds.length) {
-            // Turnamen Selesai -> Ada 1 Juara Utama
             await fbPatch(`turnamen_cup/${st.pin}`, {
               status: 'ended',
               rounds,
               champion: winners[0]
             });
           } else {
-            // Isi babak selanjutnya
             const nextMatches = rounds[rIdx + 1];
             for (let i = 0; i < nextMatches.length; i++) {
               nextMatches[i].p1 = winners[i * 2];
@@ -974,7 +1081,6 @@
         }
       }
 
-      /* Simulate Bot Scores on Host */
       async function tickBotsOnHost() {
         if (st.mode !== 'host' || !st.room || st.room.status !== 'playing') return;
         const rIdx = st.room.currentRound || 0;
@@ -1011,7 +1117,7 @@
           document.getElementById('view-host-cup').classList.add('hidden');
           const list = Object.values(r.players || {});
           document.getElementById('lobby-count').textContent = list.length;
-          document.getElementById('lobby-chips').innerHTML = list.map(p => `<div class="p-chip">👤 ${p.name}</div>`).join('');
+          document.getElementById('lobby-chips').innerHTML = list.map(p => `<div class="p-chip">🥷 ${p.name}</div>`).join('');
           return;
         }
 
@@ -1021,7 +1127,7 @@
         const rIdx = r.currentRound || 0;
         const totalRounds = r.totalRounds || 1;
         document.getElementById('host-round-title').textContent =
-          r.status === 'ended' ? '🏆 TURNAMEN SELESAI' : `${getRoundLabel(totalRounds, rIdx)} (${r.bracketSize} Peserta)`;
+          r.status === 'ended' ? '🏆 TURNAMEN SELESAI' : `${getRoundLabel(totalRounds, rIdx)} (${r.bracketSize} Ninja)`;
 
         const rem = Math.max(0, 60 - Math.floor((Date.now() - (r.roundStartedAt || Date.now())) / 1000));
         document.getElementById('host-timer').textContent = r.status === 'ended' ? 'SELESAI' : `⏱️ ${rem} dtk`;
@@ -1054,7 +1160,7 @@
 
         if (r.status === 'ended' && r.champion) {
           document.getElementById('host-champion-box').classList.remove('hidden');
-          document.getElementById('champion-name').textContent = `JUARA TURNAMEN: ${r.champion.name}`;
+          document.getElementById('champion-name').textContent = `GRAND MASTER NINJA: ${r.champion.name}`;
           if (st.lastCelebratedKey !== 'host_champ') {
             st.lastCelebratedKey = 'host_champ';
             launchConfetti(6000);
@@ -1064,7 +1170,7 @@
         }
       }
 
-      /* Render Player Duel / Cheer / Cry */
+      /* Render Player Ninja Duel */
       function renderPlayerView() {
         const r = st.room;
         if (!r) return;
@@ -1075,14 +1181,13 @@
           document.getElementById('view-player-cup').classList.add('hidden');
           const list = Object.values(r.players || {});
           document.getElementById('lobby-count').textContent = list.length;
-          document.getElementById('lobby-chips').innerHTML = list.map(p => `<div class="p-chip">👤 ${p.name}</div>`).join('');
+          document.getElementById('lobby-chips').innerHTML = list.map(p => `<div class="p-chip">🥷 ${p.name}</div>`).join('');
           return;
         }
 
         document.getElementById('view-lobby').classList.add('hidden');
         document.getElementById('view-player-cup').classList.remove('hidden');
 
-        // Cari pertandingan terakhir yang melibatkan saya di seluruh babak
         let myMatch = null;
         let myRoundIdx = -1;
         let myMatchIdx = -1;
@@ -1107,21 +1212,19 @@
         const iLostThisMatch = myMatch.winnerId && myMatch.winnerId !== st.myId;
 
         if (iLostThisMatch) {
-          // KALAH -> ANIMASI MENANGIS
           document.getElementById('player-duel-active').classList.add('hidden');
           document.getElementById('player-win-screen').classList.add('hidden');
           document.getElementById('player-lose-screen').classList.remove('hidden');
-          document.getElementById('cry-stickman').innerHTML = svgCryStickman();
-          document.getElementById('lose-title').textContent = `😭 KALAH MELAWAN ${oppObj?.name || 'LAWAN'} (${meScore} - ${oppScore})`;
+          document.getElementById('cry-stickman').innerHTML = svgNinjaCry();
+          document.getElementById('lose-title').textContent = `😭 KALAH DUEL MELAWAN ${oppObj?.name || 'LAWAN'} (${meScore} - ${oppScore})`;
           return;
         }
 
         if (iWonThisMatch) {
-          // MENANG -> ANIMASI BERSORAK
           document.getElementById('player-duel-active').classList.add('hidden');
           document.getElementById('player-lose-screen').classList.add('hidden');
           document.getElementById('player-win-screen').classList.remove('hidden');
-          document.getElementById('cheer-stickman').innerHTML = svgCheerStickman();
+          document.getElementById('cheer-stickman').innerHTML = svgNinjaCheer();
 
           const celebKey = `win_${myRoundIdx}`;
           if (st.lastCelebratedKey !== celebKey) {
@@ -1130,16 +1233,16 @@
           }
 
           if (r.status === 'ended' && r.champion?.id === st.myId) {
-            document.getElementById('win-title').textContent = '👑🏆 SELAMAT! KAMU JUARA TURNAMEN!';
+            document.getElementById('win-title').textContent = '👑🥷🏆 SELAMAT! KAMU GRAND MASTER NINJA!';
             document.getElementById('win-desc').textContent = 'Kamu mengalahkan semua lawan dan menjadi pemenang utama kejuaraan ini!';
           } else {
-            document.getElementById('win-title').textContent = `🎉 MENANG (${meScore} - ${oppScore})! STICKMAN BERSORAK!`;
+            document.getElementById('win-title').textContent = `⚔️🎉 MENANG DUEL (${meScore} - ${oppScore})! NINJA BERSORAK!`;
             document.getElementById('win-desc').textContent = 'Kamu lolos ke putaran berikutnya! Menunggu duel lainnya selesai...';
           }
           return;
         }
 
-        // SEDANG BERTANDING 1 VS 1 (TARIK TAMBANG)
+        // ACTIVE NINJA DUEL
         document.getElementById('player-duel-active').classList.remove('hidden');
         document.getElementById('player-win-screen').classList.add('hidden');
         document.getElementById('player-lose-screen').classList.add('hidden');
@@ -1150,8 +1253,15 @@
           st.qIndex = 0;
           st.wrongStreak = 0;
           st.input = '';
+          st.lastOppScore = 0;
           loadCurrentPlayerQuestion(myMatch.seed);
         }
+
+        // Jika skor lawan bertambah dari server, picu serangan shuriken lawan ke arah pemain!
+        if (oppScore > st.lastOppScore) {
+          triggerNinjaAttackFX(false);
+        }
+        st.lastOppScore = oppScore;
 
         document.getElementById('duel-me-name').textContent = st.myName;
         document.getElementById('duel-me-score').textContent = meScore;
@@ -1159,13 +1269,18 @@
         document.getElementById('duel-opp-score').textContent = oppScore;
         document.getElementById('player-round-badge').textContent = `${getRoundLabel(r.totalRounds, myRoundIdx)} • Target 50 Poin`;
 
+        document.getElementById('bar-me-power').style.width = Math.min(100, (meScore / 50) * 100) + '%';
+        document.getElementById('bar-opp-power').style.width = Math.min(100, (oppScore / 50) * 100) + '%';
+
+        // Geser posisi Ninja saling mendesak sesuai selisih skor
+        const advantage = Math.max(-25, Math.min(25, meScore - oppScore));
+        const meLeftPct = 14 + ((advantage + 25) / 50) * 18;
+        const oppRightPct = 14 + ((25 - advantage) / 50) * 18;
+        document.getElementById('fighter-me').style.left = meLeftPct + '%';
+        document.getElementById('fighter-opp').style.right = oppRightPct + '%';
+
         const rem = Math.max(0, 60 - Math.floor((Date.now() - (r.roundStartedAt || Date.now())) / 1000));
         document.getElementById('player-timer').textContent = `⏱️ ${rem} dtk`;
-
-        // Posisi Tali Tambang: jika meScore > oppScore tali bergeser ke kiri (arah pemain)
-        const diffScore = Math.max(-25, Math.min(25, meScore - oppScore));
-        const shiftPct = 50 - (diffScore / 25) * 24;
-        document.getElementById('tow-rig').style.left = shiftPct + '%';
       }
 
       function loadCurrentPlayerQuestion(seed) {
@@ -1200,11 +1315,14 @@
           curScore = Math.min(50, curScore + pts);
           m[scoreField] = curScore;
 
+          // Picu serangan Shuriken & Katana Ninja milik pemain!
+          triggerNinjaAttackFX(true);
+
           await fbPut(`turnamen_cup/${st.pin}/rounds/${rIdx}/${mIdx}/${scoreField}`, curScore);
           if (curScore >= 50) {
             await fbPut(`turnamen_cup/${st.pin}/rounds/${rIdx}/${mIdx}/winnerId`, st.myId);
           } else {
-            showToast(`Benar (${elapsed.toFixed(1)} dtk)! +${pts} poin`);
+            showToast(`Jurus Tepat (${elapsed.toFixed(1)} dtk)! +${pts} poin`);
             st.qIndex++;
             loadCurrentPlayerQuestion(m.seed);
           }
@@ -1220,9 +1338,9 @@
             curScore = Math.max(0, curScore - 1);
             m[scoreField] = curScore;
             await fbPut(`turnamen_cup/${st.pin}/rounds/${rIdx}/${mIdx}/${scoreField}`, curScore);
-            showToast('2× Salah berturut-turut! -1 poin & Soal baru');
+            showToast('2× Meleset berturut-turut! -1 poin & Soal baru');
           } else {
-            showToast('Salah (1/2)! Soal berganti...');
+            showToast('Meleset (1/2)! Soal berganti...');
           }
           st.qIndex++;
           loadCurrentPlayerQuestion(m.seed);
@@ -1233,7 +1351,6 @@
       function startSyncLoops() {
         clearAllTimers();
 
-        // Polling Firebase setiap 800ms
         const pollId = setInterval(async () => {
           if (!st.pin) return;
           const latest = await fbGet(`turnamen_cup/${st.pin}`);
@@ -1249,7 +1366,6 @@
         }, 800);
         st.timers.push(pollId);
 
-        // Timer UI cepat (250ms) + Bot Tick (2200ms)
         const uiId = setInterval(() => {
           if (st.mode === 'player' && st.room?.status === 'playing' && st.qStart) {
             const el = document.getElementById('q-timer');
@@ -1265,16 +1381,14 @@
       }
 
       document.addEventListener('DOMContentLoaded', () => {
-        // Render SVG Tarik Tambang awal
-        document.getElementById('svg-puller-me').innerHTML = svgPuller('#34d399');
-        document.getElementById('svg-puller-opp').innerHTML = svgPuller('#f87171');
+        // Render karakter Stickman Ninja kiri (Pemain) & kanan (Lawan)
+        document.getElementById('fighter-me').innerHTML = svgNinjaFighter('#34d399', '#3b82f6', false);
+        document.getElementById('fighter-opp').innerHTML = svgNinjaFighter('#f87171', '#f59e0b', true);
 
-        // Cek proteksi akses Host terpusat
         const isHostAllowed = sessionStorage.getItem("arena_host_verified") === "true";
         document.getElementById("host-locked-notice").classList.toggle("hidden", isHostAllowed);
         document.getElementById("host-unlocked-controls").classList.toggle("hidden", !isHostAllowed);
 
-        // Auto-fill PIN jika datang dari scan QR Code
         const params = new URLSearchParams(window.location.search);
         const qrPin = params.get('pin');
         if (qrPin && qrPin.length === 6) {
@@ -1282,7 +1396,6 @@
           document.getElementById('join-name').focus();
         }
 
-        // Tabs
         document.querySelectorAll('.tab-btn').forEach(b => {
           b.addEventListener('click', () => {
             document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
@@ -1292,7 +1405,6 @@
           });
         });
 
-        // HOST CREATE ROOM
         document.getElementById('btn-create-room').addEventListener('click', async () => {
           if (sessionStorage.getItem("arena_host_verified") !== "true") return showToast("Akses Host terkunci!");
           st.mode = 'host';
@@ -1316,7 +1428,6 @@
         document.getElementById('btn-start-cup').addEventListener('click', startTournamentHost);
         document.getElementById('btn-force-next').addEventListener('click', () => advanceHostRoundIfReady(true));
 
-        // MAIN LAGI DENGAN PIN SAMA
         document.getElementById('btn-play-again').addEventListener('click', async () => {
           if (st.mode !== 'host' || !st.pin) return;
           st.lastCelebratedKey = '';
@@ -1331,7 +1442,6 @@
 
         document.getElementById('btn-reset-all').addEventListener('click', () => location.reload());
 
-        // PLAYER JOIN ROOM
         document.getElementById('btn-join-room').addEventListener('click', async () => {
           const name = document.getElementById('join-name').value.trim();
           const pin = document.getElementById('join-pin').value.trim();
@@ -1353,7 +1463,6 @@
           startSyncLoops();
         });
 
-        // KEYPAD & KEYBOARD
         document.querySelectorAll('.k-btn[data-k]').forEach(btn => {
           btn.addEventListener('click', () => {
             if (st.input.length < 4) {
