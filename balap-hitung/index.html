@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Balap Hitung Stickman</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
       --bg: #0f172a;
@@ -30,12 +31,11 @@
     }
     .topbar {
       width: 100%;
-      max-width: 1120px;
+      max-width: 1140px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 12px;
-      gap: 10px;
     }
     .back-btn {
       display: inline-flex;
@@ -60,7 +60,7 @@
     }
     .card {
       width: 100%;
-      max-width: 1120px;
+      max-width: 1140px;
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 20px;
@@ -71,15 +71,6 @@
     .hidden { display: none !important; }
     h1 { font-size: clamp(1.35rem, 3vw, 1.9rem); margin-bottom: 4px; }
     .sub { color: var(--muted); font-size: 0.92rem; margin-bottom: 16px; }
-    .rules {
-      background: rgba(59,130,246,0.1);
-      border: 1px solid rgba(59,130,246,0.28);
-      border-radius: 14px;
-      padding: 12px 15px;
-      font-size: 0.88rem;
-      line-height: 1.55;
-      margin-bottom: 16px;
-    }
     .tabs {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -121,141 +112,227 @@
       font-size: 0.98rem;
       cursor: pointer;
     }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; }
     .btn-blue { background: var(--blue); color: #fff; }
     .btn-green { background: var(--green); color: #052e16; }
     .btn-amber { background: var(--amber); color: #1c1917; }
     .btn-red { background: var(--red); color: #fff; }
 
-    /* Marathon Track */
-    .race-layout {
-      display: grid;
-      grid-template-columns: 1fr 270px;
-      gap: 16px;
-      margin-bottom: 16px;
-    }
-    @media (max-width: 860px) { .race-layout { grid-template-columns: 1fr; } }
-    .track-box {
-      background: linear-gradient(180deg, #1e3a5f 0%, #0f172a 58%, #334155 58%, #1e293b 100%);
-      border: 2px solid var(--border);
+    .pin-box {
+      background: var(--panel-dark);
+      border: 2px dashed var(--blue);
       border-radius: 16px;
-      padding: 12px;
-      position: relative;
-      overflow: hidden;
-      min-height: 230px;
+      padding: 18px;
+      text-align: center;
+      margin-bottom: 14px;
     }
-    .track-header {
+    .pin-val { font-size: 2.5rem; font-weight: 900; letter-spacing: 6px; color: var(--blue); }
+
+    /* Host Lobby QR Code & PIN Layout */
+    .host-lobby-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      flex-wrap: wrap;
+      margin-bottom: 8px;
+    }
+    .qr-card {
+      background: #ffffff;
+      padding: 14px;
+      border-radius: 16px;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.45);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 288px;
+      min-height: 310px;
+    }
+    #lobby-qr-box {
+      width: 260px;
+      height: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+    }
+    #lobby-qr-box img, #lobby-qr-box canvas {
+      width: 260px !important;
+      height: 260px !important;
+      display: block;
+    }
+    .qr-caption {
+      color: #0f172a;
+      font-size: 0.84rem;
+      font-weight: 800;
+      margin-top: 10px;
+      letter-spacing: 0.3px;
+    }
+
+    /* Lobby Participants Grid */
+    .lobby-players-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+      max-height: 360px;
+      overflow-y: auto;
+      padding: 4px;
+    }
+    .lobby-chip {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-weight: 700;
+      font-size: 0.92rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      animation: popScale 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .lobby-chip.is-me {
+      border-color: var(--green);
+      background: rgba(16,185,129,0.14);
+    }
+    .lobby-chip.is-bot {
+      border-color: rgba(245,158,11,0.45);
+    }
+    .chip-tag {
+      font-size: 0.7rem;
+      padding: 2px 6px;
+      border-radius: 6px;
+      background: rgba(59,130,246,0.22);
+      color: #93c5fd;
+      font-weight: 800;
+    }
+    .lobby-chip.is-bot .chip-tag {
+      background: rgba(245,158,11,0.22);
+      color: #fcd34d;
+    }
+
+    .box {
+      background: var(--panel-dark);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 15px;
+      margin-bottom: 14px;
+    }
+
+    /* Penukaran Posisi: Layar Host vs Layar HP Peserta */
+    .race-sections {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .race-sections .box { margin-bottom: 0; }
+    .race-sections.player-layout #rank-box { order: 1; }
+    .race-sections.player-layout #track-box { order: 2; }
+
+    /* Track & Stickman Running Animation */
+    .track-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .lane {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+    }
+    .lane-head {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-size: 0.86rem;
       margin-bottom: 8px;
-      font-size: 0.85rem;
-      font-weight: 700;
+      gap: 6px;
     }
-    .track-canvas {
+    .road {
       position: relative;
-      height: 176px;
-      border-bottom: 4px dashed rgba(255,255,255,0.35);
+      height: 44px;
+      background: linear-gradient(90deg, rgba(59,130,246,0.12), rgba(16,185,129,0.15));
+      border-radius: 10px;
+      border-bottom: 3px dashed rgba(255,255,255,0.22);
+      overflow: hidden;
     }
-    .finish-line {
+    .finish-flag {
       position: absolute;
-      right: 26px;
-      top: 0;
-      bottom: 0;
-      width: 8px;
-      background: repeating-linear-gradient(0deg, #fff 0 8px, #000 8px 16px);
-      border-radius: 4px;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1.35rem;
     }
     .runner {
       position: absolute;
-      bottom: 4px;
-      left: 12px;
+      bottom: 2px;
+      left: 0%;
       transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1);
       display: flex;
       flex-direction: column;
       align-items: center;
-      width: 56px;
-      pointer-events: none;
     }
-    .runner.opponent {
-      opacity: 0.72;
-      z-index: 2;
+    .stickman-svg {
+      width: 30px;
+      height: 36px;
+      overflow: visible;
     }
-    .runner.me {
-      z-index: 10;
+    @keyframes legSwingA {
+      0%, 100% { transform: rotate(-28deg); }
+      50% { transform: rotate(28deg); }
     }
-    .runner-label {
-      background: rgba(15,23,42,0.9);
-      border: 1px solid rgba(255,255,255,0.22);
-      padding: 2px 7px;
-      border-radius: 6px;
-      font-size: 0.73rem;
-      font-weight: 800;
-      white-space: nowrap;
-      margin-bottom: 2px;
+    @keyframes legSwingB {
+      0%, 100% { transform: rotate(28deg); }
+      50% { transform: rotate(-28deg); }
     }
-    .runner.me .runner-label {
-      background: var(--green);
-      color: #052e16;
-      border: 2px solid #fff;
-      box-shadow: 0 2px 8px rgba(16,185,129,0.5);
+    @keyframes bodyBob {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-3px); }
     }
-    .stickman-svg { width: 34px; height: 48px; }
-    .running .leg-l { animation: swingL 0.25s infinite alternate; transform-origin: 17px 28px; }
-    .running .leg-r { animation: swingR 0.25s infinite alternate; transform-origin: 17px 28px; }
-    .running .arm-l { animation: swingR 0.25s infinite alternate; transform-origin: 17px 16px; }
-    .running .arm-r { animation: swingL 0.25s infinite alternate; transform-origin: 17px 16px; }
-    @keyframes swingL { from { transform: rotate(-28deg); } to { transform: rotate(28deg); } }
-    @keyframes swingR { from { transform: rotate(28deg); } to { transform: rotate(-28deg); } }
+    .runner.running .stick-body { animation: bodyBob 0.28s infinite ease-in-out; }
+    .runner.running .leg-1 { transform-origin: 15px 21px; animation: legSwingA 0.28s infinite ease-in-out; }
+    .runner.running .leg-2 { transform-origin: 15px 21px; animation: legSwingB 0.28s infinite ease-in-out; }
+    .runner.running .arm-1 { transform-origin: 15px 12px; animation: legSwingB 0.28s infinite ease-in-out; }
+    .runner.running .arm-2 { transform-origin: 15px 12px; animation: legSwingA 0.28s infinite ease-in-out; }
 
-    .top5-box {
-      background: var(--panel-dark);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 14px;
-    }
-    .top5-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 8px 10px;
-      border-radius: 9px;
-      background: var(--panel);
-      margin-top: 7px;
-      font-size: 0.86rem;
-    }
-    .question-panel {
-      background: var(--panel-dark);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
+    /* Math Question & Keypad */
+    .q-box {
       text-align: center;
-    }
-    .question-panel.wrong-shake {
-      animation: shake 0.32s ease;
-      border-color: var(--red);
-    }
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-8px); }
-      75% { transform: translateX(8px); }
-    }
-    .q-text { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 900; margin: 8px 0; }
-    .ans-display {
-      max-width: 260px;
-      margin: 0 auto 12px;
-      padding: 10px;
-      border-radius: 12px;
+      padding: 14px;
       background: var(--panel);
-      border: 2px solid var(--blue);
-      font-size: 1.7rem;
+      border-radius: 14px;
+      border: 1px solid rgba(59,130,246,0.35);
+      margin-bottom: 12px;
+    }
+    .q-text {
+      font-size: clamp(1.7rem, 4.5vw, 2.4rem);
       font-weight: 900;
-      min-height: 52px;
+      letter-spacing: 2px;
+      color: #fde047;
+    }
+    .ans-display {
+      margin: 10px auto 0;
+      max-width: 240px;
+      height: 48px;
+      border-radius: 11px;
+      background: var(--panel-dark);
+      border: 2px solid var(--blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.65rem;
+      font-weight: 900;
+      letter-spacing: 3px;
     }
     .keypad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      max-width: 320px;
+      max-width: 340px;
       margin: 0 auto;
     }
     .k-btn {
@@ -268,135 +345,165 @@
       color: #fff;
       cursor: pointer;
     }
-    .k-btn.minus { background: rgba(245,158,11,0.2); color: #fbbf24; }
+    .k-btn:active { transform: scale(0.96); }
     .k-btn.del { background: rgba(239,68,68,0.2); color: #fca5a5; }
-    .k-btn.sub { grid-column: span 3; background: var(--green); color: #052e16; }
-    .pin-box {
-      background: var(--panel-dark);
-      border: 2px dashed var(--blue);
-      border-radius: 16px;
-      padding: 16px;
-      text-align: center;
-      margin-bottom: 14px;
-    }
-    .pin-val { font-size: 2.3rem; font-weight: 900; letter-spacing: 6px; color: var(--blue); }
+    .k-btn.sub { background: var(--green); color: #052e16; }
 
-    /* Player Finish Celebration Banner */
-    .finish-celebration {
-      background: linear-gradient(135deg, rgba(16,185,129,0.22), rgba(245,158,11,0.22));
-      border: 2px solid #fbbf24;
-      border-radius: 18px;
-      padding: 24px 16px;
-      text-align: center;
+    /* Ranking & Stats List */
+    .rank-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
       margin-top: 10px;
-      animation: popScale 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: 0 0 30px rgba(251,191,36,0.25);
+      max-height: 360px;
+      overflow-y: auto;
     }
-    .trophy-bounce {
-      font-size: 3.4rem;
-      display: inline-block;
-      animation: bounceTrophy 0.9s infinite alternate ease-in-out;
+    .rank-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: var(--panel);
+      border-radius: 10px;
+      font-size: 0.9rem;
+      gap: 8px;
+      flex-wrap: wrap;
     }
-    @keyframes popScale {
-      from { transform: scale(0.8); opacity: 0; }
-      to { transform: scale(1); opacity: 1; }
+    .rank-item.is-me {
+      border: 1px solid var(--green);
+      background: rgba(16,185,129,0.14);
     }
-    @keyframes bounceTrophy {
-      from { transform: translateY(0) rotate(-6deg) scale(1); }
-      to { transform: translateY(-12px) rotate(6deg) scale(1.12); }
+    .stat-pill {
+      font-size: 0.78rem;
+      padding: 3px 8px;
+      border-radius: 7px;
+      background: rgba(59,130,246,0.18);
+      color: #93c5fd;
+      font-weight: 700;
+    }
+    .stat-pill.time {
+      background: rgba(245,158,11,0.18);
+      color: #fcd34d;
+    }
+    .stat-pill.none {
+      background: rgba(239,68,68,0.18);
+      color: #fca5a5;
+    }
+    .stat-pill.win {
+      background: rgba(16,185,129,0.2);
+      color: #34d399;
     }
 
-    /* Animated 3D-style Podium */
-    .podium-stage {
+    /* Player Personal Summary Card */
+    .my-stat-card {
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.38);
+      border-radius: 14px;
+      padding: 14px;
+      margin: 12px auto;
+      max-width: 560px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      text-align: center;
+    }
+    @media (max-width: 520px) {
+      .my-stat-card { grid-template-columns: 1fr; }
+    }
+    .my-stat-val {
+      font-size: 1.12rem;
+      font-weight: 900;
+      color: #fde047;
+    }
+    .my-stat-lbl {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    /* Top 3 Podium */
+    .podium-wrap {
       display: flex;
       align-items: flex-end;
       justify-content: center;
       gap: 12px;
-      max-width: 540px;
-      margin: 22px auto 18px;
-      padding: 12px 8px 0;
-      min-height: 230px;
+      max-width: 720px;
+      margin: 20px auto 16px;
+      padding-top: 12px;
     }
     .podium-col {
       flex: 1;
+      max-width: 225px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      max-width: 165px;
+      text-align: center;
     }
     .podium-avatar {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 6px;
-      animation: avatarCelebrate 0.8s infinite alternate ease-in-out;
+      margin-bottom: 8px;
+      animation: avatarBounce 0.9s infinite alternate ease-in-out;
     }
-    .podium-col.rank-1 .podium-avatar { animation-delay: 0s; }
-    .podium-col.rank-2 .podium-avatar { animation-delay: 0.2s; }
-    .podium-col.rank-3 .podium-avatar { animation-delay: 0.35s; }
-    @keyframes avatarCelebrate {
+    @keyframes avatarBounce {
       from { transform: translateY(0); }
-      to { transform: translateY(-10px); }
+      to { transform: translateY(-8px); }
+    }
+    @keyframes popScale {
+      from { transform: scale(0.82); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
     }
     .podium-name {
-      font-weight: 800;
-      font-size: 0.88rem;
-      text-align: center;
-      margin-bottom: 2px;
+      font-weight: 900;
+      font-size: 1rem;
+      color: #fff;
       word-break: break-word;
     }
-    .podium-score {
-      font-size: 0.78rem;
+    .podium-time {
+      font-size: 0.82rem;
+      font-weight: 800;
       color: #fde047;
-      font-weight: 700;
-      margin-bottom: 4px;
+      margin-top: 4px;
     }
-    .podium-block {
+    .podium-avg {
+      font-size: 0.75rem;
+      color: #93c5fd;
+      margin-top: 2px;
+    }
+    .podium-step {
       width: 100%;
-      border-radius: 14px 14px 4px 4px;
+      border-radius: 14px 14px 6px 6px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      padding-top: 10px;
+      justify-content: center;
       font-weight: 900;
       color: #0f172a;
-      transform-origin: bottom;
-      animation: risePodium 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+      padding: 8px;
     }
-    @keyframes risePodium {
-      from { transform: scaleY(0); opacity: 0; }
-      to { transform: scaleY(1); opacity: 1; }
-    }
-    .rank-1 .podium-block {
-      height: 135px;
+    .podium-1 .podium-step {
+      height: 124px;
       background: linear-gradient(180deg, #fde047 0%, #f59e0b 100%);
-      box-shadow: 0 0 24px rgba(250,204,21,0.45);
+      box-shadow: 0 0 24px rgba(250,204,21,0.4);
     }
-    .rank-2 .podium-block {
-      height: 102px;
+    .podium-2 .podium-step {
+      height: 96px;
       background: linear-gradient(180deg, #e2e8f0 0%, #94a3b8 100%);
     }
-    .rank-3 .podium-block {
+    .podium-3 .podium-step {
       height: 78px;
       background: linear-gradient(180deg, #fdba74 0%, #c2410c 100%);
+      color: #fff;
     }
-    .podium-rank-num { font-size: 1.5rem; }
 
-    .podium-actions {
+    .end-actions {
       display: flex;
       gap: 10px;
       justify-content: center;
       flex-wrap: wrap;
       max-width: 520px;
-      margin: 8px auto 0;
+      margin: 14px auto 0;
     }
-    .podium-actions .btn {
-      flex: 1;
-      min-width: 200px;
-    }
+    .end-actions .btn { flex: 1; min-width: 200px; }
 
-    /* Confetti Layer */
     #confetti-canvas {
       position: fixed;
       inset: 0;
@@ -426,21 +533,14 @@
 
   <div class="topbar">
     <a href="../index.html" class="back-btn">← Menu Utama</a>
-    <span class="conn-badge" id="fb-status">● Firebase Terhubung</span>
+    <span class="conn-badge">● Firebase Terhubung</span>
   </div>
 
   <div class="card">
     <!-- HOME -->
     <div id="view-home">
       <h1>🏃‍♂️ Balap Hitung Stickman</h1>
-      <p class="sub">Adu cepat penjumlahan &amp; pengurangan (-19 s/d 19) di lintasan maraton!</p>
-
-      <div class="rules">
-        <strong>Aturan Skor &amp; Balapan:</strong><br>
-        • Jawab benar <strong>&lt; 2 detik = +3 poin</strong> | <strong>2 – 4 detik = +2 poin</strong> | <strong>&gt; 4 detik = +1 poin</strong>.<br>
-        • Salah menjawab: <strong>0 poin</strong>, soal otomatis berganti baru, dan <strong>2 kali salah berturut-turut = -1 poin</strong>.<br>
-        • Balapan selesai jika <strong>3 juara</strong> mencapai target poin, <strong>60 detik</strong> setelah Juara 1 finis, atau Host menekan <strong>Akhiri Permainan</strong>.
-      </div>
+      <p class="sub">Jawab soal hitung cepat untuk memacu pelari Stickman Anda hingga garis finish!</p>
 
       <div class="tabs">
         <button class="tab-btn active" data-tab="solo">Main Lawan Bot</button>
@@ -452,29 +552,21 @@
       <div id="tab-solo">
         <div class="form-row">
           <div class="fg">
-            <label>Jumlah Bot</label>
-            <select id="solo-bots">
-              <option value="2">2 Bot</option>
-              <option value="3" selected>3 Bot</option>
-              <option value="5">5 Bot</option>
+            <label>Target Soal Finish</label>
+            <select id="solo-target">
+              <option value="10" selected>10 Soal</option>
+              <option value="15">15 Soal</option>
+              <option value="20">20 Soal</option>
             </select>
           </div>
           <div class="fg">
-            <label>Kecepatan Bot</label>
+            <label>Tingkat Kesulitan</label>
             <select id="solo-diff">
-              <option value="easy">Santai</option>
-              <option value="medium" selected>Sedang</option>
-              <option value="hard">Cepat</option>
+              <option value="easy" selected>Mudah (+ / -)</option>
+              <option value="medium">Sedang (+ / - / ×)</option>
+              <option value="hard">Sulit (+ / - / × / ÷)</option>
             </select>
           </div>
-        </div>
-        <div class="fg">
-          <label>Target Poin Pemenang</label>
-          <select id="solo-target">
-            <option value="30">30 Poin</option>
-            <option value="50" selected>50 Poin</option>
-            <option value="100">100 Poin</option>
-          </select>
         </div>
         <button id="btn-start-solo" class="btn btn-blue">Mulai Balapan Solo</button>
       </div>
@@ -495,16 +587,20 @@
         <div id="host-unlocked-controls" class="hidden">
           <div class="form-row">
             <div class="fg">
-              <label>Target Poin Pemenang</label>
-              <select id="host-target-sel">
-                <option value="50" selected>50 Poin</option>
-                <option value="100">100 Poin</option>
-                <option value="custom">Atur Manual...</option>
+              <label>Target Soal Finish</label>
+              <select id="host-target">
+                <option value="10" selected>10 Soal</option>
+                <option value="15">15 Soal</option>
+                <option value="20">20 Soal</option>
               </select>
             </div>
-            <div class="fg hidden" id="host-custom-wrap">
-              <label>Target Manual (Poin)</label>
-              <input type="number" id="host-target-custom" value="75" min="10" max="500" />
+            <div class="fg">
+              <label>Tingkat Kesulitan</label>
+              <select id="host-diff">
+                <option value="easy" selected>Mudah (+ / -)</option>
+                <option value="medium">Sedang (+ / - / ×)</option>
+                <option value="hard">Sulit (+ / - / × / ÷)</option>
+              </select>
             </div>
           </div>
           <button id="btn-create-room" class="btn btn-green">Buat Room Multiplayer</button>
@@ -521,84 +617,134 @@
           <label>PIN Room (6 Digit)</label>
           <input type="text" id="join-pin" placeholder="Contoh: 123456" maxlength="6" inputmode="numeric" />
         </div>
-        <button id="btn-join-room" class="btn btn-blue">Gabung ke Lintasan</button>
+        <button id="btn-join-room" class="btn btn-blue">Gabung Balapan</button>
       </div>
     </div>
 
     <!-- ARENA -->
     <div id="view-arena" class="hidden">
       <div id="host-bar" class="pin-box hidden">
-        <div style="font-size:0.8rem;color:var(--muted);">PIN ROOM PESERTA</div>
-        <div class="pin-val" id="display-pin">000000</div>
-        <div style="display:flex;gap:8px;max-width:560px;margin:10px auto 0;flex-wrap:wrap;">
+        <div class="host-lobby-header">
+          <!-- QR CODE BESAR UNTUK SCAN PESERTA DI LOBBY -->
+          <div id="lobby-qr-wrap" class="qr-card">
+            <div id="lobby-qr-box"></div>
+            <div class="qr-caption">📷 Scan untuk Langsung Masuk Room</div>
+          </div>
+
+          <div>
+            <div style="font-size:0.85rem;color:var(--muted);font-weight:700;">PIN ROOM PESERTA</div>
+            <div class="pin-val" id="display-pin">000000</div>
+            <div style="font-size:0.82rem;color:#94a3b8;margin-top:4px;max-width:270px;">
+              Peserta dapat langsung memindai QR Code di samping atau memasukkan PIN secara manual.
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;max-width:620px;margin:14px auto 0;flex-wrap:wrap;">
           <button id="btn-add-bot" class="btn btn-amber" style="flex:1;">+ Tambah Bot</button>
-          <button id="btn-host-start" class="btn btn-green" style="flex:1;">▶ Mulai Game</button>
-          <button id="btn-host-end" class="btn btn-red hidden" style="flex:1;">🛑 Akhiri Permainan</button>
+          <button id="btn-host-start" class="btn btn-green" style="flex:1;">▶ Mulai Balapan</button>
+          <button id="btn-host-end" class="btn btn-red hidden" style="flex:1;">🛑 Akhiri Balapan</button>
         </div>
       </div>
 
       <div id="player-wait" class="pin-box hidden">
         <h3>⏳ Berhasil Masuk Lobby!</h3>
-        <p style="color:var(--muted);margin-top:6px;">Menunggu Host menekan tombol <strong>Mulai Game</strong>...</p>
+        <p style="color:var(--muted);margin-top:6px;">Menunggu Host memulai balapan...</p>
       </div>
 
-      <div class="race-layout" id="race-layout">
-        <div class="track-box">
-          <div class="track-header">
-            <span>🏁 Lintasan Maraton (Target: <strong id="lbl-target">50</strong> Poin)</span>
-            <span id="countdown-60" style="color:var(--amber);"></span>
+      <!-- LOBBY PARTICIPANTS LIST -->
+      <div id="lobby-box" class="box hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <h3>👥 Peserta yang Sudah Bergabung</h3>
+          <span class="conn-badge" id="lobby-count-badge">0 Peserta</span>
+        </div>
+        <div id="lobby-players-grid" class="lobby-players-grid"></div>
+      </div>
+
+      <!-- ACTIVE RACE AREA -->
+      <div id="race-area" class="hidden">
+        <!-- INPUT KEYPAD (PLAYER & SOLO) -->
+        <div class="box" id="solve-box">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:0.86rem;color:var(--muted);">
+            <span>Progres: <strong id="lbl-my-prog" style="color:#34d399;">0 / 10</strong></span>
+            <span>Rata-rata Benar: <strong id="lbl-my-avg" style="color:#fde047;">Tidak ada jawaban benar</strong></span>
           </div>
-          <div class="track-canvas" id="track-canvas">
-            <div class="finish-line"></div>
+          <div class="q-box">
+            <div class="q-text" id="q-text">5 + 7 = ?</div>
+            <div class="ans-display" id="ans-display"></div>
+          </div>
+          <div class="keypad">
+            <button class="k-btn" data-d="1">1</button>
+            <button class="k-btn" data-d="2">2</button>
+            <button class="k-btn" data-d="3">3</button>
+            <button class="k-btn" data-d="4">4</button>
+            <button class="k-btn" data-d="5">5</button>
+            <button class="k-btn" data-d="6">6</button>
+            <button class="k-btn" data-d="7">7</button>
+            <button class="k-btn" data-d="8">8</button>
+            <button class="k-btn" data-d="9">9</button>
+            <button class="k-btn del" id="btn-del">⌫</button>
+            <button class="k-btn" data-d="0">0</button>
+            <button class="k-btn sub" id="btn-submit">OK</button>
           </div>
         </div>
 
-        <div class="top5-box">
-          <h4>🏆 Top 5 Pemain Teratas</h4>
-          <div id="top5-list"></div>
+        <!-- WRAPPER UNTUK PERTUKARAN POSISI PERINGKAT & ANIMASI BERLARI DI HP PESERTA -->
+        <div id="race-sections" class="race-sections">
+          <!-- ANIMASI BERLARI STICKMAN -->
+          <div class="box" id="track-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <h4>🏁 Lintasan Animasi Berlari</h4>
+              <span style="font-size:0.8rem;color:var(--muted);" id="lbl-target-info">Target: 10 Soal</span>
+            </div>
+            <div class="track-list" id="track-list"></div>
+          </div>
+
+          <!-- PERINGKAT & RATA-RATA WAKTU -->
+          <div class="box" id="rank-box">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+              <h4>🏆 Peringkat &amp; Kecepatan</h4>
+              <span style="font-size:0.8rem;color:var(--muted);" id="lbl-player-count">0 Peserta</span>
+            </div>
+            <div class="rank-list" id="rank-list"></div>
+          </div>
         </div>
       </div>
 
-      <!-- PLAYER INPUT PANEL -->
-      <div id="question-panel" class="question-panel hidden">
-        <div style="display:flex;justify-content:space-between;font-size:0.86rem;color:var(--muted);">
-          <span>Skor Anda: <strong id="my-score" style="color:#34d399;">0</strong></span>
-          <span>Waktu Soal: <strong id="q-timer" style="color:#fbbf24;">0.0 dtk</strong></span>
-        </div>
-        <div class="q-text" id="q-text">5 + 3 = ?</div>
-        <div class="ans-display" id="ans-display"></div>
-        <div class="keypad">
-          <button class="k-btn" data-k="1">1</button>
-          <button class="k-btn" data-k="2">2</button>
-          <button class="k-btn" data-k="3">3</button>
-          <button class="k-btn" data-k="4">4</button>
-          <button class="k-btn" data-k="5">5</button>
-          <button class="k-btn" data-k="6">6</button>
-          <button class="k-btn" data-k="7">7</button>
-          <button class="k-btn" data-k="8">8</button>
-          <button class="k-btn" data-k="9">9</button>
-          <button class="k-btn minus" id="k-minus">± / -</button>
-          <button class="k-btn" data-k="0">0</button>
-          <button class="k-btn del" id="k-del">⌫</button>
-          <button class="k-btn sub" id="k-submit">JAWAB (ENTER)</button>
-        </div>
-      </div>
+      <!-- END GAME & PODIUM SCREEN -->
+      <div id="end-box" class="pin-box hidden" style="border-color:var(--green);margin-top:14px;">
+        <h2 id="end-title">🏁 Balapan Selesai!</h2>
+        <p id="end-sub" style="font-size:0.92rem;color:var(--muted);margin-top:4px;"></p>
 
-      <!-- CELEBRATION WHEN THIS PLAYER REACHES FINISH -->
-      <div id="finish-celebration" class="finish-celebration hidden">
-        <div class="trophy-bounce" id="finish-emoji">🏆🎉</div>
-        <h2 id="finish-headline" style="color:#fde047;margin:8px 0 4px;">LUAR BIASA! KAMU SAMPAI FINIS!</h2>
-        <p id="finish-subtext" style="color:#e2e8f0;font-size:0.95rem;">
-          Menunggu peserta lain menyelesaikan balapan untuk melihat Podium Juara 1, 2, dan 3...
-        </p>
-      </div>
+        <!-- STATISTIK PRIBADI PESERTA (JUARA MAUPUN TIDAK) -->
+        <div id="my-end-stats" class="my-stat-card hidden">
+          <div>
+            <div class="my-stat-val" id="stat-my-rank">-</div>
+            <div class="my-stat-lbl">Peringkat Akhir</div>
+          </div>
+          <div>
+            <div class="my-stat-val" id="stat-my-avg">Tidak ada jawaban benar</div>
+            <div class="my-stat-lbl">Rata-rata Jawab Benar</div>
+          </div>
+          <div>
+            <div class="my-stat-val" id="stat-my-finish">-</div>
+            <div class="my-stat-lbl">Waktu Finish / Skor</div>
+          </div>
+        </div>
 
-      <!-- PODIUM JUARA 1, 2, 3 (ALL SCREENS: HOST & ALL PLAYERS) -->
-      <div id="podium-box" class="pin-box hidden" style="border-color:var(--green);margin-top:14px;">
-        <h2>🏆 PODIUM JUARA BALAP HITUNG</h2>
-        <p style="color:var(--muted);font-size:0.88rem;margin-top:4px;">Selamat kepada para pemenang!</p>
-        <div class="podium-stage" id="podium-stage"></div>
-        <div class="podium-actions">
+        <!-- PODIUM JUARA 1, 2, 3 DENGAN WAKTU FINISH -->
+        <div class="podium-wrap" id="podium-wrap"></div>
+
+        <!-- DAFTAR LENGKAP RATA-RATA WAKTU SELURUH PESERTA -->
+        <div class="box" style="text-align:left;margin-top:14px;">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <h4>📊 Rekap Waktu Finish &amp; Rata-rata Jawab Benar</h4>
+            <span style="font-size:0.78rem;color:var(--muted);">Semua Peserta</span>
+          </div>
+          <div class="rank-list" id="final-rank-list"></div>
+        </div>
+
+        <div class="end-actions">
           <button id="btn-play-again" class="btn btn-green hidden">🔄 Main Lagi (PIN Sama)</button>
           <button id="btn-reload" class="btn btn-blue">Kembali ke Awal</button>
         </div>
@@ -611,29 +757,23 @@
   <script>
     (function () {
       const DB_URL = "https://game-math-7361f-default-rtdb.asia-southeast1.firebasedatabase.app";
-      const COLORS = ['#3b82f6','#10b981','#f59e0b','#ec4899','#8b5cf6','#06b6d4','#f97316','#84cc16'];
-      const ONE_HOUR_MS = 3600000;
+      const RUNNER_COLORS = ['#38bdf8', '#34d399', '#fbbf24', '#f472b6', '#a78bfa', '#fb923c', '#2dd4bf', '#f87171'];
 
       let st = {
         mode: 'solo',
         pin: '',
-        myId: 'u_' + Math.random().toString(36).slice(2, 9),
+        myId: 'p_' + Math.random().toString(36).slice(2, 9),
         myName: 'Anda',
-        target: 50,
+        target: 10,
+        diff: 'easy',
         status: 'lobby',
-        round: 1,
-        players: {},
-        winners: [],
-        firstWinAt: null,
-        q: { text: '', ans: 0, start: 0 },
+        startedAt: 0,
+        endedAt: 0,
+        currentAns: 0,
         input: '',
-        wrongStreak: 0,
-        hasFinished: false,
-        celebrated: false,
+        players: {},
         confettiRunning: false,
-        roomCleaned: false,
-        botInterval: null,
-        cleanupTimeout: null,
+        celebrated: false,
         timers: []
       };
 
@@ -645,7 +785,95 @@
         t._id = setTimeout(() => t.classList.add('hidden'), 2400);
       }
 
-      /* Confetti Celebration Animation */
+      function formatDurationSec(ms) {
+        if (!ms || ms <= 0) return '-';
+        const sec = ms / 1000;
+        if (sec < 60) return `${sec.toFixed(1).replace('.', ',')} dtk`;
+        const m = Math.floor(sec / 60);
+        const s = (sec % 60).toFixed(1).replace('.', ',');
+        return `${m}m ${s}d`;
+      }
+
+      function getPlayerAvgStat(p) {
+        const correctCount = (p.correctCount !== undefined) ? p.correctCount : (p.score || 0);
+        if (!correctCount || correctCount <= 0) {
+          return {
+            hasCorrect: false,
+            avgMs: Infinity,
+            label: 'Tidak ada jawaban benar'
+          };
+        }
+
+        const startRef = p.startedAt || st.startedAt || Date.now();
+        const isFinished = (p.score || 0) >= st.target;
+        let numeratorMs = 0;
+
+        if (isFinished) {
+          if (p.finishDurationMs && p.finishDurationMs > 0) {
+            numeratorMs = p.finishDurationMs;
+          } else if (p.finishedAt && p.finishedAt >= startRef) {
+            numeratorMs = Math.max(500, p.finishedAt - startRef);
+          } else {
+            const endRef = (st.status === 'ended' && st.endedAt) ? st.endedAt : Date.now();
+            numeratorMs = Math.max(500, endRef - startRef);
+          }
+        } else {
+          const endRef = (st.status === 'ended' && st.endedAt) ? st.endedAt : Date.now();
+          numeratorMs = Math.max(500, endRef - startRef);
+        }
+
+        const avgMs = numeratorMs / correctCount;
+        const avgSec = avgMs / 1000;
+        return {
+          hasCorrect: true,
+          avgMs,
+          label: `${avgSec.toFixed(2).replace('.', ',')} dtk/soal`
+        };
+      }
+
+      function buildJoinUrl(pin) {
+        const url = new URL(window.location.href);
+        url.search = '';
+        url.hash = '';
+        url.searchParams.set('pin', pin);
+        return url.toString();
+      }
+
+      function updateLobbyQrCode(pin) {
+        const qrBox = document.getElementById('lobby-qr-box');
+        const qrWrap = document.getElementById('lobby-qr-wrap');
+        if (!qrBox || !qrWrap || !pin) return;
+
+        const targetUrl = buildJoinUrl(pin);
+        qrWrap.classList.remove('hidden');
+        qrBox.innerHTML = '';
+
+        // 1. Render langsung di browser menggunakan QRCode.js (instan tanpa internet eksternal)
+        if (typeof window.QRCode === 'function') {
+          try {
+            new window.QRCode(qrBox, {
+              text: targetUrl,
+              width: 260,
+              height: 260,
+              colorDark: '#0f172a',
+              colorLight: '#ffffff',
+              correctLevel: window.QRCode.CorrectLevel.M
+            });
+            return;
+          } catch (e) {}
+        }
+
+        // 2. Fallback otomatis jika script CDN belum termuat
+        const img = document.createElement('img');
+        img.alt = 'QR Code Gabung Room';
+        img.src = `https://quickchart.io/qr?size=260&margin=1&text=${encodeURIComponent(targetUrl)}`;
+        img.onerror = function () {
+          this.onerror = null;
+          this.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=2&data=${encodeURIComponent(targetUrl)}`;
+        };
+        qrBox.appendChild(img);
+      }
+
       function launchConfetti(durationMs) {
         const canvas = document.getElementById('confetti-canvas');
         if (!canvas) return;
@@ -667,7 +895,7 @@
           vRot: (Math.random() - 0.5) * 8
         }));
 
-        const endAt = Date.now() + (durationMs || 5000);
+        const endAt = Date.now() + (durationMs || 6500);
         st.confettiRunning = true;
 
         function frame() {
@@ -699,7 +927,6 @@
         requestAnimationFrame(frame);
       }
 
-      /* Web Audio Fanfare */
       function playVictorySound() {
         try {
           const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -748,461 +975,532 @@
         } catch (e) { return null; }
       }
 
-      async function fbDelete(path, keepalive) {
-        try {
-          await fetch(`${DB_URL}/${path}.json`, {
-            method: 'DELETE',
-            keepalive: !!keepalive
-          });
-        } catch (e) {}
+      function stickmanSvg(color) {
+        return `
+          <svg class="stickman-svg" viewBox="0 0 30 36" fill="none" stroke="${color}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <g class="stick-body">
+              <circle cx="15" cy="6" r="3.6" fill="${color}" stroke="none"/>
+              <line x1="15" y1="10" x2="15" y2="21"/>
+              <line class="arm-1" x1="15" y1="12" x2="21" y2="17"/>
+              <line class="arm-2" x1="15" y1="12" x2="9" y2="17"/>
+              <line class="leg-1" x1="15" y1="21" x2="21" y2="32"/>
+              <line class="leg-2" x1="15" y1="21" x2="9" y2="32"/>
+            </g>
+          </svg>
+        `;
       }
 
-      function cleanupHostRoom(keepalive) {
-        if (st.mode !== 'host' || !st.pin || st.roomCleaned) return;
-        st.roomCleaned = true;
-        fbDelete(`balap_hitung/${st.pin}`, keepalive);
-      }
-
-      // Bersihkan room lama yang sudah berakhir lebih dari 1 jam saat Host membuat room baru
-      async function purgeExpiredRooms() {
-        const all = await fbGet('balap_hitung');
-        if (!all || typeof all !== 'object') return;
-        const now = Date.now();
-        Object.keys(all).forEach(pinKey => {
-          const r = all[pinKey];
-          if (r && r.status === 'ended' && r.endedAt && (now - r.endedAt >= ONE_HOUR_MS)) {
-            fbDelete(`balap_hitung/${pinKey}`, false);
-          }
-        });
-      }
-
-      function makeQuestion(prevText) {
-        if (st.hasFinished) return;
-        let a, b, op, text, ans;
-        do {
-          a = Math.floor(Math.random() * 39) - 19;
-          b = Math.floor(Math.random() * 39) - 19;
+      function generateQuestion() {
+        const diff = st.diff || 'easy';
+        let a, b, op, ans;
+        if (diff === 'easy') {
           op = Math.random() < 0.5 ? '+' : '-';
+          a = Math.floor(Math.random() * 20) + 1;
+          b = Math.floor(Math.random() * 20) + 1;
+          if (op === '-' && b > a) [a, b] = [b, a];
           ans = op === '+' ? a + b : a - b;
-          const bStr = b < 0 ? `(${b})` : `${b}`;
-          text = `${a} ${op} ${bStr}`;
-        } while (text === prevText);
-        st.q = { text, ans, start: Date.now() };
+        } else if (diff === 'medium') {
+          const ops = ['+', '-', '×'];
+          op = ops[Math.floor(Math.random() * ops.length)];
+          if (op === '×') {
+            a = Math.floor(Math.random() * 11) + 2;
+            b = Math.floor(Math.random() * 11) + 2;
+            ans = a * b;
+          } else {
+            a = Math.floor(Math.random() * 45) + 5;
+            b = Math.floor(Math.random() * 45) + 5;
+            if (op === '-' && b > a) [a, b] = [b, a];
+            ans = op === '+' ? a + b : a - b;
+          }
+        } else {
+          const ops = ['+', '-', '×', '÷'];
+          op = ops[Math.floor(Math.random() * ops.length)];
+          if (op === '÷') {
+            b = Math.floor(Math.random() * 11) + 2;
+            ans = Math.floor(Math.random() * 12) + 2;
+            a = b * ans;
+          } else if (op === '×') {
+            a = Math.floor(Math.random() * 14) + 3;
+            b = Math.floor(Math.random() * 12) + 3;
+            ans = a * b;
+          } else {
+            a = Math.floor(Math.random() * 80) + 10;
+            b = Math.floor(Math.random() * 80) + 10;
+            if (op === '-' && b > a) [a, b] = [b, a];
+            ans = op === '+' ? a + b : a - b;
+          }
+        }
+        st.currentAns = ans;
         st.input = '';
-        document.getElementById('q-text').textContent = text + ' = ?';
+        document.getElementById('q-text').textContent = `${a} ${op} ${b} = ?`;
         document.getElementById('ans-display').textContent = '';
       }
 
-      function stickmanSVG(color) {
-        return `<svg class="stickman-svg" viewBox="0 0 34 48">
-          <circle cx="17" cy="7" r="5" fill="${color}" />
-          <line x1="17" y1="12" x2="17" y2="28" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
-          <line class="arm-l" x1="17" y1="16" x2="9" y2="24" stroke="${color}" stroke-width="2.6" stroke-linecap="round"/>
-          <line class="arm-r" x1="17" y1="16" x2="25" y2="24" stroke="${color}" stroke-width="2.6" stroke-linecap="round"/>
-          <line class="leg-l" x1="17" y1="28" x2="10" y2="43" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
-          <line class="leg-r" x1="17" y1="28" x2="24" y2="43" stroke="${color}" stroke-width="3" stroke-linecap="round"/>
-        </svg>`;
-      }
-
-      function getRankedPlayers() {
+      function getSortedPlayers() {
         const list = Object.values(st.players || {});
         return list.sort((a, b) => {
           const aDone = (a.score || 0) >= st.target;
           const bDone = (b.score || 0) >= st.target;
+          if (aDone && !bDone) return -1;
+          if (!aDone && bDone) return 1;
           if (aDone && bDone) {
-            if ((a.finishedAt || 0) !== (b.finishedAt || 0)) {
-              return (a.finishedAt || 0) - (b.finishedAt || 0);
-            }
+            const aFinish = a.finishDurationMs || (a.finishedAt ? (a.finishedAt - (a.startedAt || st.startedAt)) : 999999999);
+            const bFinish = b.finishDurationMs || (b.finishedAt ? (b.finishedAt - (b.startedAt || st.startedAt)) : 999999999);
+            return aFinish - bFinish;
           }
-          if ((b.score || 0) !== (a.score || 0)) {
-            return (b.score || 0) - (a.score || 0);
-          }
-          return (a.finishedAt || Number.MAX_SAFE_INTEGER) - (b.finishedAt || Number.MAX_SAFE_INTEGER);
+          if ((b.score || 0) !== (a.score || 0)) return (b.score || 0) - (a.score || 0);
+          return getPlayerAvgStat(a).avgMs - getPlayerAvgStat(b).avgMs;
         });
       }
 
-      function renderRace() {
+      function renderLobbyPlayers() {
         const list = Object.values(st.players || {});
-        const track = document.getElementById('track-canvas');
-        const maxW = Math.max(160, track.clientWidth - 88);
+        list.sort((a, b) => (a.joinedAt || 0) - (b.joinedAt || 0));
 
-        track.querySelectorAll('.runner').forEach(el => el.remove());
+        const badge = document.getElementById('lobby-count-badge');
+        if (badge) badge.textContent = `${list.length} Peserta`;
 
-        list.forEach((p, idx) => {
+        const grid = document.getElementById('lobby-players-grid');
+        if (!grid) return;
+
+        if (list.length === 0) {
+          grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:var(--muted);padding:22px 10px;font-size:0.9rem;">
+            Menunggu peserta memindai QR Code atau memasukkan PIN <strong>${st.pin}</strong>...
+          </div>`;
+          return;
+        }
+
+        grid.innerHTML = list.map((p, idx) => {
           const isMe = p.id === st.myId;
-          const ratio = Math.min(1, Math.max(0, (p.score || 0) / st.target));
-          const leftPx = 10 + ratio * maxW;
-          const div = document.createElement('div');
-          const isStopped = (p.score || 0) >= st.target || st.status !== 'playing';
-
-          div.className = 'runner'
-            + (isStopped ? '' : ' running')
-            + (isMe ? ' me' : ' opponent');
-
-          div.style.left = leftPx + 'px';
-          div.style.bottom = (4 + (idx % 5) * 12) + 'px';
-
-          let labelHTML = '';
-          if (st.mode === 'player') {
-            if (isMe) {
-              labelHTML = `<div class="runner-label">${p.name}</div>`;
-            }
-          } else {
-            labelHTML = `<div class="runner-label">${p.name} (${p.score || 0})</div>`;
-          }
-
-          div.innerHTML = `${labelHTML}${stickmanSVG(p.color || COLORS[idx % COLORS.length])}`;
-          track.appendChild(div);
-        });
-
-        const sorted = getRankedPlayers();
-        document.getElementById('top5-list').innerHTML = sorted.slice(0, 5).map((p, i) => `
-          <div class="top5-item">
-            <span><strong>#${i + 1}</strong> ${p.name} ${(p.score || 0) >= st.target ? '🏁' : ''}</span>
-            <strong style="color:#34d399;">${p.score || 0} poin</strong>
-          </div>
-        `).join('');
-
-        if (st.players[st.myId]) {
-          document.getElementById('my-score').textContent = st.players[st.myId].score || 0;
-        }
-
-        if (st.firstWinAt && st.status === 'playing') {
-          const rem = Math.max(0, 60 - Math.floor((Date.now() - st.firstWinAt) / 1000));
-          document.getElementById('countdown-60').textContent = `⏱️ Sisa waktu: ${rem} dtk`;
-          if (rem === 0 && (st.mode === 'host' || st.mode === 'solo')) {
-            endRace();
-          }
-        } else {
-          document.getElementById('countdown-60').textContent = '';
-        }
-      }
-
-      function onThisPlayerReachedFinish() {
-        if (st.hasFinished) return;
-        st.hasFinished = true;
-
-        document.getElementById('question-panel').classList.add('hidden');
-
-        const ranked = getRankedPlayers();
-        const myRank = ranked.findIndex(p => p.id === st.myId) + 1;
-
-        const celebBox = document.getElementById('finish-celebration');
-        celebBox.classList.remove('hidden');
-
-        if (myRank >= 1 && myRank <= 3) {
-          const medalMap = { 1: '🥇 JUARA 1!', 2: '🥈 JUARA 2!', 3: '🥉 JUARA 3!' };
-          document.getElementById('finish-emoji').textContent = myRank === 1 ? '👑🏆🎉' : '🏅🎉✨';
-          document.getElementById('finish-headline').textContent = `SELAMAT! KAMU MERAIH ${medalMap[myRank]}`;
-          document.getElementById('finish-subtext').textContent = `Kamu mencapai garis finis di peringkat #${myRank}! Menunggu podium akhir...`;
-          if (!st.celebrated) {
-            st.celebrated = true;
-            playVictorySound();
-            launchConfetti(6000);
-          }
-        } else {
-          document.getElementById('finish-emoji').textContent = '🏁👏';
-          document.getElementById('finish-headline').textContent = 'HEBAT! KAMU SAMPAI GARIS FINIS!';
-          document.getElementById('finish-subtext').textContent = `Kamu finis di posisi #${myRank}. Menunggu balapan selesai untuk melihat Podium...`;
-        }
-      }
-
-      async function endRace() {
-        if (st.status === 'ended') return;
-        st.status = 'ended';
-
-        if (st.botInterval) {
-          clearInterval(st.botInterval);
-          st.botInterval = null;
-        }
-
-        if (st.mode === 'host') {
-          document.getElementById('btn-host-end').classList.add('hidden');
-          document.getElementById('btn-play-again').classList.remove('hidden');
-          await fbPatch(`balap_hitung/${st.pin}`, { status: 'ended', endedAt: Date.now() });
-
-          if (st.cleanupTimeout) clearTimeout(st.cleanupTimeout);
-          st.cleanupTimeout = setTimeout(() => { cleanupHostRoom(false); }, ONE_HOUR_MS);
-        } else if (st.mode === 'solo') {
-          document.getElementById('btn-play-again').classList.remove('hidden');
-        }
-
-        document.getElementById('question-panel').classList.add('hidden');
-        document.getElementById('finish-celebration').classList.add('hidden');
-        document.getElementById('podium-box').classList.remove('hidden');
-
-        const sorted = getRankedPlayers();
-        const top3 = sorted.slice(0, 3);
-
-        if ((st.mode === 'player' || st.mode === 'solo') && top3.some(p => p.id === st.myId)) {
-          if (!st.celebrated) {
-            st.celebrated = true;
-            playVictorySound();
-          }
-          launchConfetti(7500);
-        } else if (st.mode === 'host') {
-          playVictorySound();
-          launchConfetti(6500);
-        }
-
-        const order = [
-          { rank: 2, player: top3[1], medal: '🥈' },
-          { rank: 1, player: top3[0], medal: '👑🥇' },
-          { rank: 3, player: top3[2], medal: '🥉' }
-        ];
-
-        const stage = document.getElementById('podium-stage');
-        stage.innerHTML = order.map(item => {
-          if (!item.player) return '';
-          const p = item.player;
-          const isMeTag = (p.id === st.myId) ? ' (Kamu!)' : '';
+          const cls = isMe ? 'lobby-chip is-me' : (p.isBot ? 'lobby-chip is-bot' : 'lobby-chip');
+          const tag = p.isBot ? 'BOT' : (isMe ? 'KAMU' : `#${idx + 1}`);
           return `
-            <div class="podium-col rank-${item.rank}">
-              <div class="podium-avatar">
-                <div style="font-size:1.3rem;">${item.medal}</div>
-                ${stickmanSVG(p.color || '#fde047')}
-                <div class="podium-name">${p.name}${isMeTag}</div>
-                <div class="podium-score">${p.score || 0} poin</div>
+            <div class="${cls}">
+              <span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${p.name}</span>
+              <span class="chip-tag">${tag}</span>
+            </div>
+          `;
+        }).join('');
+      }
+
+      function renderTrackAndRank() {
+        const sorted = getSortedPlayers();
+        const me = st.players[st.myId];
+
+        if (me && st.mode !== 'host') {
+          const myAvg = getPlayerAvgStat(me);
+          document.getElementById('lbl-my-prog').textContent = `${me.score || 0} / ${st.target}`;
+          document.getElementById('lbl-my-avg').textContent = myAvg.label;
+        }
+
+        document.getElementById('lbl-target-info').textContent = `Target: ${st.target} Soal`;
+        document.getElementById('lbl-player-count').textContent = `${sorted.length} Peserta`;
+
+        document.getElementById('rank-list').innerHTML = sorted.map((p, idx) => {
+          const isMe = p.id === st.myId;
+          const done = (p.score || 0) >= st.target;
+          const avgStat = getPlayerAvgStat(p);
+          const finishTxt = done
+            ? `<span class="stat-pill win">🏁 ${formatDurationSec(p.finishDurationMs)}</span>`
+            : `<span class="stat-pill">${p.score || 0}/${st.target}</span>`;
+          const avgBadge = avgStat.hasCorrect
+            ? `<span class="stat-pill time" title="Rata-rata waktu jawab benar">⚡ ${avgStat.label}</span>`
+            : `<span class="stat-pill none">Tidak ada jawaban benar</span>`;
+
+          return `
+            <div class="rank-item ${isMe ? 'is-me' : ''}">
+              <span><strong>#${idx + 1}</strong> ${p.name}${isMe ? ' (Kamu)' : ''}</span>
+              <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                ${avgBadge}
+                ${finishTxt}
+              </span>
+            </div>
+          `;
+        }).join('');
+
+        document.getElementById('track-list').innerHTML = sorted.map((p, idx) => {
+          const pct = Math.min(88, Math.round(((p.score || 0) / st.target) * 88));
+          const color = p.color || RUNNER_COLORS[idx % RUNNER_COLORS.length];
+          const isRunning = st.status === 'playing' && (p.score || 0) < st.target;
+          const done = (p.score || 0) >= st.target;
+          return `
+            <div class="lane">
+              <div class="lane-head">
+                <span><strong>#${idx + 1}</strong> ${p.name}</span>
+                <span style="color:${done ? '#34d399' : '#94a3b8'};font-weight:700;">
+                  ${done ? `FINISH (${formatDurationSec(p.finishDurationMs)})` : `${p.score || 0}/${st.target}`}
+                </span>
               </div>
-              <div class="podium-block">
-                <span class="podium-rank-num">${item.rank}</span>
+              <div class="road">
+                <span class="finish-flag">🏁</span>
+                <div class="runner ${isRunning ? 'running' : ''}" style="left:${pct}%;">
+                  ${stickmanSvg(color)}
+                </div>
               </div>
             </div>
           `;
         }).join('');
       }
 
+      async function handleCorrectAnswer() {
+        if (st.status !== 'playing' || st.mode === 'host') return;
+        const me = st.players[st.myId];
+        if (!me || (me.score || 0) >= st.target) return;
+
+        const now = Date.now();
+        me.score = (me.score || 0) + 1;
+        me.correctCount = (me.correctCount || 0) + 1;
+
+        if (!me.startedAt) {
+          me.startedAt = st.startedAt || now;
+        }
+
+        if (me.score >= st.target) {
+          me.finishedAt = now;
+          me.finishDurationMs = Math.max(500, now - me.startedAt);
+        }
+
+        if (st.mode === 'player') {
+          await fbPatch(`balap_hitung/${st.pin}/players/${st.myId}`, {
+            score: me.score,
+            correctCount: me.correctCount,
+            startedAt: me.startedAt,
+            finishedAt: me.finishedAt || null,
+            finishDurationMs: me.finishDurationMs || null
+          });
+        }
+
+        renderTrackAndRank();
+
+        if (me.score >= st.target) {
+          showToast(`🏁 FINISH! Waktu tempuh: ${formatDurationSec(me.finishDurationMs)}`);
+          if (st.mode === 'solo') {
+            await endRace();
+          } else {
+            document.getElementById('q-text').textContent = '🏁 GARIS FINISH!';
+            document.getElementById('ans-display').textContent = formatDurationSec(me.finishDurationMs);
+          }
+        } else {
+          generateQuestion();
+        }
+      }
+
+      function checkAnswerInput() {
+        if (st.status !== 'playing' || st.mode === 'host') return;
+        if (!st.input.length) return;
+        const val = parseInt(st.input, 10);
+        if (val === st.currentAns) {
+          handleCorrectAnswer();
+        } else if (st.input.length >= String(st.currentAns).length) {
+          showToast('Jawaban kurang tepat, coba lagi!');
+          st.input = '';
+          document.getElementById('ans-display').textContent = '';
+        }
+      }
+
+      async function endRace() {
+        if (st.status === 'ended') return;
+        st.status = 'ended';
+        if (!st.endedAt) st.endedAt = Date.now();
+
+        if (st.mode === 'host') {
+          document.getElementById('lobby-qr-wrap').classList.add('hidden');
+          document.getElementById('btn-host-end').classList.add('hidden');
+          document.getElementById('btn-play-again').classList.remove('hidden');
+          await fbPatch(`balap_hitung/${st.pin}`, {
+            status: 'ended',
+            endedAt: st.endedAt
+          });
+        } else if (st.mode === 'solo') {
+          document.getElementById('btn-play-again').classList.remove('hidden');
+        }
+
+        document.getElementById('lobby-box').classList.add('hidden');
+        document.getElementById('race-area').classList.add('hidden');
+        document.getElementById('end-box').classList.remove('hidden');
+
+        const sorted = getSortedPlayers();
+
+        if (st.mode !== 'host' && st.players[st.myId]) {
+          const me = st.players[st.myId];
+          const myRankIdx = sorted.findIndex(p => p.id === st.myId);
+          const myDone = (me.score || 0) >= st.target;
+          const myAvg = getPlayerAvgStat(me);
+          document.getElementById('my-end-stats').classList.remove('hidden');
+          document.getElementById('stat-my-rank').textContent = myRankIdx >= 0 ? `#${myRankIdx + 1}` : '-';
+          document.getElementById('stat-my-avg').textContent = myAvg.label;
+          document.getElementById('stat-my-finish').textContent = myDone
+            ? formatDurationSec(me.finishDurationMs)
+            : `${me.score || 0}/${st.target} Soal`;
+        } else {
+          document.getElementById('my-end-stats').classList.add('hidden');
+        }
+
+        const top3 = sorted.slice(0, 3);
+        const podiumOrder = [
+          { idx: 1, medal: '🥈', label: 'JUARA 2', cls: 'podium-2' },
+          { idx: 0, medal: '👑🥇', label: 'JUARA 1', cls: 'podium-1' },
+          { idx: 2, medal: '🥉', label: 'JUARA 3', cls: 'podium-3' }
+        ];
+
+        const podiumHtml = podiumOrder.map(slot => {
+          const p = top3[slot.idx];
+          if (!p) return '';
+          const done = (p.score || 0) >= st.target;
+          const finishTimeTxt = done
+            ? `⏱️ Waktu Finish: ${formatDurationSec(p.finishDurationMs)}`
+            : `Skor: ${p.score || 0}/${st.target} soal`;
+          const avgStat = getPlayerAvgStat(p);
+          const avgTimeTxt = avgStat.hasCorrect
+            ? `⚡ Rata-rata: ${avgStat.label}`
+            : `Tidak ada jawaban benar`;
+
+          return `
+            <div class="podium-col ${slot.cls}">
+              <div class="podium-avatar">
+                <div style="font-size:2.1rem;line-height:1.1;">${slot.medal}</div>
+                <div class="podium-name">${p.name}</div>
+                <div class="podium-time">${finishTimeTxt}</div>
+                <div class="podium-avg">${avgTimeTxt}</div>
+              </div>
+              <div class="podium-step">
+                <div style="font-size:1.1rem;">${slot.label}</div>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        document.getElementById('podium-wrap').innerHTML = podiumHtml;
+        document.getElementById('end-sub').textContent = top3[0]
+          ? `Selamat kepada ${top3[0].name} sebagai Juara 1!`
+          : 'Balapan telah berakhir.';
+
+        document.getElementById('final-rank-list').innerHTML = sorted.map((p, i) => {
+          const isMe = p.id === st.myId;
+          const done = (p.score || 0) >= st.target;
+          const avgStat = getPlayerAvgStat(p);
+          const finishBadge = done
+            ? `<span class="stat-pill win">⏱️ Finish: ${formatDurationSec(p.finishDurationMs)}</span>`
+            : `<span class="stat-pill">Progres: ${p.score || 0}/${st.target}</span>`;
+          const avgBadge = avgStat.hasCorrect
+            ? `<span class="stat-pill time">⚡ Rata-rata Benar: ${avgStat.label}</span>`
+            : `<span class="stat-pill none">Tidak ada jawaban benar</span>`;
+
+          return `
+            <div class="rank-item ${isMe ? 'is-me' : ''}">
+              <span><strong>#${i + 1}</strong> ${p.name}${isMe ? ' (Kamu)' : ''}</span>
+              <span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                ${avgBadge}
+                ${finishBadge}
+              </span>
+            </div>
+          `;
+        }).join('');
+
+        if (!st.celebrated && top3.length > 0) {
+          st.celebrated = true;
+          playVictorySound();
+          launchConfetti(6500);
+        }
+      }
+
       async function resetToLobbySamePin() {
-        if (st.cleanupTimeout) {
-          clearTimeout(st.cleanupTimeout);
-          st.cleanupTimeout = null;
-        }
-        if (st.botInterval) {
-          clearInterval(st.botInterval);
-          st.botInterval = null;
-        }
-
         st.status = 'lobby';
-        st.round = (st.round || 1) + 1;
-        st.winners = [];
-        st.firstWinAt = null;
-        st.hasFinished = false;
-        st.celebrated = false;
-        st.wrongStreak = 0;
+        st.startedAt = 0;
+        st.endedAt = 0;
         st.input = '';
+        st.celebrated = false;
 
-        // Reset skor seluruh pemain & bot yang sudah bergabung menjadi 0
         const resetPlayers = {};
         Object.keys(st.players || {}).forEach(pid => {
           const p = st.players[pid];
           resetPlayers[pid] = {
             id: p.id,
             name: p.name,
+            color: p.color || RUNNER_COLORS[0],
+            joinedAt: p.joinedAt || Date.now(),
             score: 0,
-            color: p.color || COLORS[0],
-            ...(p.isBot ? { isBot: true } : {})
+            correctCount: 0,
+            startedAt: 0,
+            finishedAt: null,
+            finishDurationMs: null,
+            ...(p.isBot ? { isBot: true, botDelayMs: p.botDelayMs || 3200 } : {})
           };
         });
         st.players = resetPlayers;
 
-        document.getElementById('podium-box').classList.add('hidden');
-        document.getElementById('finish-celebration').classList.add('hidden');
-        document.getElementById('countdown-60').textContent = '';
+        document.getElementById('end-box').classList.add('hidden');
+        document.getElementById('my-end-stats').classList.add('hidden');
 
         if (st.mode === 'host') {
+          updateLobbyQrCode(st.pin);
           document.getElementById('btn-add-bot').classList.remove('hidden');
           document.getElementById('btn-host-start').classList.remove('hidden');
           document.getElementById('btn-host-end').classList.add('hidden');
+          document.getElementById('race-area').classList.add('hidden');
+          document.getElementById('lobby-box').classList.remove('hidden');
+          renderLobbyPlayers();
 
           await fbPut(`balap_hitung/${st.pin}`, {
             pin: st.pin,
             target: st.target,
+            diff: st.diff,
             status: 'lobby',
-            round: st.round,
+            startedAt: 0,
+            endedAt: 0,
             players: resetPlayers
           });
-          showToast('Lobby dibuka kembali dengan PIN yang sama! Peserta baru dapat bergabung.');
+          showToast('Lobby & QR Code dibuka kembali dengan PIN sama!');
         } else if (st.mode === 'solo') {
           st.status = 'playing';
-          document.getElementById('question-panel').classList.remove('hidden');
-          makeQuestion('');
-          startSoloBots();
+          st.startedAt = Date.now();
+          Object.values(st.players).forEach(pl => { pl.startedAt = st.startedAt; });
+          document.getElementById('race-area').classList.remove('hidden');
+          document.getElementById('race-sections').classList.add('player-layout');
+          generateQuestion();
+          renderTrackAndRank();
           showToast('Balapan baru dimulai!');
         }
-
-        renderRace();
       }
 
-      function checkWinners() {
-        const list = Object.values(st.players || {});
-        list.forEach(p => {
-          if ((p.score || 0) >= st.target && !st.winners.includes(p.id)) {
-            st.winners.push(p.id);
-            if (!st.firstWinAt) {
-              st.firstWinAt = Date.now();
+      function startPolling() {
+        const botTick = setInterval(async () => {
+          if (st.status !== 'playing') return;
+          if (st.mode !== 'host' && st.mode !== 'solo') return;
+
+          const now = Date.now();
+          let anyUpdated = false;
+          let allFinished = true;
+          const list = Object.values(st.players || {});
+
+          for (const p of list) {
+            if ((p.score || 0) < st.target) {
+              allFinished = false;
+            }
+            if (!p.isBot || (p.score || 0) >= st.target) continue;
+
+            if (!p._nextBotMoveAt) {
+              p._nextBotMoveAt = now + (p.botDelayMs || 3000) + Math.floor(Math.random() * 1400);
+            }
+            if (now >= p._nextBotMoveAt) {
+              p._nextBotMoveAt = now + (p.botDelayMs || 3000) + Math.floor(Math.random() * 1400);
+
+              p.score = (p.score || 0) + 1;
+              p.correctCount = (p.correctCount || 0) + 1;
+              if (!p.startedAt) p.startedAt = st.startedAt || now;
+
+              if (p.score >= st.target) {
+                p.finishedAt = now;
+                p.finishDurationMs = Math.max(500, now - p.startedAt);
+              }
+              anyUpdated = true;
+
               if (st.mode === 'host') {
-                fbPatch(`balap_hitung/${st.pin}`, { firstWinAt: st.firstWinAt, winners: st.winners });
+                await fbPatch(`balap_hitung/${st.pin}/players/${p.id}`, {
+                  score: p.score,
+                  correctCount: p.correctCount,
+                  startedAt: p.startedAt,
+                  finishedAt: p.finishedAt || null,
+                  finishDurationMs: p.finishDurationMs || null
+                });
               }
             }
           }
-        });
-        if (st.winners.length >= 3) {
-          endRace();
-        }
-      }
 
-      function handleAnswerSubmit() {
-        if (st.status !== 'playing' || st.mode === 'host' || st.hasFinished) return;
-        const val = parseInt(st.input, 10);
-        if (isNaN(val)) return;
-
-        const me = st.players[st.myId];
-        if (!me) return;
-
-        if (val === st.q.ans) {
-          st.wrongStreak = 0;
-          const elapsed = (Date.now() - st.q.start) / 1000;
-          let pts = 1;
-          if (elapsed < 2) pts = 3;
-          else if (elapsed <= 4) pts = 2;
-
-          me.score = (me.score || 0) + pts;
-          if (me.score >= st.target && !me.finishedAt) {
-            me.finishedAt = Date.now();
+          if (anyUpdated) {
+            renderTrackAndRank();
           }
 
-          if (st.mode === 'player') {
-            fbPatch(`balap_hitung/${st.pin}/players/${st.myId}`, {
-              score: me.score,
-              finishedAt: me.finishedAt || null
-            });
+          const finishedCount = list.filter(pl => (pl.score || 0) >= st.target).length;
+          const neededFinishers = Math.min(3, list.length);
+          if (list.length > 0 && (finishedCount >= neededFinishers || allFinished)) {
+            await endRace();
           }
+        }, 450);
+        st.timers.push(botTick);
 
-          if (me.score >= st.target) {
-            onThisPlayerReachedFinish();
-          } else {
-            showToast(`Benar (${elapsed.toFixed(1)} dtk)! +${pts} poin`);
-            makeQuestion(st.q.text);
-          }
-        } else {
-          st.wrongStreak++;
-          const panel = document.getElementById('question-panel');
-          panel.classList.remove('wrong-shake');
-          void panel.offsetWidth;
-          panel.classList.add('wrong-shake');
-
-          if (st.wrongStreak >= 2) {
-            st.wrongStreak = 0;
-            me.score = Math.max(0, (me.score || 0) - 1);
-            showToast('2x Salah berturut-turut! Poin -1 & Soal baru');
-          } else {
-            showToast('Salah (1/2)! Soal baru...');
-          }
-
-          if (st.mode === 'player') {
-            fbPatch(`balap_hitung/${st.pin}/players/${st.myId}`, { score: me.score });
-          }
-          makeQuestion(st.q.text);
-        }
-
-        checkWinners();
-        renderRace();
-      }
-
-      function startPollingLoop() {
-        const id = setInterval(async () => {
-          if ((st.mode === 'player' || st.mode === 'solo') && st.status === 'playing' && !st.hasFinished) {
-            document.getElementById('q-timer').textContent = ((Date.now() - st.q.start) / 1000).toFixed(1) + ' dtk';
-          }
-
-          if (st.mode === 'host' && st.pin && st.status !== 'ended') {
+        const fbTick = setInterval(async () => {
+          if (st.mode === 'host' && st.pin) {
             const room = await fbGet(`balap_hitung/${st.pin}`);
             if (room && room.players) {
-              Object.keys(room.players).forEach(k => {
-                st.players[k] = room.players[k];
-              });
-              if (st.status === 'playing') checkWinners();
-              renderRace();
+              st.players = room.players;
+              if (st.status === 'lobby') {
+                renderLobbyPlayers();
+              } else if (st.status === 'playing') {
+                renderTrackAndRank();
+                const list = Object.values(st.players || {});
+                const finishedCount = list.filter(pl => (pl.score || 0) >= st.target).length;
+                const neededFinishers = Math.min(3, list.length);
+                if (list.length > 0 && finishedCount >= neededFinishers) {
+                  await endRace();
+                }
+              }
             }
           } else if (st.mode === 'player' && st.pin) {
             const room = await fbGet(`balap_hitung/${st.pin}`);
             if (room) {
               st.target = room.target || st.target;
-              document.getElementById('lbl-target').textContent = st.target;
+              st.diff = room.diff || st.diff;
+              if (room.startedAt) st.startedAt = room.startedAt;
+              if (room.endedAt) st.endedAt = room.endedAt;
 
               if (room.players) {
-                const myLocal = st.players[st.myId];
+                const localMe = st.players[st.myId];
                 st.players = room.players;
-                if (myLocal && st.players[st.myId] && room.status === 'playing') {
-                  if ((myLocal.score || 0) > (st.players[st.myId].score || 0)) {
-                    st.players[st.myId].score = myLocal.score;
-                  }
-                  if (myLocal.finishedAt) {
-                    st.players[st.myId].finishedAt = myLocal.finishedAt;
+                if (localMe && st.players[st.myId] && room.status === 'playing') {
+                  if ((localMe.score || 0) > (st.players[st.myId].score || 0)) {
+                    st.players[st.myId] = { ...st.players[st.myId], ...localMe };
                   }
                 }
               }
-              st.firstWinAt = room.firstWinAt || null;
 
-              // Host menekan "Main Lagi (PIN Sama)" -> kembali ke ruang tunggu lobby secara otomatis
-              if (room.status === 'lobby' && st.status !== 'lobby') {
-                st.status = 'lobby';
-                st.hasFinished = false;
-                st.celebrated = false;
-                st.wrongStreak = 0;
-                st.winners = [];
-                st.firstWinAt = null;
-                document.getElementById('podium-box').classList.add('hidden');
-                document.getElementById('finish-celebration').classList.add('hidden');
-                document.getElementById('question-panel').classList.add('hidden');
-                document.getElementById('player-wait').classList.remove('hidden');
-                showToast('Host memulai ronde baru! Bersiap di garis start...');
-              } else if (room.status === 'playing' && st.status === 'lobby') {
-                st.status = 'playing';
-                st.hasFinished = false;
-                st.celebrated = false;
-                document.getElementById('player-wait').classList.add('hidden');
-                document.getElementById('podium-box').classList.add('hidden');
-                document.getElementById('question-panel').classList.remove('hidden');
-                makeQuestion('');
+              if (room.status === 'lobby') {
+                if (st.status !== 'lobby') {
+                  st.status = 'lobby';
+                  st.endedAt = 0;
+                  st.input = '';
+                  st.celebrated = false;
+                  document.getElementById('end-box').classList.add('hidden');
+                  document.getElementById('race-area').classList.add('hidden');
+                  document.getElementById('player-wait').classList.remove('hidden');
+                  document.getElementById('lobby-box').classList.remove('hidden');
+                  showToast('Host membuka balapan baru! Bersiap...');
+                }
+                renderLobbyPlayers();
+              } else if (room.status === 'playing') {
+                if (st.status === 'lobby') {
+                  st.status = 'playing';
+                  st.startedAt = room.startedAt || Date.now();
+                  if (st.players[st.myId]) {
+                    st.players[st.myId].startedAt = st.startedAt;
+                  }
+                  document.getElementById('player-wait').classList.add('hidden');
+                  document.getElementById('lobby-box').classList.add('hidden');
+                  document.getElementById('end-box').classList.add('hidden');
+                  document.getElementById('race-area').classList.remove('hidden');
+                  document.getElementById('solve-box').classList.remove('hidden');
+                  document.getElementById('race-sections').classList.add('player-layout');
+                  generateQuestion();
+                }
+                renderTrackAndRank();
               } else if (room.status === 'ended' && st.status !== 'ended') {
-                endRace();
+                if (!st.endedAt) st.endedAt = room.endedAt || Date.now();
+                await endRace();
               }
-              renderRace();
             }
           }
-        }, 850);
-        st.timers.push(id);
+        }, 700);
+        st.timers.push(fbTick);
       }
 
-      function startSoloBots() {
-        if (st.botInterval) clearInterval(st.botInterval);
-        const diff = document.getElementById('solo-diff').value;
-        const delay = diff === 'easy' ? 3600 : diff === 'medium' ? 2400 : 1500;
-        st.botInterval = setInterval(() => {
-          if (st.status !== 'playing') return;
-          Object.values(st.players).forEach(p => {
-            if (!p.isBot || (p.score || 0) >= st.target) return;
-            if (Math.random() < 0.78) {
-              p.streak = 0;
-              p.score += diff === 'hard' ? 2 : 1;
-              if (p.score >= st.target && !p.finishedAt) p.finishedAt = Date.now();
-            } else {
-              p.streak = (p.streak || 0) + 1;
-              if (p.streak >= 2) { p.streak = 0; p.score = Math.max(0, p.score - 1); }
-            }
-          });
-          checkWinners();
-          renderRace();
-        }, delay);
+      function switchHomeTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(x => {
+          x.classList.toggle('active', x.getAttribute('data-tab') === tab);
+        });
+        ['solo', 'host', 'join'].forEach(t => {
+          document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab);
+        });
       }
-
-      // Hapus PIN otomatis saat Host menutup tab/browser
-      window.addEventListener('beforeunload', () => {
-        if (st.mode === 'host' && st.pin && !st.roomCleaned) {
-          cleanupHostRoom(true);
-        }
-      });
 
       document.addEventListener('DOMContentLoaded', () => {
         const isHostAllowed = sessionStorage.getItem("arena_host_verified") === "true";
@@ -1213,113 +1511,166 @@
           unlockedEl.classList.toggle("hidden", !isHostAllowed);
         }
 
-        document.querySelectorAll('.tab-btn').forEach(b => {
-          b.addEventListener('click', () => {
-            document.querySelectorAll('.tab-btn').forEach(x => x.classList.remove('active'));
-            b.classList.add('active');
-            const tab = b.getAttribute('data-tab');
-            ['solo', 'host', 'join'].forEach(t => document.getElementById('tab-' + t).classList.toggle('hidden', t !== tab));
-          });
-        });
+        const urlParams = new URLSearchParams(window.location.search);
+        const scannedPin = (urlParams.get('pin') || '').replace(/\D/g, '').slice(0, 6);
+        if (scannedPin.length === 6) {
+          switchHomeTab('join');
+          const pinInput = document.getElementById('join-pin');
+          const nameInput = document.getElementById('join-name');
+          if (pinInput) pinInput.value = scannedPin;
+          if (nameInput) setTimeout(() => nameInput.focus(), 100);
+          showToast(`PIN Room ${scannedPin} terdeteksi dari QR Code! Masukkan nama Anda.`);
+        }
 
-        document.getElementById('host-target-sel').addEventListener('change', (e) => {
-          document.getElementById('host-custom-wrap').classList.toggle('hidden', e.target.value !== 'custom');
+        document.querySelectorAll('.tab-btn').forEach(b => {
+          b.addEventListener('click', () => switchHomeTab(b.getAttribute('data-tab')));
         });
 
         // SOLO
         document.getElementById('btn-start-solo').addEventListener('click', () => {
           st.mode = 'solo';
           st.status = 'playing';
-          st.hasFinished = false;
-          st.celebrated = false;
           st.target = parseInt(document.getElementById('solo-target').value, 10);
-          const botCount = parseInt(document.getElementById('solo-bots').value, 10);
+          st.diff = document.getElementById('solo-diff').value;
+          st.startedAt = Date.now();
+          st.endedAt = 0;
+          st.celebrated = false;
 
           st.players = {};
-          st.players[st.myId] = { id: st.myId, name: 'Anda', score: 0, color: COLORS[0] };
-          const botNames = ['Budi [BOT]', 'Siti [BOT]', 'Andi [BOT]', 'Rina [BOT]', 'Dimas [BOT]'];
-          for (let i = 0; i < botCount; i++) {
-            const bid = 'bot_' + i;
-            st.players[bid] = { id: bid, name: botNames[i], score: 0, color: COLORS[i + 1], isBot: true, streak: 0 };
-          }
+          st.players[st.myId] = {
+            id: st.myId,
+            name: 'Anda',
+            color: RUNNER_COLORS[0],
+            joinedAt: Date.now(),
+            startedAt: st.startedAt,
+            score: 0,
+            correctCount: 0
+          };
 
-          document.getElementById('lbl-target').textContent = st.target;
+          const bots = [
+            { name: 'Raka [BOT]', delay: 2600 },
+            { name: 'Nadia [BOT]', delay: 3300 },
+            { name: 'Fajar [BOT]', delay: 4000 }
+          ];
+          bots.forEach((b, i) => {
+            const bid = 'bot_' + i;
+            st.players[bid] = {
+              id: bid,
+              name: b.name,
+              color: RUNNER_COLORS[i + 1],
+              joinedAt: Date.now() + i + 1,
+              startedAt: st.startedAt,
+              isBot: true,
+              botDelayMs: b.delay,
+              score: 0,
+              correctCount: 0
+            };
+          });
+
           document.getElementById('view-home').classList.add('hidden');
           document.getElementById('view-arena').classList.remove('hidden');
-          document.getElementById('question-panel').classList.remove('hidden');
-          makeQuestion('');
-          renderRace();
-          startSoloBots();
-          startPollingLoop();
+          document.getElementById('lobby-box').classList.add('hidden');
+          document.getElementById('race-area').classList.remove('hidden');
+          document.getElementById('solve-box').classList.remove('hidden');
+          document.getElementById('race-sections').classList.add('player-layout');
+
+          generateQuestion();
+          renderTrackAndRank();
+          startPolling();
         });
 
         // HOST
         document.getElementById('btn-create-room').addEventListener('click', async () => {
           if (sessionStorage.getItem("arena_host_verified") !== "true") return showToast("Akses Host terkunci!");
-          purgeExpiredRooms();
           st.mode = 'host';
           st.pin = String(Math.floor(100000 + Math.random() * 900000));
-          st.roomCleaned = false;
-          st.round = 1;
-          const sel = document.getElementById('host-target-sel').value;
-          st.target = sel === 'custom'
-            ? Math.max(10, parseInt(document.getElementById('host-target-custom').value, 10) || 50)
-            : parseInt(sel, 10);
+          st.target = parseInt(document.getElementById('host-target').value, 10);
+          st.diff = document.getElementById('host-diff').value;
           st.status = 'lobby';
+          st.endedAt = 0;
           st.players = {};
+          st.celebrated = false;
+
+          document.getElementById('display-pin').textContent = st.pin;
+          document.getElementById('view-home').classList.add('hidden');
+          document.getElementById('view-arena').classList.remove('hidden');
+          document.getElementById('host-bar').classList.remove('hidden');
+          document.getElementById('lobby-box').classList.remove('hidden');
+          document.getElementById('race-area').classList.add('hidden');
+          updateLobbyQrCode(st.pin);
+          renderLobbyPlayers();
 
           await fbPut(`balap_hitung/${st.pin}`, {
             pin: st.pin,
             target: st.target,
+            diff: st.diff,
             status: 'lobby',
-            round: 1,
+            startedAt: 0,
+            endedAt: 0,
             players: {}
           });
 
-          document.getElementById('display-pin').textContent = st.pin;
-          document.getElementById('lbl-target').textContent = st.target;
-          document.getElementById('view-home').classList.add('hidden');
-          document.getElementById('view-arena').classList.remove('hidden');
-          document.getElementById('host-bar').classList.remove('hidden');
-          startPollingLoop();
+          startPolling();
         });
 
+        // + TAMBAH BOT (HOST)
         document.getElementById('btn-add-bot').addEventListener('click', async () => {
-          const count = Object.keys(st.players).length;
-          const bid = 'bot_' + Date.now();
-          const botObj = { id: bid, name: 'Bot #' + (count + 1), score: 0, color: COLORS[count % COLORS.length], isBot: true };
+          const count = Object.keys(st.players || {}).length;
+          const bid = 'bot_' + Date.now() + '_' + Math.floor(Math.random() * 100);
+          const botObj = {
+            id: bid,
+            name: 'Bot #' + (count + 1),
+            color: RUNNER_COLORS[count % RUNNER_COLORS.length],
+            joinedAt: Date.now(),
+            isBot: true,
+            botDelayMs: 2800 + Math.floor(Math.random() * 1400),
+            score: 0,
+            correctCount: 0
+          };
           st.players[bid] = botObj;
           await fbPut(`balap_hitung/${st.pin}/players/${bid}`, botObj);
-          renderRace();
+          renderLobbyPlayers();
+          showToast(`${botObj.name} ditambahkan ke lobby!`);
         });
 
+        // START RACE (HOST)
         document.getElementById('btn-host-start').addEventListener('click', async () => {
+          if (Object.keys(st.players || {}).length === 0) {
+            return showToast('Minimal ada 1 peserta atau Bot untuk memulai!');
+          }
           st.status = 'playing';
-          st.winners = [];
-          st.firstWinAt = null;
-          document.getElementById('btn-host-start').classList.add('hidden');
-          document.getElementById('btn-add-bot').classList.add('hidden');
-          document.getElementById('btn-host-end').classList.remove('hidden');
-          await fbPatch(`balap_hitung/${st.pin}`, { status: 'playing', firstWinAt: null, winners: [] });
+          st.startedAt = Date.now();
+          st.endedAt = 0;
 
-          if (st.botInterval) clearInterval(st.botInterval);
-          st.botInterval = setInterval(() => {
-            if (st.status !== 'playing') return;
-            Object.values(st.players).forEach(p => {
-              if (!p.isBot || (p.score || 0) >= st.target) return;
-              p.score += Math.random() < 0.7 ? 2 : 0;
-              if (p.score >= st.target && !p.finishedAt) p.finishedAt = Date.now();
-              fbPatch(`balap_hitung/${st.pin}/players/${p.id}`, {
-                score: p.score,
-                finishedAt: p.finishedAt || null
-              });
-            });
-            checkWinners();
-            renderRace();
-          }, 2300);
+          Object.values(st.players).forEach(pl => {
+            pl.startedAt = st.startedAt;
+            pl.score = 0;
+            pl.correctCount = 0;
+            pl.finishedAt = null;
+            pl.finishDurationMs = null;
+          });
+
+          document.getElementById('lobby-qr-wrap').classList.add('hidden');
+          document.getElementById('btn-add-bot').classList.add('hidden');
+          document.getElementById('btn-host-start').classList.add('hidden');
+          document.getElementById('btn-host-end').classList.remove('hidden');
+
+          document.getElementById('lobby-box').classList.add('hidden');
+          document.getElementById('race-area').classList.remove('hidden');
+          document.getElementById('solve-box').classList.add('hidden');
+          document.getElementById('race-sections').classList.remove('player-layout');
+
+          await fbPatch(`balap_hitung/${st.pin}`, {
+            status: 'playing',
+            startedAt: st.startedAt,
+            endedAt: 0,
+            players: st.players
+          });
+
+          renderTrackAndRank();
         });
 
-        document.getElementById('btn-host-end').addEventListener('click', endRace);
+        document.getElementById('btn-host-end').addEventListener('click', () => endRace());
 
         // JOIN
         document.getElementById('btn-join-room').addEventListener('click', async () => {
@@ -1330,77 +1681,93 @@
 
           const room = await fbGet(`balap_hitung/${pin}`);
           if (!room) return showToast('Room PIN tidak ditemukan!');
-          if (room.status === 'ended') return showToast('Permainan untuk PIN ini sudah berakhir!');
+          if (room.status === 'ended') return showToast('Balapan untuk PIN ini sudah berakhir!');
 
           st.mode = 'player';
           st.pin = pin;
           st.myName = name;
-          st.target = room.target || 50;
+          st.target = room.target || 10;
+          st.diff = room.diff || 'easy';
           st.status = room.status || 'lobby';
-          st.hasFinished = false;
+          st.startedAt = room.startedAt || Date.now();
+          st.endedAt = 0;
           st.celebrated = false;
 
-          const meObj = { id: st.myId, name: st.myName, score: 0, color: COLORS[Math.floor(Math.random() * COLORS.length)] };
+          const existingCount = Object.keys(room.players || {}).length;
+          const meObj = {
+            id: st.myId,
+            name: st.myName,
+            color: RUNNER_COLORS[existingCount % RUNNER_COLORS.length],
+            joinedAt: Date.now(),
+            startedAt: st.status === 'playing' ? st.startedAt : 0,
+            score: 0,
+            correctCount: 0
+          };
           st.players = room.players || {};
           st.players[st.myId] = meObj;
           await fbPut(`balap_hitung/${st.pin}/players/${st.myId}`, meObj);
 
-          document.getElementById('lbl-target').textContent = st.target;
           document.getElementById('view-home').classList.add('hidden');
           document.getElementById('view-arena').classList.remove('hidden');
 
           if (st.status === 'playing') {
-            document.getElementById('question-panel').classList.remove('hidden');
-            makeQuestion('');
+            document.getElementById('lobby-box').classList.add('hidden');
+            document.getElementById('race-area').classList.remove('hidden');
+            document.getElementById('solve-box').classList.remove('hidden');
+            document.getElementById('race-sections').classList.add('player-layout');
+            generateQuestion();
+            renderTrackAndRank();
           } else {
             document.getElementById('player-wait').classList.remove('hidden');
+            document.getElementById('lobby-box').classList.remove('hidden');
+            document.getElementById('race-area').classList.add('hidden');
+            renderLobbyPlayers();
           }
-          renderRace();
-          startPollingLoop();
+          startPolling();
         });
 
         // KEYPAD
-        document.querySelectorAll('.k-btn[data-k]').forEach(btn => {
+        document.querySelectorAll('.k-btn[data-d]').forEach(btn => {
           btn.addEventListener('click', () => {
-            if (st.input.length < 4) {
-              st.input += btn.getAttribute('data-k');
+            if (st.input.length < 5) {
+              st.input += btn.getAttribute('data-d');
               document.getElementById('ans-display').textContent = st.input;
+              checkAnswerInput();
             }
           });
         });
-        document.getElementById('k-minus').addEventListener('click', () => {
-          st.input = st.input.startsWith('-') ? st.input.slice(1) : '-' + st.input;
-          document.getElementById('ans-display').textContent = st.input;
-        });
-        document.getElementById('k-del').addEventListener('click', () => {
+
+        document.getElementById('btn-del').addEventListener('click', () => {
           st.input = st.input.slice(0, -1);
           document.getElementById('ans-display').textContent = st.input;
         });
-        document.getElementById('k-submit').addEventListener('click', handleAnswerSubmit);
+
+        document.getElementById('btn-submit').addEventListener('click', () => {
+          checkAnswerInput();
+        });
 
         document.addEventListener('keydown', (e) => {
-          if (document.getElementById('question-panel').classList.contains('hidden')) return;
-          if (e.key >= '0' && e.key <= '9' && st.input.length < 4) {
-            st.input += e.key;
-            document.getElementById('ans-display').textContent = st.input;
-          } else if (e.key === '-') {
-            st.input = st.input.startsWith('-') ? st.input.slice(1) : '-' + st.input;
-            document.getElementById('ans-display').textContent = st.input;
+          if (document.getElementById('race-area').classList.contains('hidden')) return;
+          if (document.getElementById('solve-box').classList.contains('hidden')) return;
+          if (e.key >= '0' && e.key <= '9') {
+            if (st.input.length < 5) {
+              st.input += e.key;
+              document.getElementById('ans-display').textContent = st.input;
+              checkAnswerInput();
+            }
           } else if (e.key === 'Backspace') {
             st.input = st.input.slice(0, -1);
             document.getElementById('ans-display').textContent = st.input;
           } else if (e.key === 'Enter') {
-            handleAnswerSubmit();
+            checkAnswerInput();
           }
         });
 
-        // Tombol Main Lagi (PIN Sama)
         document.getElementById('btn-play-again').addEventListener('click', resetToLobbySamePin);
-
-        // Saat menekan "Kembali ke Awal", PIN tetap ada di database
         document.getElementById('btn-reload').addEventListener('click', () => {
-          st.pin = '';
-          location.reload();
+          const cleanUrl = new URL(window.location.href);
+          cleanUrl.search = '';
+          window.location.href = cleanUrl.toString();
         });
       });
     })();
