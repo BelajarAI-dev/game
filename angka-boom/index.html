@@ -23,7 +23,7 @@
       background: radial-gradient(circle at top, #1e293b 0%, var(--bg) 75%);
       color: var(--text);
       min-height: 100vh;
-      padding: 14px;
+      padding: 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -35,23 +35,23 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     .back-btn {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 7px 13px;
+      padding: 6px 12px;
       background: rgba(255,255,255,0.08);
       color: #fff;
       text-decoration: none;
       border-radius: 10px;
-      font-size: 0.85rem;
+      font-size: 0.83rem;
       font-weight: 600;
       border: 1px solid var(--border);
     }
     .conn-badge {
-      font-size: 0.78rem;
+      font-size: 0.76rem;
       padding: 4px 10px;
       border-radius: 999px;
       background: rgba(16,185,129,0.18);
@@ -64,7 +64,7 @@
       background: var(--panel);
       border: 1px solid var(--border);
       border-radius: 20px;
-      padding: 22px;
+      padding: 20px;
       box-shadow: 0 20px 40px rgba(0,0,0,0.35);
       position: relative;
     }
@@ -249,9 +249,9 @@
       background: radial-gradient(circle at center, rgba(239,68,68,0.16) 0%, rgba(15,23,42,0.92) 75%);
       border: 1px solid rgba(239,68,68,0.38);
       border-radius: 16px;
-      padding: 16px;
+      padding: 14px;
       text-align: center;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       position: relative;
       overflow: hidden;
     }
@@ -264,27 +264,27 @@
       justify-content: space-between;
       align-items: center;
       flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 10px;
+      gap: 6px;
+      margin-bottom: 8px;
     }
     .session-badge {
       background: rgba(59,130,246,0.22);
       border: 1px solid rgba(59,130,246,0.45);
       color: #93c5fd;
-      padding: 4px 12px;
+      padding: 4px 10px;
       border-radius: 999px;
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       font-weight: 800;
     }
     .timer-pill {
       background: rgba(16,185,129,0.2);
       border: 1px solid rgba(16,185,129,0.5);
       color: #6ee7b7;
-      padding: 5px 14px;
+      padding: 4px 12px;
       border-radius: 999px;
-      font-size: 0.95rem;
+      font-size: 0.88rem;
       font-weight: 900;
-      letter-spacing: 0.4px;
+      letter-spacing: 0.3px;
     }
     .timer-pill.waiting {
       background: rgba(245,158,11,0.24);
@@ -303,9 +303,9 @@
     }
 
     .bomb-visual {
-      font-size: 3.1rem;
-      line-height: 1.1;
-      margin: 4px 0;
+      font-size: 2.7rem;
+      line-height: 1.05;
+      margin: 2px 0;
       display: inline-block;
       animation: bombPulse 1.1s infinite alternate ease-in-out;
     }
@@ -322,63 +322,74 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 14px;
-      margin: 10px 0 6px;
-      flex-wrap: wrap;
+      gap: 12px;
+      margin: 8px 0 4px;
+      flex-wrap: nowrap;
     }
     .range-box {
       background: var(--panel);
       border: 2px solid var(--blue);
-      border-radius: 14px;
-      padding: 8px 20px;
-      min-width: 110px;
+      border-radius: 13px;
+      padding: 6px 16px;
+      min-width: 96px;
     }
     .range-lbl {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       color: var(--muted);
       font-weight: 700;
       text-transform: uppercase;
     }
     .range-num {
-      font-size: clamp(1.7rem, 4.5vw, 2.4rem);
+      font-size: clamp(1.55rem, 4.5vw, 2.3rem);
       font-weight: 900;
       color: #fde047;
+      line-height: 1.15;
     }
     .range-sep {
-      font-size: 1.3rem;
+      font-size: 1.1rem;
       font-weight: 900;
       color: var(--muted);
     }
     .session-summary-strip {
-      margin-top: 10px;
-      padding: 9px 13px;
+      margin-top: 8px;
+      padding: 7px 11px;
       border-radius: 10px;
       background: rgba(255,255,255,0.06);
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       color: #e2e8f0;
-      line-height: 1.45;
+      line-height: 1.4;
     }
 
     /* KEYPAD & INPUT PESERTA */
+    .player-mini-stats {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+      gap: 4px;
+    }
     .q-box {
       text-align: center;
-      padding: 14px;
+      padding: 10px;
       background: var(--panel);
-      border-radius: 14px;
+      border-radius: 13px;
       border: 1px solid rgba(59,130,246,0.35);
-      margin-bottom: 12px;
+      margin-bottom: 10px;
     }
     .ans-display {
-      margin: 8px auto 0;
-      max-width: 240px;
-      height: 50px;
-      border-radius: 11px;
+      margin: 6px auto 0;
+      max-width: 230px;
+      height: 44px;
+      border-radius: 10px;
       background: var(--panel-dark);
       border: 2px solid var(--blue);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.75rem;
+      font-size: 1.65rem;
       font-weight: 900;
       letter-spacing: 3px;
       color: #fde047;
@@ -386,15 +397,15 @@
     .keypad {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
+      gap: 7px;
       max-width: 340px;
       margin: 0 auto;
     }
     .k-btn {
-      padding: 13px;
-      font-size: 1.2rem;
+      padding: 11px;
+      font-size: 1.18rem;
       font-weight: 800;
-      border-radius: 11px;
+      border-radius: 10px;
       border: 1px solid var(--border);
       background: var(--panel);
       color: #fff;
@@ -407,11 +418,11 @@
 
     .status-lock-card {
       text-align: center;
-      padding: 18px 14px;
-      border-radius: 14px;
+      padding: 14px 12px;
+      border-radius: 13px;
       background: rgba(16,185,129,0.12);
       border: 1px solid rgba(16,185,129,0.4);
-      margin-top: 8px;
+      margin-top: 6px;
     }
     .status-lock-card.waiting-card {
       background: rgba(245,158,11,0.13);
@@ -420,6 +431,77 @@
     .status-lock-card.eliminated {
       background: rgba(239,68,68,0.14);
       border-color: rgba(239,68,68,0.48);
+    }
+
+    /* ============================================================
+       OPTIMASI TAMPILAN LAYAR HP (COMPACT ONE-SCREEN VIEWPORT)
+       Agar rentang angka & tombol input selalu terlihat berdekatan
+       tanpa harus scroll pada HP peserta!
+       ============================================================ */
+    @media (max-width: 640px) {
+      body { padding: 8px; }
+      .topbar { margin-bottom: 6px; }
+      .card { padding: 12px; border-radius: 16px; }
+      .box { padding: 10px; margin-bottom: 10px; border-radius: 13px; }
+
+      .game-area-player .bomb-arena {
+        padding: 9px 10px;
+        margin-bottom: 8px;
+        border-radius: 13px;
+      }
+      .game-area-player .bomb-visual,
+      .game-area-player #lbl-phase-caption,
+      .game-area-player #lbl-active-count {
+        display: none;
+      }
+      .game-area-player .session-header {
+        margin-bottom: 6px;
+      }
+      .game-area-player .range-display {
+        margin: 2px 0;
+        gap: 10px;
+      }
+      .game-area-player .range-box {
+        padding: 4px 14px;
+        min-width: 88px;
+        border-radius: 10px;
+      }
+      .game-area-player .range-lbl {
+        font-size: 0.62rem;
+      }
+      .game-area-player .range-num {
+        font-size: 1.55rem;
+      }
+      .game-area-player .session-summary-strip {
+        margin-top: 6px;
+        padding: 5px 8px;
+        font-size: 0.74rem;
+        line-height: 1.3;
+      }
+      .game-area-player #solve-box {
+        padding: 9px 10px;
+        margin-bottom: 10px;
+      }
+      .game-area-player .player-mini-stats {
+        margin-bottom: 6px;
+        font-size: 0.75rem;
+      }
+      .game-area-player .q-box {
+        padding: 7px 8px;
+        margin-bottom: 8px;
+      }
+      .game-area-player .ans-display {
+        height: 40px;
+        margin-top: 4px;
+        font-size: 1.5rem;
+      }
+      .game-area-player .keypad {
+        gap: 6px;
+      }
+      .game-area-player .k-btn {
+        padding: 10px 6px;
+        font-size: 1.15rem;
+      }
     }
 
     /* RANKING LIST */
@@ -733,14 +815,14 @@
       </div>
 
       <div id="player-wait" class="pin-box hidden">
-        <h3>⏳ Berhasil Masuk Lobby!</h3>
-        <p style="color:var(--muted);margin-top:6px;">Menunggu Host memulai Sesi 1...</p>
+        <h3>⏳ Ruang Tunggu Peserta</h3>
+        <p style="color:var(--muted);margin-top:6px;">Menunggu Host memulai permainan...</p>
       </div>
 
       <!-- LOBBY PARTICIPANTS LIST -->
       <div id="lobby-box" class="box hidden">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
-          <h3>👥 Peserta yang Sudah Bergabung</h3>
+          <h3>👥 Peserta di Ruang Tunggu</h3>
           <span class="conn-badge" id="lobby-count-badge">0 Peserta</span>
         </div>
         <div id="lobby-players-grid" class="lobby-players-grid"></div>
@@ -780,16 +862,16 @@
 
         <!-- PLAYER KEYPAD INPUT -->
         <div class="box" id="solve-box">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:0.86rem;color:var(--muted);flex-wrap:wrap;gap:6px;">
-            <span>Poin Kamu: <strong id="lbl-my-score" style="color:#34d399;">0 Poin</strong></span>
+          <div class="player-mini-stats">
+            <span>Poin: <strong id="lbl-my-score" style="color:#34d399;">0 Poin</strong></span>
             <span>Status: <strong id="lbl-my-status" style="color:#93c5fd;">Aktif</strong></span>
-            <span>Rata-rata Kecepatan: <strong id="lbl-my-speed" style="color:#fde047;">-</strong></span>
+            <span>Kecepatan: <strong id="lbl-my-speed" style="color:#fde047;">-</strong></span>
           </div>
 
           <div id="active-input-panel">
             <div class="q-box">
-              <div style="font-size:0.8rem;color:var(--muted);">
-                Masukkan 1 angka antara <strong id="hint-min" style="color:#fde047;">1</strong> – <strong id="hint-max" style="color:#fde047;">100</strong> (Lolos: +2 poin • Acuan range baru: +3 poin)
+              <div style="font-size:0.78rem;color:var(--muted);">
+                Tebak angka <strong id="hint-min" style="color:#fde047;">1</strong> – <strong id="hint-max" style="color:#fde047;">100</strong> (Lolos: +2 • Acuan range: +3)
               </div>
               <div class="ans-display" id="ans-display"></div>
             </div>
@@ -810,9 +892,9 @@
           </div>
 
           <div id="locked-input-panel" class="status-lock-card hidden">
-            <div style="font-size:1.6rem;margin-bottom:4px;" id="locked-icon">✅</div>
+            <div style="font-size:1.5rem;margin-bottom:4px;" id="locked-icon">✅</div>
             <strong id="locked-title">Angka Terkunci untuk Sesi Ini!</strong>
-            <p style="font-size:0.86rem;color:#cbd5e1;margin-top:4px;" id="locked-desc">
+            <p style="font-size:0.84rem;color:#cbd5e1;margin-top:4px;" id="locked-desc">
               Menunggu sesi berakhir untuk melihat hasil dan rentang angka terbaru...
             </p>
           </div>
@@ -885,7 +967,7 @@
         boomNumber: 50,
         roundNum: 1,
         sessionNum: 1,
-        phase: 'guessing', // 'guessing' (10s) | 'waiting' (5s)
+        phase: 'guessing',
         phaseStartedAt: 0,
         emptySessionsStreak: 0,
         lastSummary: 'Kirim 1 angka pilihanmu sebelum waktu 10 detik berakhir!',
@@ -1091,7 +1173,7 @@
 
       function formatAvgSpeed(p) {
         const avg = getAvgResponseMs(p);
-        if (!isFinite(avg)) return 'Belum mengajukan';
+        if (!isFinite(avg)) return 'Belum ada';
         return `${(avg / 1000).toFixed(2).replace('.', ',')} dtk`;
       }
 
@@ -1140,6 +1222,11 @@
         const activePlayers = allPlayers.filter(p => (p.status || 'active') === 'active');
         const isWaiting = st.phase === 'waiting';
 
+        const gameAreaEl = document.getElementById('game-area');
+        if (gameAreaEl) {
+          gameAreaEl.classList.toggle('game-area-player', st.mode !== 'host');
+        }
+
         document.getElementById('lbl-session-info').textContent = isWaiting
           ? `Jeda Sesi #${st.sessionNum} → #${st.sessionNum + 1} • Ronde #${st.roundNum}`
           : `Sesi #${st.sessionNum} • Ronde #${st.roundNum}`;
@@ -1180,7 +1267,7 @@
             lockedPanel.classList.remove('eliminated', 'waiting-card');
 
             if (me.status === 'boom') {
-              statusLbl.textContent = '💥 Terkena Boom';
+              statusLbl.textContent = '💥 Kena Boom';
               statusLbl.style.color = '#fca5a5';
               activePanel.classList.add('hidden');
               lockedPanel.classList.remove('hidden');
@@ -1198,16 +1285,16 @@
               lockedTitle.textContent = 'KAMU DIDISKUALIFIKASI';
               lockedDesc.textContent = 'Terkena pengurangan poin 3× berturut-turut.';
             } else if (isWaiting) {
-              statusLbl.textContent = '⏳ Sesi Tunggu (5 dtk)';
+              statusLbl.textContent = '⏳ Tunggu 5 dtk';
               statusLbl.style.color = '#fde047';
               activePanel.classList.add('hidden');
               lockedPanel.classList.remove('hidden');
               lockedPanel.classList.add('waiting-card');
               lockedIcon.textContent = '⏳';
               lockedTitle.textContent = me.lastSessionNote || 'Evaluasi Sesi Selesai!';
-              lockedDesc.textContent = `Perhatikan rentang baru (${st.minRange} – ${st.maxRange}). Sesi berikutnya segera dimulai...`;
+              lockedDesc.textContent = `Rentang baru: ${st.minRange} – ${st.maxRange}. Sesi berikutnya segera dimulai...`;
             } else if (me.guessSession === st.sessionNum && me.currentGuess !== null && me.currentGuess !== undefined) {
-              statusLbl.textContent = '🔒 Sudah Mengajukan';
+              statusLbl.textContent = '🔒 Terkunci';
               statusLbl.style.color = '#34d399';
               activePanel.classList.add('hidden');
               lockedPanel.classList.remove('hidden');
@@ -1215,7 +1302,7 @@
               lockedTitle.textContent = `Angka ${me.currentGuess} Terkunci!`;
               lockedDesc.textContent = 'Menunggu sisa waktu 10 detik berakhir...';
             } else {
-              statusLbl.textContent = `🟢 Aktif (Penalti beruntun: ${me.penaltyStreak || 0}/3)`;
+              statusLbl.textContent = `🟢 Aktif (${me.penaltyStreak || 0}/3)`;
               statusLbl.style.color = '#34d399';
               activePanel.classList.remove('hidden');
               lockedPanel.classList.add('hidden');
@@ -1264,9 +1351,6 @@
         }).join('');
       }
 
-      /*
-       * Evaluasi Saat Sesi Menebak 10 Detik Berakhir -> Masuk Sesi Tunggu 5 Detik
-       */
       async function evaluateGuessingPhaseEnd() {
         if (st.status !== 'playing' || st.phase !== 'guessing' || st.transitioningPhase) return;
         st.transitioningPhase = true;
@@ -1291,7 +1375,6 @@
             p => p.guessSession === st.sessionNum && p.currentGuess !== null && p.currentGuess !== undefined
           );
 
-          // ATURAN 8: Tidak ada satu pun peserta yang menjawab di sesi ini
           if (respondents.length === 0) {
             st.emptySessionsStreak += 1;
 
@@ -1326,18 +1409,16 @@
             return;
           }
 
-          // Ada peserta yang menjawab
           st.emptySessionsStreak = 0;
 
           let boomVictims = [];
           let outOfRangeCount = 0;
-          let safeSubmissions = []; // { playerId, guess }
+          let safeSubmissions = [];
 
           activeList.forEach(p => {
             const answeredThisSession =
               p.guessSession === st.sessionNum && p.currentGuess !== null && p.currentGuess !== undefined;
 
-            // REVISI ATURAN 4 & 5: Tidak menjawab -> -1 poin; 3x berturut-turut poin dikurangi -> diskualifikasi
             if (!answeredThisSession) {
               p.score = (p.score || 0) - 1;
               p.penaltyStreak = (p.penaltyStreak || 0) + 1;
@@ -1351,7 +1432,6 @@
 
             const g = Number(p.currentGuess);
 
-            // ATURAN 7 & 5: Menjawab di luar range -> -1 poin; 3x berturut-turut poin dikurangi -> diskualifikasi
             if (g < st.minRange || g > st.maxRange) {
               p.score = (p.score || 0) - 1;
               p.penaltyStreak = (p.penaltyStreak || 0) + 1;
@@ -1364,7 +1444,6 @@
               return;
             }
 
-            // Jawaban valid di dalam rentang -> reset penaltyStreak
             p.penaltyStreak = 0;
 
             if (g === st.boomNumber) {
@@ -1377,7 +1456,6 @@
             }
           });
 
-          // Hitung batas range baru dari tebakan aman
           const prevMin = st.minRange;
           const prevMax = st.maxRange;
           let nextMin = prevMin;
@@ -1392,9 +1470,6 @@
             }
           });
 
-          // REVISI ATURAN 3:
-          // - Lolos Angka Boom = +2 poin
-          // - Tebakan yang menjadi acuan batas range baru = +3 poin
           const anchorNames = [];
           safeSubmissions.forEach(item => {
             const p = st.players[item.playerId];
@@ -1454,8 +1529,7 @@
             return;
           }
 
-          // Masuk ke SESI TUNGGU 5 DETIK (REVISI ATURAN 1)
-          st.lastSummary = `${summaryParts.join(' ')} ⏳ Sesi berikutnya dimulai dalam 5 detik...`;
+          st.lastSummary = `${summaryParts.join(' ')} ⏳ Sesi berikutnya dalam 5 detik...`;
           st.phase = 'waiting';
           st.phaseStartedAt = Date.now();
 
@@ -1466,9 +1540,6 @@
         }
       }
 
-      /*
-       * Transisi Setelah Sesi Tunggu 5 Detik Selesai -> Mulai Sesi Menebak Berikutnya
-       */
       async function startNextGuessingSession() {
         if (st.status !== 'playing' || st.phase !== 'waiting' || st.transitioningPhase) return;
         st.transitioningPhase = true;
@@ -1562,9 +1633,9 @@
       async function endGame(reasonText) {
         if (st.status === 'ended') return;
         st.status = 'ended';
-        clearAllTimers();
 
         if (st.mode === 'host') {
+          clearAllTimers();
           document.getElementById('lobby-qr-wrap').classList.add('hidden');
           document.getElementById('btn-host-end').classList.add('hidden');
           document.getElementById('btn-play-again').classList.remove('hidden');
@@ -1573,8 +1644,12 @@
             lastSummary: reasonText || st.lastSummary
           });
         } else if (st.mode === 'solo') {
+          clearAllTimers();
           document.getElementById('btn-play-again').classList.remove('hidden');
         }
+        // Untuk mode 'player', polling Firebase tetap aktif agar ketika Host menekan
+        // "Main Lagi (PIN Sama)" dan mengubah status room ke 'lobby', layar HP peserta
+        // langsung otomatis kembali masuk ke ruang tunggu.
 
         document.getElementById('lobby-box').classList.add('hidden');
         document.getElementById('game-area').classList.add('hidden');
@@ -1712,7 +1787,7 @@
             players: resetPlayers
           });
           startPolling();
-          showToast('Lobby dibuka kembali dengan PIN yang sama!');
+          showToast('Ruang tunggu dibuka kembali dengan PIN yang sama!');
         } else if (st.mode === 'solo') {
           st.status = 'playing';
           st.phase = 'guessing';
@@ -1801,7 +1876,7 @@
         }, 120);
         st.timers.push(fastTick);
 
-        // Sinkronisasi Firebase untuk Host & Player
+        // Sinkronisasi Firebase untuk Host & Player (termasuk saat status === 'ended' pada Player)
         const fbTick = setInterval(async () => {
           if (st.mode === 'host' && st.pin) {
             const room = await fbGet(`angka_boom/${st.pin}`);
@@ -1849,7 +1924,7 @@
             if (room.players) {
               const localMe = st.players[st.myId];
               st.players = room.players;
-              if (localMe && st.players[st.myId] && st.phase === 'guessing' && localMe.guessSession === st.sessionNum) {
+              if (localMe && st.players[st.myId] && room.status === 'playing' && st.phase === 'guessing' && localMe.guessSession === st.sessionNum) {
                 st.players[st.myId].currentGuess = localMe.currentGuess;
                 st.players[st.myId].guessSession = localMe.guessSession;
                 st.players[st.myId].submitCount = Math.max(st.players[st.myId].submitCount || 0, localMe.submitCount || 0);
@@ -1861,15 +1936,18 @@
               if (st.status !== 'lobby') {
                 st.status = 'lobby';
                 st.celebrated = false;
+                st.input = '';
+                document.getElementById('ans-display').textContent = '';
                 document.getElementById('end-box').classList.add('hidden');
+                document.getElementById('my-end-stats').classList.add('hidden');
                 document.getElementById('game-area').classList.add('hidden');
                 document.getElementById('player-wait').classList.remove('hidden');
                 document.getElementById('lobby-box').classList.remove('hidden');
-                showToast('Host membuka permainan baru! Bersiap...');
+                showToast('Host membuka ruang tunggu untuk permainan baru!');
               }
               renderLobbyPlayers();
             } else if (room.status === 'playing') {
-              if (st.status === 'lobby') {
+              if (st.status === 'lobby' || st.status === 'ended') {
                 st.status = 'playing';
                 document.getElementById('player-wait').classList.add('hidden');
                 document.getElementById('lobby-box').classList.add('hidden');
@@ -2065,7 +2143,7 @@
           st.players[bid] = botObj;
           await fbPut(`angka_boom/${st.pin}/players/${bid}`, botObj);
           renderLobbyPlayers();
-          showToast(`${botObj.name} ditambahkan ke lobby!`);
+          showToast(`${botObj.name} ditambahkan ke ruang tunggu!`);
         });
 
         // HOST START SESI 1
