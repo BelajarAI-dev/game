@@ -255,6 +255,10 @@
       position: relative;
       overflow: hidden;
     }
+    .bomb-arena.waiting-phase {
+      background: radial-gradient(circle at center, rgba(245,158,11,0.18) 0%, rgba(15,23,42,0.94) 75%);
+      border-color: rgba(245,158,11,0.55);
+    }
     .session-header {
       display: flex;
       justify-content: space-between;
@@ -281,6 +285,11 @@
       font-size: 0.95rem;
       font-weight: 900;
       letter-spacing: 0.4px;
+    }
+    .timer-pill.waiting {
+      background: rgba(245,158,11,0.24);
+      border-color: #f59e0b;
+      color: #fde047;
     }
     .timer-pill.urgent {
       background: rgba(239,68,68,0.28);
@@ -342,11 +351,12 @@
     }
     .session-summary-strip {
       margin-top: 10px;
-      padding: 8px 12px;
+      padding: 9px 13px;
       border-radius: 10px;
-      background: rgba(255,255,255,0.05);
-      font-size: 0.84rem;
-      color: #cbd5e1;
+      background: rgba(255,255,255,0.06);
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      line-height: 1.45;
     }
 
     /* KEYPAD & INPUT PESERTA */
@@ -403,6 +413,10 @@
       border: 1px solid rgba(16,185,129,0.4);
       margin-top: 8px;
     }
+    .status-lock-card.waiting-card {
+      background: rgba(245,158,11,0.13);
+      border-color: rgba(245,158,11,0.45);
+    }
     .status-lock-card.eliminated {
       background: rgba(239,68,68,0.14);
       border-color: rgba(239,68,68,0.48);
@@ -450,6 +464,10 @@
     .stat-pill.win {
       background: rgba(16,185,129,0.2);
       color: #34d399;
+    }
+    .stat-pill.bonus {
+      background: rgba(250,204,21,0.22);
+      color: #fde047;
     }
     .stat-pill.boom {
       background: rgba(239,68,68,0.22);
@@ -598,16 +616,16 @@
     <!-- HOME -->
     <div id="view-home">
       <h1>💣 Angka Boom (Sesi Serentak)</h1>
-      <p class="sub">Hindari Angka Boom tersembunyi di dalam rentang angka! Semua peserta menebak serentak 10 detik tiap sesi.</p>
+      <p class="sub">Hindari Angka Boom tersembunyi di dalam rentang angka! 10 detik menebak + 5 detik sesi tunggu hasil.</p>
 
       <div class="rules-banner">
         <strong>⚡ Aturan Permainan:</strong>
-        Tiap sesi berdurasi <strong>10 detik</strong> (maksimal <strong>1× tebakan/sesi</strong>) •
-        Lolos Angka Boom = <strong>+1 Poin</strong> •
+        Sesi tebak <strong>10 detik</strong> + sesi tunggu hasil <strong>5 detik</strong> (1× tebakan/sesi) •
+        Lolos Angka Boom = <strong>+2 Poin</strong> •
+        Tebakan menjadi <strong>acuan batas range baru = +3 Poin</strong> •
         Kena Angka Boom = <strong>💥 Gugur</strong> •
-        Jawab di luar rentang = <strong>-1 Poin</strong> •
-        2× sesi beruntun tidak menjawab = <strong>-1 Poin</strong> •
-        <strong>2× pengurangan poin beruntun = Diskualifikasi</strong> •
+        Tidak menjawab atau jawab di luar rentang = <strong>-1 Poin</strong> •
+        <strong>3× pengurangan poin beruntun = Diskualifikasi</strong> •
         Peringkat diurutkan dari <strong>Poin Tertinggi</strong> lalu <strong>Kecepatan Pengajuan</strong>.
       </div>
 
@@ -664,8 +682,8 @@
               </select>
             </div>
             <div class="fg">
-              <label>Durasi Tiap Sesi</label>
-              <input type="text" value="10 Detik / Sesi (Otomatis)" disabled />
+              <label>Alur Waktu Tiap Sesi</label>
+              <input type="text" value="10 Detik Tebak + 5 Detik Tunggu" disabled />
             </div>
           </div>
           <button id="btn-create-room" class="btn btn-green">Buat Room Multiplayer</button>
@@ -731,15 +749,15 @@
       <!-- ACTIVE GAME AREA -->
       <div id="game-area" class="hidden">
         <!-- BOMB & RANGE BOARD -->
-        <div class="bomb-arena">
+        <div class="bomb-arena" id="bomb-arena-box">
           <div class="session-header">
             <span class="session-badge" id="lbl-session-info">Sesi #1 • Ronde #1</span>
             <span class="conn-badge" id="lbl-active-count">0 Peserta Aktif</span>
-            <span class="timer-pill" id="lbl-session-timer">⏱️ 10.0 detik</span>
+            <span class="timer-pill" id="lbl-session-timer">⏱️ Tebak: 10.0 detik</span>
           </div>
 
           <div class="bomb-visual" id="bomb-icon">💣</div>
-          <div style="font-size:0.82rem;color:#fca5a5;font-weight:700;">
+          <div style="font-size:0.82rem;color:#fca5a5;font-weight:700;" id="lbl-phase-caption">
             HINDARI ANGKA BOOM DI DALAM RENTANG AMAN BERIKUT:
           </div>
 
@@ -771,7 +789,7 @@
           <div id="active-input-panel">
             <div class="q-box">
               <div style="font-size:0.8rem;color:var(--muted);">
-                Masukkan 1 angka antara <strong id="hint-min" style="color:#fde047;">1</strong> – <strong id="hint-max" style="color:#fde047;">100</strong> (1× kesempatan per sesi)
+                Masukkan 1 angka antara <strong id="hint-min" style="color:#fde047;">1</strong> – <strong id="hint-max" style="color:#fde047;">100</strong> (Lolos: +2 poin • Acuan range baru: +3 poin)
               </div>
               <div class="ans-display" id="ans-display"></div>
             </div>
@@ -853,7 +871,8 @@
   <script>
     (function () {
       const DB_URL = "https://game-math-7361f-default-rtdb.asia-southeast1.firebasedatabase.app";
-      const SESSION_DURATION_MS = 10000; // 10 detik per sesi
+      const GUESS_DURATION_MS = 10000; // 10 detik sesi menebak
+      const WAIT_DURATION_MS = 5000;   // 5 detik sesi tunggu hasil
 
       let st = {
         mode: 'solo',
@@ -866,13 +885,14 @@
         boomNumber: 50,
         roundNum: 1,
         sessionNum: 1,
-        sessionStartedAt: 0,
+        phase: 'guessing', // 'guessing' (10s) | 'waiting' (5s)
+        phaseStartedAt: 0,
         emptySessionsStreak: 0,
         lastSummary: 'Kirim 1 angka pilihanmu sebelum waktu 10 detik berakhir!',
         status: 'lobby',
         input: '',
         players: {},
-        evaluatingSession: false,
+        transitioningPhase: false,
         confettiRunning: false,
         celebrated: false,
         timers: []
@@ -1075,10 +1095,6 @@
         return `${(avg / 1000).toFixed(2).replace('.', ',')} dtk`;
       }
 
-      /*
-       * Aturan 9: Peringkat ditentukan pertama berdasarkan Poin tertinggi,
-       * kedua berdasarkan Kecepatan Pengajuan angka (rata-rata waktu respon tercepat).
-       */
       function getSortedPlayers() {
         const list = Object.values(st.players || {});
         return list.sort((a, b) => {
@@ -1122,16 +1138,28 @@
       function renderGameUi() {
         const allPlayers = Object.values(st.players || {});
         const activePlayers = allPlayers.filter(p => (p.status || 'active') === 'active');
+        const isWaiting = st.phase === 'waiting';
 
-        document.getElementById('lbl-session-info').textContent = `Sesi #${st.sessionNum} • Ronde #${st.roundNum}`;
+        document.getElementById('lbl-session-info').textContent = isWaiting
+          ? `Jeda Sesi #${st.sessionNum} → #${st.sessionNum + 1} • Ronde #${st.roundNum}`
+          : `Sesi #${st.sessionNum} • Ronde #${st.roundNum}`;
         document.getElementById('lbl-active-count').textContent = `${activePlayers.length} / ${allPlayers.length} Aktif`;
         document.getElementById('lbl-min-range').textContent = st.minRange;
         document.getElementById('lbl-max-range').textContent = st.maxRange;
         document.getElementById('lbl-last-session-summary').textContent = st.lastSummary;
 
+        const arenaBox = document.getElementById('bomb-arena-box');
+        const phaseCaption = document.getElementById('lbl-phase-caption');
+        if (arenaBox && phaseCaption) {
+          arenaBox.classList.toggle('waiting-phase', isWaiting);
+          phaseCaption.textContent = isWaiting
+            ? '⏳ SESI TUNGGU (5 DETIK) — BERSIAP UNTUK SESI BERIKUTNYA:'
+            : 'HINDARI ANGKA BOOM DI DALAM RENTANG AMAN BERIKUT:';
+        }
+
         const spanSize = st.maxRange - st.minRange + 1;
         const bombEl = document.getElementById('bomb-icon');
-        if (bombEl) bombEl.classList.toggle('danger', spanSize <= 10);
+        if (bombEl) bombEl.classList.toggle('danger', spanSize <= 10 && !isWaiting);
 
         // Panel Input Peserta (Solo & Player)
         if (st.mode !== 'host') {
@@ -1148,6 +1176,8 @@
             const lockedIcon = document.getElementById('locked-icon');
             const lockedTitle = document.getElementById('locked-title');
             const lockedDesc = document.getElementById('locked-desc');
+
+            lockedPanel.classList.remove('eliminated', 'waiting-card');
 
             if (me.status === 'boom') {
               statusLbl.textContent = '💥 Terkena Boom';
@@ -1166,18 +1196,26 @@
               lockedPanel.classList.add('eliminated');
               lockedIcon.textContent = '⛔';
               lockedTitle.textContent = 'KAMU DIDISKUALIFIKASI';
-              lockedDesc.textContent = 'Terkena pengurangan poin 2× berturut-turut.';
+              lockedDesc.textContent = 'Terkena pengurangan poin 3× berturut-turut.';
+            } else if (isWaiting) {
+              statusLbl.textContent = '⏳ Sesi Tunggu (5 dtk)';
+              statusLbl.style.color = '#fde047';
+              activePanel.classList.add('hidden');
+              lockedPanel.classList.remove('hidden');
+              lockedPanel.classList.add('waiting-card');
+              lockedIcon.textContent = '⏳';
+              lockedTitle.textContent = me.lastSessionNote || 'Evaluasi Sesi Selesai!';
+              lockedDesc.textContent = `Perhatikan rentang baru (${st.minRange} – ${st.maxRange}). Sesi berikutnya segera dimulai...`;
             } else if (me.guessSession === st.sessionNum && me.currentGuess !== null && me.currentGuess !== undefined) {
               statusLbl.textContent = '🔒 Sudah Mengajukan';
               statusLbl.style.color = '#34d399';
               activePanel.classList.add('hidden');
               lockedPanel.classList.remove('hidden');
-              lockedPanel.classList.remove('eliminated');
               lockedIcon.textContent = '🔒';
               lockedTitle.textContent = `Angka ${me.currentGuess} Terkunci!`;
-              lockedDesc.textContent = 'Menunggu sesi 10 detik selesai untuk melihat hasil tebakan & rentang baru...';
+              lockedDesc.textContent = 'Menunggu sisa waktu 10 detik berakhir...';
             } else {
-              statusLbl.textContent = '🟢 Aktif (Siap Menebak)';
+              statusLbl.textContent = `🟢 Aktif (Penalti beruntun: ${me.penaltyStreak || 0}/3)`;
               statusLbl.style.color = '#34d399';
               activePanel.classList.remove('hidden');
               lockedPanel.classList.add('hidden');
@@ -1185,7 +1223,7 @@
           }
         }
 
-        // Daftar Peringkat (Maksimal 10 peserta di layar Host agar proyektor bersih)
+        // Daftar Peringkat (Maksimal 10 peserta teratas di layar Host)
         const sorted = getSortedPlayers();
         const visibleList = st.mode === 'host' ? sorted.slice(0, 10) : sorted;
         document.getElementById('lbl-rank-title').textContent = st.mode === 'host'
@@ -1201,10 +1239,16 @@
             stateBadge = `<span class="stat-pill boom">💥 Kena Boom</span>`;
           } else if (pStatus === 'dq') {
             stateBadge = `<span class="stat-pill boom">⛔ Diskualifikasi</span>`;
+          } else if (isWaiting) {
+            stateBadge = p.lastDelta === 3
+              ? `<span class="stat-pill bonus">🎯 Acuan Range (+3)</span>`
+              : (p.lastDelta === 2
+                ? `<span class="stat-pill win">✅ Aman (+2)</span>`
+                : `<span class="stat-pill boom">⚠️ Penalti (-1)</span>`);
           } else if (p.guessSession === st.sessionNum && p.currentGuess !== null && p.currentGuess !== undefined) {
             stateBadge = `<span class="stat-pill win">🔒 Sudah Jawab</span>`;
           } else {
-            stateBadge = `<span class="stat-pill">⏳ Menunggu</span>`;
+            stateBadge = `<span class="stat-pill">⏳ Menunggu (${p.penaltyStreak || 0}/3)</span>`;
           }
 
           return `
@@ -1221,11 +1265,11 @@
       }
 
       /*
-       * Evaluasi Saat Sesi 10 Detik Berakhir (Aturan 1 - 8)
+       * Evaluasi Saat Sesi Menebak 10 Detik Berakhir -> Masuk Sesi Tunggu 5 Detik
        */
-      async function evaluateSessionEnd() {
-        if (st.status !== 'playing' || st.evaluatingSession) return;
-        st.evaluatingSession = true;
+      async function evaluateGuessingPhaseEnd() {
+        if (st.status !== 'playing' || st.phase !== 'guessing' || st.transitioningPhase) return;
+        st.transitioningPhase = true;
 
         try {
           if (st.mode === 'host' && st.pin) {
@@ -1243,20 +1287,20 @@
             return;
           }
 
-          // Cek apakah ada minimal 1 peserta aktif yang mengajukan jawaban di sesi ini
           const respondents = activeList.filter(
             p => p.guessSession === st.sessionNum && p.currentGuess !== null && p.currentGuess !== undefined
           );
 
-          // ATURAN 8: Jika sesi berakhir, namun tidak ada yang menjawab
+          // ATURAN 8: Tidak ada satu pun peserta yang menjawab di sesi ini
           if (respondents.length === 0) {
             st.emptySessionsStreak += 1;
 
             activeList.forEach(p => {
               p.score = (p.score || 0) - 1;
-              p.missedStreak = (p.missedStreak || 0) + 1;
               p.penaltyStreak = (p.penaltyStreak || 0) + 1;
-              if (p.penaltyStreak >= 2) {
+              p.lastDelta = -1;
+              p.lastSessionNote = `Tidak menjawab (-1 poin • Penalti ${p.penaltyStreak}/3)`;
+              if (p.penaltyStreak >= 3) {
                 p.status = 'dq';
               }
             });
@@ -1267,87 +1311,106 @@
               return;
             }
 
-            st.lastSummary = `⚠️ Sesi #${st.sessionNum}: Tidak ada yang menjawab! Semua peserta aktif -1 poin.`;
-            st.sessionNum += 1;
-            st.sessionStartedAt = Date.now();
-            resetSessionGuesses();
-
             const remainingAfterEmpty = Object.values(st.players).filter(p => (p.status || 'active') === 'active');
             if (remainingAfterEmpty.length <= 1) {
               await syncGameStateToFirebase();
-              await endGame('Permainan selesai karena peserta aktif habis tereliminasi.');
+              await endGame('Permainan selesai karena peserta aktif tersisa ≤ 1 orang.');
               return;
             }
 
+            st.lastSummary = `⚠️ Sesi #${st.sessionNum}: Tidak ada yang menjawab! Semua peserta aktif -1 poin. (Sesi tunggu 5 detik)`;
+            st.phase = 'waiting';
+            st.phaseStartedAt = Date.now();
             await syncGameStateToFirebase();
             renderGameUi();
             return;
           }
 
-          // Ada peserta yang menjawab -> reset emptySessionsStreak
+          // Ada peserta yang menjawab
           st.emptySessionsStreak = 0;
 
           let boomVictims = [];
           let outOfRangeCount = 0;
-          let safeGuesses = [];
+          let safeSubmissions = []; // { playerId, guess }
 
           activeList.forEach(p => {
             const answeredThisSession =
               p.guessSession === st.sessionNum && p.currentGuess !== null && p.currentGuess !== undefined;
 
+            // REVISI ATURAN 4 & 5: Tidak menjawab -> -1 poin; 3x berturut-turut poin dikurangi -> diskualifikasi
             if (!answeredThisSession) {
-              // ATURAN 4 & 5: Tidak mengajukan angka -> 0 poin; 2x beruntun tidak mengajukan -> -1 poin; 2x pengurangan poin beruntun -> DQ
-              p.missedStreak = (p.missedStreak || 0) + 1;
-              if (p.missedStreak >= 2) {
-                p.score = (p.score || 0) - 1;
-                p.penaltyStreak = (p.penaltyStreak || 0) + 1;
-                if (p.penaltyStreak >= 2) {
-                  p.status = 'dq';
-                }
-              } else {
-                p.penaltyStreak = 0;
-              }
-              return;
-            }
-
-            // Peserta mengajukan angka -> reset missedStreak
-            p.missedStreak = 0;
-            const g = Number(p.currentGuess);
-
-            // ATURAN 7: Menjawab di luar range -> -1 poin & hitung penaltyStreak
-            if (g < st.minRange || g > st.maxRange) {
               p.score = (p.score || 0) - 1;
               p.penaltyStreak = (p.penaltyStreak || 0) + 1;
-              outOfRangeCount += 1;
-              if (p.penaltyStreak >= 2) {
+              p.lastDelta = -1;
+              p.lastSessionNote = `Tidak menjawab (-1 poin • Penalti ${p.penaltyStreak}/3)`;
+              if (p.penaltyStreak >= 3) {
                 p.status = 'dq';
               }
               return;
             }
 
-            // Menjawab di dalam range -> reset penaltyStreak
+            const g = Number(p.currentGuess);
+
+            // ATURAN 7 & 5: Menjawab di luar range -> -1 poin; 3x berturut-turut poin dikurangi -> diskualifikasi
+            if (g < st.minRange || g > st.maxRange) {
+              p.score = (p.score || 0) - 1;
+              p.penaltyStreak = (p.penaltyStreak || 0) + 1;
+              p.lastDelta = -1;
+              p.lastSessionNote = `Angka ${g} di luar rentang (-1 poin • Penalti ${p.penaltyStreak}/3)`;
+              outOfRangeCount += 1;
+              if (p.penaltyStreak >= 3) {
+                p.status = 'dq';
+              }
+              return;
+            }
+
+            // Jawaban valid di dalam rentang -> reset penaltyStreak
             p.penaltyStreak = 0;
 
             if (g === st.boomNumber) {
-              // KENA ANGKA BOOM!
               p.status = 'boom';
+              p.lastDelta = 0;
+              p.lastSessionNote = `💥 Terkena Angka Boom (${g})!`;
               boomVictims.push(p.name);
             } else {
-              // ATURAN 3: Berhasil menghindari Angka Boom -> +1 poin
-              p.score = (p.score || 0) + 1;
-              safeGuesses.push(g);
+              safeSubmissions.push({ playerId: p.id, guess: g });
             }
           });
 
-          // ATURAN 6: Perbarui nilai rentang berdasarkan jawaban peserta saat sesi berakhir
-          let nextMin = st.minRange;
-          let nextMax = st.maxRange;
-          safeGuesses.forEach(g => {
-            if (g < st.boomNumber && g + 1 > nextMin) {
-              nextMin = g + 1;
+          // Hitung batas range baru dari tebakan aman
+          const prevMin = st.minRange;
+          const prevMax = st.maxRange;
+          let nextMin = prevMin;
+          let nextMax = prevMax;
+
+          safeSubmissions.forEach(item => {
+            if (item.guess < st.boomNumber && item.guess + 1 > nextMin) {
+              nextMin = item.guess + 1;
             }
-            if (g > st.boomNumber && g - 1 < nextMax) {
-              nextMax = g - 1;
+            if (item.guess > st.boomNumber && item.guess - 1 < nextMax) {
+              nextMax = item.guess - 1;
+            }
+          });
+
+          // REVISI ATURAN 3:
+          // - Lolos Angka Boom = +2 poin
+          // - Tebakan yang menjadi acuan batas range baru = +3 poin
+          const anchorNames = [];
+          safeSubmissions.forEach(item => {
+            const p = st.players[item.playerId];
+            if (!p) return;
+            const becameLowerAnchor = (nextMin > prevMin) && (item.guess + 1 === nextMin);
+            const becameUpperAnchor = (nextMax < prevMax) && (item.guess - 1 === nextMax);
+
+            if (becameLowerAnchor || becameUpperAnchor) {
+              p.score = (p.score || 0) + 3;
+              p.lastDelta = 3;
+              p.lastSessionNote = `🎯 Tebakan ${item.guess} jadi acuan range baru (+3 Poin)!`;
+              anchorNames.push(p.name);
+            } else {
+              p.score = (p.score || 0) + 2;
+              p.lastDelta = 2;
+              p.lastSessionNote = `✅ Tebakan ${item.guess} lolos Angka Boom (+2 Poin)!`;
             }
           });
 
@@ -1359,44 +1422,70 @@
             st.minRange = 1;
             st.maxRange = st.initialMax;
             st.boomNumber = randInt(st.minRange, st.maxRange);
-            summaryParts.push(`💥 BOOM (${oldBoom}) mengenai: ${boomVictims.join(', ')}! Ronde #${st.roundNum} dimulai (1 – ${st.initialMax}).`);
+            summaryParts.push(`💥 BOOM (${oldBoom}) mengenai: ${boomVictims.join(', ')}! Ronde #${st.roundNum} akan dimulai (1 – ${st.initialMax}).`);
           } else {
             st.minRange = nextMin;
             st.maxRange = nextMax;
-            // Jika rentang mengerucut tepat 1 angka tersisa (pasti Angka Boom), otomatis ronde baru agar tidak buntu
             if (st.minRange >= st.maxRange) {
               const revealedBoom = st.boomNumber;
               st.roundNum += 1;
               st.minRange = 1;
               st.maxRange = st.initialMax;
               st.boomNumber = randInt(st.minRange, st.maxRange);
-              summaryParts.push(`🔒 Angka Boom (${revealedBoom}) terkepung! Lanjut Ronde #${st.roundNum} (1 – ${st.initialMax}).`);
+              summaryParts.push(`🔒 Angka Boom (${revealedBoom}) terkepung! Ronde #${st.roundNum} akan dimulai (1 – ${st.initialMax}).`);
             } else {
-              summaryParts.push(`✅ Sesi #${st.sessionNum} aman! Rentang baru: ${st.minRange} – ${st.maxRange}.`);
+              summaryParts.push(`✅ Sesi #${st.sessionNum} selesai! Rentang baru: ${st.minRange} – ${st.maxRange}.`);
             }
           }
 
-          if (outOfRangeCount > 0) {
-            summaryParts.push(`(${outOfRangeCount} peserta menjawab di luar rentang: -1 poin)`);
+          if (anchorNames.length > 0) {
+            summaryParts.push(`🎯 Acuan range (+3 poin): ${anchorNames.join(', ')}.`);
           }
-
-          st.lastSummary = summaryParts.join(' ');
-          st.sessionNum += 1;
-          st.sessionStartedAt = Date.now();
-          resetSessionGuesses();
+          if (outOfRangeCount > 0) {
+            summaryParts.push(`(${outOfRangeCount} peserta di luar rentang: -1 poin)`);
+          }
 
           const surviving = Object.values(st.players).filter(p => (p.status || 'active') === 'active');
           if (surviving.length <= 1) {
+            st.lastSummary = summaryParts.join(' ');
             await syncGameStateToFirebase();
             const lastHero = surviving[0] ? `${surviving[0].name} bertahan hingga akhir!` : 'Semua peserta telah tereliminasi!';
             await endGame(lastHero);
             return;
           }
 
+          // Masuk ke SESI TUNGGU 5 DETIK (REVISI ATURAN 1)
+          st.lastSummary = `${summaryParts.join(' ')} ⏳ Sesi berikutnya dimulai dalam 5 detik...`;
+          st.phase = 'waiting';
+          st.phaseStartedAt = Date.now();
+
           await syncGameStateToFirebase();
           renderGameUi();
         } finally {
-          st.evaluatingSession = false;
+          st.transitioningPhase = false;
+        }
+      }
+
+      /*
+       * Transisi Setelah Sesi Tunggu 5 Detik Selesai -> Mulai Sesi Menebak Berikutnya
+       */
+      async function startNextGuessingSession() {
+        if (st.status !== 'playing' || st.phase !== 'waiting' || st.transitioningPhase) return;
+        st.transitioningPhase = true;
+
+        try {
+          st.sessionNum += 1;
+          st.phase = 'guessing';
+          st.phaseStartedAt = Date.now();
+          st.input = '';
+          document.getElementById('ans-display').textContent = '';
+          st.lastSummary = `Sesi #${st.sessionNum} dimulai! Pilih 1 angka antara ${st.minRange} – ${st.maxRange}.`;
+
+          resetSessionGuesses();
+          await syncGameStateToFirebase();
+          renderGameUi();
+        } finally {
+          st.transitioningPhase = false;
         }
       }
 
@@ -1405,7 +1494,7 @@
           p.currentGuess = null;
           p.guessSession = 0;
           if (p.isBot && (p.status || 'active') === 'active') {
-            p._botWillAnswer = Math.random() < 0.9; // 90% bot menjawab, 10% simulasi lupa menjawab
+            p._botWillAnswer = Math.random() < 0.92;
             p._botAnswerDelayMs = randInt(1200, 7800);
           }
         });
@@ -1420,7 +1509,8 @@
           boomNumber: st.boomNumber,
           roundNum: st.roundNum,
           sessionNum: st.sessionNum,
-          sessionStartedAt: st.sessionStartedAt,
+          phase: st.phase,
+          phaseStartedAt: st.phaseStartedAt,
           emptySessionsStreak: st.emptySessionsStreak,
           lastSummary: st.lastSummary,
           players: st.players
@@ -1429,6 +1519,9 @@
 
       async function submitGuess() {
         if (st.status !== 'playing' || st.mode === 'host') return;
+        if (st.phase !== 'guessing') {
+          return showToast('Sedang sesi tunggu 5 detik! Tunggu sesi tebak berikutnya.');
+        }
         const me = st.players[st.myId];
         if (!me || (me.status || 'active') !== 'active') return;
         if (me.guessSession === st.sessionNum && me.currentGuess !== null && me.currentGuess !== undefined) {
@@ -1440,7 +1533,7 @@
         if (isNaN(val)) return;
 
         const now = Date.now();
-        const responseMs = Math.max(150, Math.min(SESSION_DURATION_MS, now - (st.sessionStartedAt || now)));
+        const responseMs = Math.max(150, Math.min(GUESS_DURATION_MS, now - (st.phaseStartedAt || now)));
 
         me.currentGuess = val;
         me.guessSession = st.sessionNum;
@@ -1563,7 +1656,8 @@
         st.boomNumber = randInt(1, st.initialMax);
         st.roundNum = 1;
         st.sessionNum = 1;
-        st.sessionStartedAt = 0;
+        st.phase = 'guessing';
+        st.phaseStartedAt = 0;
         st.emptySessionsStreak = 0;
         st.lastSummary = 'Kirim 1 angka pilihanmu sebelum waktu 10 detik berakhir!';
         st.input = '';
@@ -1578,8 +1672,9 @@
             joinedAt: p.joinedAt || Date.now(),
             score: 0,
             status: 'active',
-            missedStreak: 0,
             penaltyStreak: 0,
+            lastDelta: 0,
+            lastSessionNote: '',
             currentGuess: null,
             guessSession: 0,
             submitCount: 0,
@@ -1609,7 +1704,8 @@
             boomNumber: st.boomNumber,
             roundNum: 1,
             sessionNum: 1,
-            sessionStartedAt: 0,
+            phase: 'guessing',
+            phaseStartedAt: 0,
             emptySessionsStreak: 0,
             lastSummary: st.lastSummary,
             status: 'lobby',
@@ -1619,7 +1715,8 @@
           showToast('Lobby dibuka kembali dengan PIN yang sama!');
         } else if (st.mode === 'solo') {
           st.status = 'playing';
-          st.sessionStartedAt = Date.now();
+          st.phase = 'guessing';
+          st.phaseStartedAt = Date.now();
           resetSessionGuesses();
           document.getElementById('game-area').classList.remove('hidden');
           renderGameUi();
@@ -1631,62 +1728,74 @@
       function startPolling() {
         clearAllTimers();
 
-        // Timer Presisi 100ms: Countdown 10 detik, simulasi jawaban Bot, & evaluasi akhir sesi
+        // Timer Presisi 120ms: Sesi Tebak 10 detik + Sesi Tunggu 5 detik
         const fastTick = setInterval(async () => {
           if (st.status !== 'playing') return;
 
           const now = Date.now();
-          const elapsed = now - (st.sessionStartedAt || now);
-          const remainingMs = Math.max(0, SESSION_DURATION_MS - elapsed);
+          const elapsed = now - (st.phaseStartedAt || now);
+          const targetDuration = st.phase === 'waiting' ? WAIT_DURATION_MS : GUESS_DURATION_MS;
+          const remainingMs = Math.max(0, targetDuration - elapsed);
 
           const timerEl = document.getElementById('lbl-session-timer');
           if (timerEl) {
-            timerEl.textContent = `⏱️ ${(remainingMs / 1000).toFixed(1)} detik`;
-            timerEl.classList.toggle('urgent', remainingMs <= 3000);
+            if (st.phase === 'waiting') {
+              timerEl.textContent = `⏳ Tunggu: ${(remainingMs / 1000).toFixed(1)} detik`;
+              timerEl.classList.remove('urgent');
+              timerEl.classList.add('waiting');
+            } else {
+              timerEl.textContent = `⏱️ Tebak: ${(remainingMs / 1000).toFixed(1)} detik`;
+              timerEl.classList.remove('waiting');
+              timerEl.classList.toggle('urgent', remainingMs <= 3000);
+            }
           }
 
-          // Simulasi Bot mengajukan angka pada Mode Host & Solo
           if (st.mode === 'host' || st.mode === 'solo') {
-            let botChanged = false;
-            for (const p of Object.values(st.players || {})) {
-              const isBot = Boolean(p.isBot) || String(p.id || '').startsWith('bot_');
-              if (!isBot || (p.status || 'active') !== 'active') continue;
-              if (p.guessSession === st.sessionNum) continue;
+            if (st.phase === 'guessing') {
+              let botChanged = false;
+              for (const p of Object.values(st.players || {})) {
+                const isBot = Boolean(p.isBot) || String(p.id || '').startsWith('bot_');
+                if (!isBot || (p.status || 'active') !== 'active') continue;
+                if (p.guessSession === st.sessionNum) continue;
 
-              if (p._botWillAnswer === undefined) {
-                p._botWillAnswer = Math.random() < 0.9;
-                p._botAnswerDelayMs = randInt(1200, 7800);
+                if (p._botWillAnswer === undefined) {
+                  p._botWillAnswer = Math.random() < 0.92;
+                  p._botAnswerDelayMs = randInt(1200, 7800);
+                }
+
+                if (p._botWillAnswer && elapsed >= p._botAnswerDelayMs) {
+                  let botGuess;
+                  if (st.maxRange - st.minRange >= 2 && Math.random() < 0.72) {
+                    botGuess = randInt(st.minRange + 1, st.maxRange - 1);
+                  } else {
+                    botGuess = randInt(st.minRange, st.maxRange);
+                  }
+                  p.currentGuess = botGuess;
+                  p.guessSession = st.sessionNum;
+                  p.submitCount = (p.submitCount || 0) + 1;
+                  p.totalResponseMs = (p.totalResponseMs || 0) + p._botAnswerDelayMs;
+                  botChanged = true;
+
+                  if (st.mode === 'host' && st.pin) {
+                    await fbPatch(`angka_boom/${st.pin}/players/${p.id}`, {
+                      currentGuess: p.currentGuess,
+                      guessSession: p.guessSession,
+                      submitCount: p.submitCount,
+                      totalResponseMs: p.totalResponseMs
+                    });
+                  }
+                }
               }
 
-              if (p._botWillAnswer && elapsed >= p._botAnswerDelayMs) {
-                // Bot memilih angka cerdas di dalam rentang aman (sesekali acak penuh)
-                let botGuess;
-                if (st.maxRange - st.minRange >= 2 && Math.random() < 0.75) {
-                  botGuess = randInt(st.minRange + 1, st.maxRange - 1);
-                } else {
-                  botGuess = randInt(st.minRange, st.maxRange);
-                }
-                p.currentGuess = botGuess;
-                p.guessSession = st.sessionNum;
-                p.submitCount = (p.submitCount || 0) + 1;
-                p.totalResponseMs = (p.totalResponseMs || 0) + p._botAnswerDelayMs;
-                botChanged = true;
+              if (botChanged) renderGameUi();
 
-                if (st.mode === 'host' && st.pin) {
-                  await fbPatch(`angka_boom/${st.pin}/players/${p.id}`, {
-                    currentGuess: p.currentGuess,
-                    guessSession: p.guessSession,
-                    submitCount: p.submitCount,
-                    totalResponseMs: p.totalResponseMs
-                  });
-                }
+              if (remainingMs <= 0) {
+                await evaluateGuessingPhaseEnd();
               }
-            }
-
-            if (botChanged) renderGameUi();
-
-            if (remainingMs <= 0) {
-              await evaluateSessionEnd();
+            } else if (st.phase === 'waiting') {
+              if (remainingMs <= 0) {
+                await startNextGuessingSession();
+              }
             }
           }
         }, 120);
@@ -1725,6 +1834,7 @@
 
             const prevRound = st.roundNum;
             const prevSession = st.sessionNum;
+            const prevPhase = st.phase;
 
             st.initialMax = room.initialMax || st.initialMax;
             st.minRange = room.minRange || 1;
@@ -1732,13 +1842,14 @@
             st.boomNumber = room.boomNumber || st.boomNumber;
             st.roundNum = room.roundNum || 1;
             st.sessionNum = room.sessionNum || 1;
-            st.sessionStartedAt = room.sessionStartedAt || Date.now();
+            st.phase = room.phase || 'guessing';
+            st.phaseStartedAt = room.phaseStartedAt || Date.now();
             st.lastSummary = room.lastSummary || st.lastSummary;
 
             if (room.players) {
               const localMe = st.players[st.myId];
               st.players = room.players;
-              if (localMe && st.players[st.myId] && localMe.guessSession === st.sessionNum) {
+              if (localMe && st.players[st.myId] && st.phase === 'guessing' && localMe.guessSession === st.sessionNum) {
                 st.players[st.myId].currentGuess = localMe.currentGuess;
                 st.players[st.myId].guessSession = localMe.guessSession;
                 st.players[st.myId].submitCount = Math.max(st.players[st.myId].submitCount || 0, localMe.submitCount || 0);
@@ -1769,7 +1880,7 @@
               if (st.roundNum > prevRound) {
                 triggerBoomShake();
               }
-              if (st.sessionNum > prevSession) {
+              if (st.sessionNum > prevSession || (prevPhase === 'waiting' && st.phase === 'guessing')) {
                 st.input = '';
                 document.getElementById('ans-display').textContent = '';
               }
@@ -1828,7 +1939,8 @@
           st.boomNumber = randInt(1, maxVal);
           st.roundNum = 1;
           st.sessionNum = 1;
-          st.sessionStartedAt = Date.now();
+          st.phase = 'guessing';
+          st.phaseStartedAt = Date.now();
           st.emptySessionsStreak = 0;
           st.lastSummary = 'Kirim 1 angka pilihanmu sebelum waktu 10 detik berakhir!';
           st.celebrated = false;
@@ -1840,8 +1952,9 @@
             joinedAt: Date.now(),
             score: 0,
             status: 'active',
-            missedStreak: 0,
             penaltyStreak: 0,
+            lastDelta: 0,
+            lastSessionNote: '',
             currentGuess: null,
             guessSession: 0,
             submitCount: 0,
@@ -1858,8 +1971,9 @@
               isBot: true,
               score: 0,
               status: 'active',
-              missedStreak: 0,
               penaltyStreak: 0,
+              lastDelta: 0,
+              lastSessionNote: '',
               currentGuess: null,
               guessSession: 0,
               submitCount: 0,
@@ -1892,7 +2006,8 @@
           st.boomNumber = randInt(1, maxVal);
           st.roundNum = 1;
           st.sessionNum = 1;
-          st.sessionStartedAt = 0;
+          st.phase = 'guessing';
+          st.phaseStartedAt = 0;
           st.emptySessionsStreak = 0;
           st.lastSummary = 'Kirim 1 angka pilihanmu sebelum waktu 10 detik berakhir!';
           st.status = 'lobby';
@@ -1917,7 +2032,8 @@
             boomNumber: st.boomNumber,
             roundNum: 1,
             sessionNum: 1,
-            sessionStartedAt: 0,
+            phase: 'guessing',
+            phaseStartedAt: 0,
             emptySessionsStreak: 0,
             lastSummary: st.lastSummary,
             status: 'lobby',
@@ -1938,8 +2054,9 @@
             isBot: true,
             score: 0,
             status: 'active',
-            missedStreak: 0,
             penaltyStreak: 0,
+            lastDelta: 0,
+            lastSessionNote: '',
             currentGuess: null,
             guessSession: 0,
             submitCount: 0,
@@ -1962,7 +2079,8 @@
           st.minRange = 1;
           st.maxRange = st.initialMax;
           st.boomNumber = randInt(1, st.initialMax);
-          st.sessionStartedAt = Date.now();
+          st.phase = 'guessing';
+          st.phaseStartedAt = Date.now();
           st.emptySessionsStreak = 0;
           st.lastSummary = 'Sesi #1 dimulai! Pilih 1 angka sebelum 10 detik berakhir.';
           resetSessionGuesses();
@@ -2005,7 +2123,8 @@
           st.boomNumber = room.boomNumber || 50;
           st.roundNum = room.roundNum || 1;
           st.sessionNum = room.sessionNum || 1;
-          st.sessionStartedAt = room.sessionStartedAt || Date.now();
+          st.phase = room.phase || 'guessing';
+          st.phaseStartedAt = room.phaseStartedAt || Date.now();
           st.lastSummary = room.lastSummary || st.lastSummary;
           st.status = room.status || 'lobby';
           st.celebrated = false;
@@ -2016,8 +2135,9 @@
             joinedAt: Date.now(),
             score: 0,
             status: 'active',
-            missedStreak: 0,
             penaltyStreak: 0,
+            lastDelta: 0,
+            lastSessionNote: '',
             currentGuess: null,
             guessSession: 0,
             submitCount: 0,
