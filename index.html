@@ -14,6 +14,7 @@
       --accent-1: #3b82f6;
       --accent-2: #10b981;
       --accent-3: #f59e0b;
+      --accent-4: #8b5cf6;
       --red: #ef4444;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -28,7 +29,7 @@
     }
     .topbar {
       width: 100%;
-      max-width: 1020px;
+      max-width: 1120px;
       display: flex;
       justify-content: flex-end;
       align-items: center;
@@ -47,27 +48,29 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      transition: background 0.2s ease, border-color 0.2s ease;
     }
+    .admin-btn:hover { background: rgba(255,255,255,0.13); }
     .admin-btn.unlocked {
       background: rgba(16,185,129,0.2);
       border-color: var(--accent-2);
       color: #34d399;
     }
-    header { text-align: center; max-width: 680px; margin-bottom: 36px; }
+    header { text-align: center; max-width: 720px; margin-bottom: 36px; }
     header h1 { font-size: clamp(1.8rem, 4vw, 2.5rem); font-weight: 800; margin-bottom: 10px; }
     header p { color: var(--muted); font-size: 1.02rem; line-height: 1.5; }
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 22px;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
       width: 100%;
-      max-width: 1020px;
+      max-width: 1120px;
     }
     .card {
       background: var(--card);
       border: 1px solid rgba(255,255,255,0.08);
       border-radius: 20px;
-      padding: 26px 22px;
+      padding: 24px 20px;
       text-decoration: none;
       color: inherit;
       display: flex;
@@ -92,21 +95,22 @@
     .b1 { background: rgba(59,130,246,0.2); color: #60a5fa; }
     .b2 { background: rgba(16,185,129,0.2); color: #34d399; }
     .b3 { background: rgba(245,158,11,0.2); color: #fbbf24; }
+    .b4 { background: rgba(139,92,246,0.22); color: #c4b5fd; }
     .icon { font-size: 2.5rem; margin-bottom: 12px; }
-    .card h2 { font-size: 1.3rem; margin-bottom: 8px; }
-    .card p { color: var(--muted); font-size: 0.93rem; line-height: 1.5; margin-bottom: 22px; }
+    .card h2 { font-size: 1.25rem; margin-bottom: 8px; }
+    .card p { color: var(--muted); font-size: 0.91rem; line-height: 1.5; margin-bottom: 22px; }
     .btn {
       text-align: center;
       padding: 12px;
       border-radius: 12px;
       font-weight: 700;
-      font-size: 0.95rem;
+      font-size: 0.94rem;
       color: #fff;
     }
     .btn-1 { background: var(--accent-1); }
     .btn-2 { background: var(--accent-2); color: #052e16; }
     .btn-3 { background: var(--accent-3); color: #0f172a; }
-    .btn-4 { background: var(--accent-3); color: #0a172a; }
+    .btn-4 { background: var(--accent-4); color: #fff; }
 
     /* Modal Passcode */
     .modal-backdrop {
@@ -162,10 +166,11 @@
 
   <header>
     <h1>Arena Game Interaktif Kelas</h1>
-    <p>Pilih permainan di bawah ini. Peserta dapat langsung bergabung dengan PIN Room atau bermain Solo.</p>
+    <p>Pilih permainan di bawah ini. Peserta dapat langsung bergabung dengan PIN Room / QR Code atau bermain Solo.</p>
   </header>
 
   <main class="grid">
+    <!-- Game 1 -->
     <a href="./balap-hitung/index.html" class="card">
       <div>
         <span class="badge b1">Kecepatan &amp; Berhitung</span>
@@ -176,6 +181,7 @@
       <div class="btn btn-1">Buka Permainan →</div>
     </a>
 
+    <!-- Game 2 -->
     <a href="./tebak-angka/index.html" class="card">
       <div>
         <span class="badge b2">Logika &amp; Deduksi</span>
@@ -186,6 +192,7 @@
       <div class="btn btn-2">Buka Permainan →</div>
     </a>
 
+    <!-- Game 3 -->
     <a href="./angka-boom/index.html" class="card">
       <div>
         <span class="badge b3">Ketegangan &amp; Strategi</span>
@@ -195,14 +202,16 @@
       </div>
       <div class="btn btn-3">Buka Permainan →</div>
     </a>
+
+    <!-- Game 4 -->
     <a href="./turnamen-cup/index.html" class="card">
-      <div></div>
-      <span class="badge b3">kecepatan &amp; respon</span>
-        <div class="icon">🏆</div>
-        <h2>Turnamen Cup Matematika </h2>
-        <p>Sistem gugur 1 vs 1 acak! Adu cepat hitung (+, -, ×, ÷) &amp; tarik tambang hingga jadi juara tunggal.</p>
-        <div class="btn btn-4">Buka Turnamen →</div>
+      <div>
+        <span class="badge b4">Kejuaraan 1 vs 1</span>
+        <div class="icon">🏆🪢</div>
+        <h2>Turnamen Cup Matematika</h2>
+        <p>Sistem gugur 1 vs 1 acak! Adu cepat hitung (+, -, ×, ÷) &amp; tarik tambang hingga tersisa 1 juara bertahan.</p>
       </div>
+      <div class="btn btn-4">Buka Turnamen →</div>
     </a>
   </main>
 
@@ -210,7 +219,7 @@
   <div id="admin-modal" class="modal-backdrop hidden">
     <div class="modal-box">
       <h3>🔐 Verifikasi Akses Host</h3>
-      <p>Masukkan kata kunci Admin untuk membuka fitur pembuatan Room di semua permainan.</p>
+      <p>Masukkan kata kunci Admin untuk membuka fitur pembuatan Room/Turnamen di semua permainan.</p>
       <input type="password" id="passcode-input" placeholder="Kata kunci Admin..." />
       <div id="passcode-error" class="err-msg hidden">Kata kunci salah!</div>
       <div class="modal-actions">
@@ -220,7 +229,7 @@
     </div>
   </div>
 
-  <footer>Platform Game Edukasi &amp; Interaktif Kelas</footer>
+  <footer>Platform Game Edukasi &amp; Interaktif Kelas • Terhubung Real-Time via Firebase</footer>
 
   <script>
     (function () {
