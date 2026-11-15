@@ -445,9 +445,9 @@
       margin-bottom: 4px;
     }
     .q-text {
-      font-size: clamp(1.7rem, 4.5vw, 2.4rem);
+      font-size: clamp(1.65rem, 4.3vw, 2.35rem);
       font-weight: 900;
-      letter-spacing: 2px;
+      letter-spacing: 1.5px;
       color: #fde047;
     }
     .ans-display {
@@ -482,8 +482,9 @@
       cursor: pointer;
     }
     .k-btn:active { transform: scale(0.96); }
+    .k-btn.neg { background: rgba(245,158,11,0.22); color: #fde047; font-size: 1.35rem; }
     .k-btn.del { background: rgba(239,68,68,0.2); color: #fca5a5; }
-    .k-btn.sub { background: var(--green); color: #052e16; }
+    .k-btn.sub { background: var(--green); color: #052e16; grid-column: span 3; padding: 12px; }
 
     /* Ranking & Stats List */
     .rank-list {
@@ -708,9 +709,9 @@
           <div class="fg">
             <label>Tingkat Kesulitan</label>
             <select id="solo-diff">
-              <option value="easy" selected>Mudah (+ / -)</option>
-              <option value="medium">Sedang (+ / - / ×)</option>
-              <option value="hard">Sulit (+ / - / × / ÷)</option>
+              <option value="easy" selected>Mudah (+ / - positif)</option>
+              <option value="medium">Sedang (+ / - / × termasuk negatif)</option>
+              <option value="hard">Sulit (+ / - / × / ÷ termasuk negatif)</option>
             </select>
           </div>
         </div>
@@ -744,9 +745,9 @@
             <div class="fg">
               <label>Tingkat Kesulitan</label>
               <select id="host-diff">
-                <option value="easy" selected>Mudah (+ / -)</option>
-                <option value="medium">Sedang (+ / - / ×)</option>
-                <option value="hard">Sulit (+ / - / × / ÷)</option>
+                <option value="easy" selected>Mudah (+ / - positif)</option>
+                <option value="medium">Sedang (+ / - / × termasuk negatif)</option>
+                <option value="hard">Sulit (+ / - / × / ÷ termasuk negatif)</option>
               </select>
             </div>
           </div>
@@ -842,9 +843,10 @@
             <button class="k-btn" data-d="7">7</button>
             <button class="k-btn" data-d="8">8</button>
             <button class="k-btn" data-d="9">9</button>
-            <button class="k-btn del" id="btn-del">⌫</button>
+            <button class="k-btn neg" id="btn-neg" title="Tanda Negatif (-)">± / -</button>
             <button class="k-btn" data-d="0">0</button>
-            <button class="k-btn sub" id="btn-submit">OK</button>
+            <button class="k-btn del" id="btn-del">⌫</button>
+            <button class="k-btn sub" id="btn-submit">OK / Kirim Jawaban</button>
           </div>
         </div>
 
@@ -928,7 +930,7 @@
     (function () {
       const DB_URL = "https://game-math-7361f-default-rtdb.asia-southeast1.firebasedatabase.app";
       const RUNNER_COLORS = ['#38bdf8', '#34d399', '#fbbf24', '#f472b6', '#a78bfa', '#fb923c', '#2dd4bf', '#f87171'];
-      const GRACE_PERIOD_MS = 30000; // 30 detik setelah Juara 1 sampai finish
+      const GRACE_PERIOD_MS = 30000;
 
       let st = {
         mode: 'solo',
@@ -964,6 +966,14 @@
         t.classList.remove('hidden');
         clearTimeout(t._id);
         t._id = setTimeout(() => t.classList.add('hidden'), 2400);
+      }
+
+      function randInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+      function formatSecondOperand(val) {
+        return val < 0 ? `(${val})` : `${val}`;
       }
 
       function formatDurationSec(ms) {
@@ -1178,6 +1188,17 @@
         `;
       }
 
+      /*
+       * Pembangkit Soal dengan Rentang Terbaru:
+       * 1. Mudah (easy): (+, -) rentang 1 s.d. 20 (hasil >= 0)
+       * 2. Sedang (medium):
+       *    - (+, -) : a, b di rentang -20 s.d. 20
+       *    - (×)    : a di rentang 2 s.d. 12, b di rentang 2 s.d. 12
+       * 3. Sulit (hard):
+       *    - (+, -) : a, b di rentang -40 s.d. 40
+       *    - (×)    : b di rentang 3 s.d. 12, dan -100 <= answer <= 200
+       *    - (÷)    : pembagi (b) di rentang 2 s.d. 10, hasil bagi (ans) di rentang 2 s.d. 13
+       */
       function generateQuestion() {
         const diff = st.diff || 'easy';
         let a, b, op, ans, key;
@@ -1187,57 +1208,54 @@
           guard++;
           if (diff === 'easy') {
             op = Math.random() < 0.5 ? '+' : '-';
-            a = Math.floor(Math.random() * 20) + 1;
-            b = Math.floor(Math.random() * 20) + 1;
+            a = randInt(1, 20);
+            b = randInt(1, 20);
             if (op === '-' && b > a) [a, b] = [b, a];
             ans = op === '+' ? a + b : a - b;
           } else if (diff === 'medium') {
             const ops = ['+', '-', '×'];
             op = ops[Math.floor(Math.random() * ops.length)];
             if (op === '×') {
-              a = Math.floor(Math.random() * 11) + 2;
-              b = Math.floor(Math.random() * 11) + 2;
+              a = randInt(2, 12);
+              b = randInt(2, 12);
               ans = a * b;
             } else {
-              a = Math.floor(Math.random() * 45) + 5;
-              b = Math.floor(Math.random() * 45) + 5;
-              if (op === '-' && b > a) [a, b] = [b, a];
+              a = randInt(-20, 20);
+              b = randInt(-20, 20);
               ans = op === '+' ? a + b : a - b;
             }
           } else {
             const ops = ['+', '-', '×', '÷'];
             op = ops[Math.floor(Math.random() * ops.length)];
             if (op === '÷') {
-              b = Math.floor(Math.random() * 11) + 2;
-              ans = Math.floor(Math.random() * 12) + 2;
+              b = randInt(2, 10);
+              ans = randInt(2, 13);
               a = b * ans;
             } else if (op === '×') {
-              a = Math.floor(Math.random() * 14) + 3;
-              b = Math.floor(Math.random() * 12) + 3;
+              b = randInt(3, 12);
+              const minA = Math.ceil(-100 / b);
+              const maxA = Math.floor(200 / b);
+              do {
+                a = randInt(minA, maxA);
+              } while (a === 0);
               ans = a * b;
             } else {
-              a = Math.floor(Math.random() * 80) + 10;
-              b = Math.floor(Math.random() * 80) + 10;
-              if (op === '-' && b > a) [a, b] = [b, a];
+              a = randInt(-40, 40);
+              b = randInt(-40, 40);
               ans = op === '+' ? a + b : a - b;
             }
           }
           key = `${a}${op}${b}`;
-        } while (key === st.lastQuestionKey && guard < 10);
+        } while (key === st.lastQuestionKey && guard < 12);
 
         st.lastQuestionKey = key;
         st.currentAns = ans;
         st.input = '';
         st.questionShownAt = Date.now();
-        document.getElementById('q-text').textContent = `${a} ${op} ${b} = ?`;
+        document.getElementById('q-text').textContent = `${a} ${op} ${formatSecondOperand(b)} = ?`;
         document.getElementById('ans-display').textContent = '';
       }
 
-      /*
-       * Urutan Peringkat:
-       * 1. Peserta yang sudah finish (score >= target) diurutkan berdasarkan waktu tempuh finish tercepat
-       * 2. Peserta yang belum finish diurutkan berdasarkan skor tertinggi (Juara 2 & 3 jika waktu 30 detik habis)
-       */
       function getSortedPlayers() {
         const list = Object.values(st.players || {});
         return list.sort((a, b) => {
@@ -1255,12 +1273,6 @@
         });
       }
 
-      /*
-       * Evaluasi 3 Syarat Berakhirnya Game:
-       * 1. Host menekan tombol akhiri permainan (ditangani langsung via endRace)
-       * 2. Ada 3 juara terkunci (finishedCount >= Math.min(3, list.length))
-       * 3. 30 detik setelah Juara 1 sampai finish (Date.now() - st.firstFinisherAt >= 30000)
-       */
       async function evaluateRaceEndConditions() {
         if (st.status !== 'playing') return;
         const list = Object.values(st.players || {});
@@ -1276,13 +1288,11 @@
 
         const neededWinners = Math.min(3, list.length);
 
-        // Syarat 2: Sudah ada 3 juara terkunci (atau semua pemain jika pemain < 3)
         if (finishers.length >= neededWinners) {
           await endRace('3 Juara sudah terkunci di garis finish!');
           return;
         }
 
-        // Aktifkan timer 30 detik begitu Juara 1 menyentuh garis finish
         if (finishers.length >= 1 && !st.firstFinisherAt) {
           st.firstFinisherAt = Date.now();
           st.firstFinisherName = finishers[0].name || 'Juara 1';
@@ -1296,7 +1306,6 @@
           showToast(`👑 ${st.firstFinisherName} finish! 30 detik tersisa untuk Juara 2 & 3!`);
         }
 
-        // Perbarui tampilan countdown 30 detik & cek syarat 3
         if (st.firstFinisherAt > 0) {
           const elapsed = Date.now() - st.firstFinisherAt;
           const remainingMs = Math.max(0, GRACE_PERIOD_MS - elapsed);
@@ -1495,13 +1504,22 @@
         generateQuestion();
       }
 
-      async function checkAnswerInput() {
+      async function checkAnswerInput(forceSubmit) {
         if (st.status !== 'playing' || st.mode === 'host') return;
-        if (!st.input.length) return;
+        if (!st.input.length || st.input === '-') return;
+
         const val = parseInt(st.input, 10);
+        if (isNaN(val)) return;
+
         if (val === st.currentAns) {
           await handleCorrectAnswer();
-        } else if (st.input.length >= String(st.currentAns).length) {
+          return;
+        }
+
+        const inputDigitsOnly = st.input.replace('-', '');
+        const targetDigitsOnly = String(Math.abs(st.currentAns));
+
+        if (forceSubmit || inputDigitsOnly.length >= targetDigitsOnly.length) {
           await handleWrongAnswer();
         }
       }
@@ -1690,7 +1708,6 @@
       function startPolling() {
         clearAllTimers();
 
-        // Loop simulasi Bot & evaluasi aturan akhir permainan (250ms agar countdown 30 detik presisi)
         const botTick = setInterval(async () => {
           if (st.status !== 'playing') return;
 
@@ -1748,7 +1765,6 @@
         }, 250);
         st.timers.push(botTick);
 
-        // Sinkronisasi Firebase untuk mode Host & Player
         const fbTick = setInterval(async () => {
           if (st.mode === 'host' && st.pin) {
             const room = await fbGet(`balap_hitung/${st.pin}`);
@@ -1842,6 +1858,16 @@
           }
         }, 700);
         st.timers.push(fbTick);
+      }
+
+      function toggleNegativeSign() {
+        if (st.input.startsWith('-')) {
+          st.input = st.input.slice(1);
+        } else {
+          st.input = '-' + st.input;
+        }
+        document.getElementById('ans-display').textContent = st.input;
+        checkAnswerInput(false);
       }
 
       function switchHomeTab(tab) {
@@ -2086,7 +2112,6 @@
           startPolling();
         });
 
-        // Syarat 1: Host menekan tombol Akhiri Balapan
         document.getElementById('btn-host-end').addEventListener('click', () => {
           endRace('Balapan diakhiri oleh Host.');
         });
@@ -2151,13 +2176,16 @@
         // KEYPAD
         document.querySelectorAll('.k-btn[data-d]').forEach(btn => {
           btn.addEventListener('click', () => {
-            if (st.input.length < 5) {
+            const digitsCount = st.input.replace('-', '').length;
+            if (digitsCount < 4) {
               st.input += btn.getAttribute('data-d');
               document.getElementById('ans-display').textContent = st.input;
-              checkAnswerInput();
+              checkAnswerInput(false);
             }
           });
         });
+
+        document.getElementById('btn-neg').addEventListener('click', toggleNegativeSign);
 
         document.getElementById('btn-del').addEventListener('click', () => {
           st.input = st.input.slice(0, -1);
@@ -2165,23 +2193,26 @@
         });
 
         document.getElementById('btn-submit').addEventListener('click', () => {
-          checkAnswerInput();
+          checkAnswerInput(true);
         });
 
         document.addEventListener('keydown', (e) => {
           if (document.getElementById('race-area').classList.contains('hidden')) return;
           if (document.getElementById('solve-box').classList.contains('hidden')) return;
           if (e.key >= '0' && e.key <= '9') {
-            if (st.input.length < 5) {
+            const digitsCount = st.input.replace('-', '').length;
+            if (digitsCount < 4) {
               st.input += e.key;
               document.getElementById('ans-display').textContent = st.input;
-              checkAnswerInput();
+              checkAnswerInput(false);
             }
+          } else if (e.key === '-') {
+            toggleNegativeSign();
           } else if (e.key === 'Backspace') {
             st.input = st.input.slice(0, -1);
             document.getElementById('ans-display').textContent = st.input;
           } else if (e.key === 'Enter') {
-            checkAnswerInput();
+            checkAnswerInput(true);
           }
         });
 
