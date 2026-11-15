@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Balap Hitung Stickman</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <style>
     :root {
       --bg: #0f172a;
@@ -138,25 +139,34 @@
     }
     .qr-card {
       background: #ffffff;
-      padding: 12px;
+      padding: 14px;
       border-radius: 16px;
       box-shadow: 0 10px 26px rgba(0,0,0,0.45);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
+      min-width: 288px;
+      min-height: 310px;
     }
-    .qr-card img {
+    #lobby-qr-box {
       width: 260px;
       height: 260px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #ffffff;
+    }
+    #lobby-qr-box img, #lobby-qr-box canvas {
+      width: 260px !important;
+      height: 260px !important;
       display: block;
-      border-radius: 8px;
     }
     .qr-caption {
       color: #0f172a;
       font-size: 0.84rem;
       font-weight: 800;
-      margin-top: 8px;
+      margin-top: 10px;
       letter-spacing: 0.3px;
     }
 
@@ -211,7 +221,7 @@
       margin-bottom: 14px;
     }
 
-    /* Penukaran Posisi: Layar Host (Track di atas, Peringkat di bawah) vs Layar HP Peserta (Peringkat di atas, Track di bawah) */
+    /* Penukaran Posisi: Layar Host vs Layar HP Peserta */
     .race-sections {
       display: flex;
       flex-direction: column;
@@ -617,7 +627,7 @@
         <div class="host-lobby-header">
           <!-- QR CODE BESAR UNTUK SCAN PESERTA DI LOBBY -->
           <div id="lobby-qr-wrap" class="qr-card">
-            <img id="lobby-qr-img" src="" alt="QR Code Gabung Room" />
+            <div id="lobby-qr-box"></div>
             <div class="qr-caption">📷 Scan untuk Langsung Masuk Room</div>
           </div>
 
@@ -784,12 +794,6 @@
         return `${m}m ${s}d`;
       }
 
-      /*
-       * Rumus Waktu Rata-rata Mengisi Soal Benar:
-       * - Tidak pernah menjawab benar (correctCount === 0): "Tidak ada jawaban benar"
-       * - Juara / sudah finish (score >= target): waktu saat mengunci status finish/juara dibagi jumlah soal benar
-       * - Belum finish (score < target): total durasi permainan dibagi jumlah soal benar
-       */
       function getPlayerAvgStat(p) {
         const correctCount = (p.correctCount !== undefined) ? p.correctCount : (p.score || 0);
         if (!correctCount || correctCount <= 0) {
@@ -836,12 +840,38 @@
       }
 
       function updateLobbyQrCode(pin) {
-        const qrImg = document.getElementById('lobby-qr-img');
+        const qrBox = document.getElementById('lobby-qr-box');
         const qrWrap = document.getElementById('lobby-qr-wrap');
-        if (!qrImg || !qrWrap || !pin) return;
+        if (!qrBox || !qrWrap || !pin) return;
+
         const targetUrl = buildJoinUrl(pin);
-        qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=2&data=${encodeURIComponent(targetUrl)}`;
         qrWrap.classList.remove('hidden');
+        qrBox.innerHTML = '';
+
+        // 1. Render langsung di browser menggunakan QRCode.js (instan tanpa internet eksternal)
+        if (typeof window.QRCode === 'function') {
+          try {
+            new window.QRCode(qrBox, {
+              text: targetUrl,
+              width: 260,
+              height: 260,
+              colorDark: '#0f172a',
+              colorLight: '#ffffff',
+              correctLevel: window.QRCode.CorrectLevel.M
+            });
+            return;
+          } catch (e) {}
+        }
+
+        // 2. Fallback otomatis jika script CDN belum termuat
+        const img = document.createElement('img');
+        img.alt = 'QR Code Gabung Room';
+        img.src = `https://quickchart.io/qr?size=260&margin=1&text=${encodeURIComponent(targetUrl)}`;
+        img.onerror = function () {
+          this.onerror = null;
+          this.src = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&margin=2&data=${encodeURIComponent(targetUrl)}`;
+        };
+        qrBox.appendChild(img);
       }
 
       function launchConfetti(durationMs) {
@@ -1066,7 +1096,6 @@
         document.getElementById('lbl-target-info').textContent = `Target: ${st.target} Soal`;
         document.getElementById('lbl-player-count').textContent = `${sorted.length} Peserta`;
 
-        // Render Peringkat & Rata-rata Waktu Jawab Benar
         document.getElementById('rank-list').innerHTML = sorted.map((p, idx) => {
           const isMe = p.id === st.myId;
           const done = (p.score || 0) >= st.target;
@@ -1089,7 +1118,6 @@
           `;
         }).join('');
 
-        // Render Lintasan Animasi Stickman
         document.getElementById('track-list').innerHTML = sorted.map((p, idx) => {
           const pct = Math.min(88, Math.round(((p.score || 0) / st.target) * 88));
           const color = p.color || RUNNER_COLORS[idx % RUNNER_COLORS.length];
@@ -1193,7 +1221,6 @@
 
         const sorted = getSortedPlayers();
 
-        // Tampilkan kartu statistik pribadi untuk akun peserta (juara maupun tidak)
         if (st.mode !== 'host' && st.players[st.myId]) {
           const me = st.players[st.myId];
           const myRankIdx = sorted.findIndex(p => p.id === st.myId);
@@ -1209,7 +1236,6 @@
           document.getElementById('my-end-stats').classList.add('hidden');
         }
 
-        // Podium Juara 1, 2, 3 lengkap dengan waktu menyelesaikan tantangan hingga finish & rata-rata
         const top3 = sorted.slice(0, 3);
         const podiumOrder = [
           { idx: 1, medal: '🥈', label: 'JUARA 2', cls: 'podium-2' },
@@ -1249,7 +1275,6 @@
           ? `Selamat kepada ${top3[0].name} sebagai Juara 1!`
           : 'Balapan telah berakhir.';
 
-        // Rekap Lengkap Semua Peserta (Waktu Finish + Rata-rata Waktu Jawab Benar)
         document.getElementById('final-rank-list').innerHTML = sorted.map((p, i) => {
           const isMe = p.id === st.myId;
           const done = (p.score || 0) >= st.target;
@@ -1339,7 +1364,6 @@
       }
 
       function startPolling() {
-        // Bot simulation tick (Host & Solo)
         const botTick = setInterval(async () => {
           if (st.status !== 'playing') return;
           if (st.mode !== 'host' && st.mode !== 'solo') return;
@@ -1387,7 +1411,6 @@
             renderTrackAndRank();
           }
 
-          // Cek apakah Top 3 (atau seluruh peserta jika < 3) sudah finish
           const finishedCount = list.filter(pl => (pl.score || 0) >= st.target).length;
           const neededFinishers = Math.min(3, list.length);
           if (list.length > 0 && (finishedCount >= neededFinishers || allFinished)) {
@@ -1396,7 +1419,6 @@
         }, 450);
         st.timers.push(botTick);
 
-        // Firebase sync polling
         const fbTick = setInterval(async () => {
           if (st.mode === 'host' && st.pin) {
             const room = await fbGet(`balap_hitung/${st.pin}`);
@@ -1489,7 +1511,6 @@
           unlockedEl.classList.toggle("hidden", !isHostAllowed);
         }
 
-        // Deteksi parameter ?pin=XXXXXX saat peserta scan QR Code di Lobby Host
         const urlParams = new URLSearchParams(window.location.search);
         const scannedPin = (urlParams.get('pin') || '').replace(/\D/g, '').slice(0, 6);
         if (scannedPin.length === 6) {
@@ -1570,6 +1591,15 @@
           st.players = {};
           st.celebrated = false;
 
+          document.getElementById('display-pin').textContent = st.pin;
+          document.getElementById('view-home').classList.add('hidden');
+          document.getElementById('view-arena').classList.remove('hidden');
+          document.getElementById('host-bar').classList.remove('hidden');
+          document.getElementById('lobby-box').classList.remove('hidden');
+          document.getElementById('race-area').classList.add('hidden');
+          updateLobbyQrCode(st.pin);
+          renderLobbyPlayers();
+
           await fbPut(`balap_hitung/${st.pin}`, {
             pin: st.pin,
             target: st.target,
@@ -1580,14 +1610,6 @@
             players: {}
           });
 
-          document.getElementById('display-pin').textContent = st.pin;
-          updateLobbyQrCode(st.pin);
-          document.getElementById('view-home').classList.add('hidden');
-          document.getElementById('view-arena').classList.remove('hidden');
-          document.getElementById('host-bar').classList.remove('hidden');
-          document.getElementById('lobby-box').classList.remove('hidden');
-          document.getElementById('race-area').classList.add('hidden');
-          renderLobbyPlayers();
           startPolling();
         });
 
