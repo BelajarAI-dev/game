@@ -118,6 +118,18 @@
     .btn-amber { background: var(--amber); color: #1c1917; }
     .btn-red { background: var(--red); color: #fff; }
 
+    .rules-banner {
+      background: rgba(59,130,246,0.12);
+      border: 1px solid rgba(59,130,246,0.32);
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: 0.83rem;
+      color: #cbd5e1;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+    .rules-banner strong { color: #fde047; }
+
     .pin-box {
       background: var(--panel-dark);
       border: 2px dashed var(--blue);
@@ -308,6 +320,11 @@
       border: 1px solid rgba(59,130,246,0.35);
       margin-bottom: 12px;
     }
+    .q-speed-hint {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
     .q-text {
       font-size: clamp(1.7rem, 4.5vw, 2.4rem);
       font-weight: 900;
@@ -401,7 +418,7 @@
       border-radius: 14px;
       padding: 14px;
       margin: 12px auto;
-      max-width: 560px;
+      max-width: 580px;
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
@@ -540,7 +557,15 @@
     <!-- HOME -->
     <div id="view-home">
       <h1>🏃‍♂️ Balap Hitung Stickman</h1>
-      <p class="sub">Jawab soal hitung cepat untuk memacu pelari Stickman Anda hingga garis finish!</p>
+      <p class="sub">Kumpulkan skor hingga garis finish! Semakin cepat menjawab benar, semakin besar poinnya.</p>
+
+      <div class="rules-banner">
+        <strong>⚡ Aturan Skor:</strong>
+        Jawab benar <strong>&lt; 2 detik = +3 poin</strong> •
+        Jawab benar <strong>2 – 4 detik = +2 poin</strong> •
+        Jawab benar <strong>&gt; 4 detik = +1 poin</strong> •
+        Salah <strong>2× berturut-turut = -1 poin</strong>.
+      </div>
 
       <div class="tabs">
         <button class="tab-btn active" data-tab="solo">Main Lawan Bot</button>
@@ -552,12 +577,13 @@
       <div id="tab-solo">
         <div class="form-row">
           <div class="fg">
-            <label>Target Soal Finish</label>
-            <select id="solo-target">
-              <option value="10" selected>10 Soal</option>
-              <option value="15">15 Soal</option>
-              <option value="20">20 Soal</option>
+            <label>Target Skor Finish</label>
+            <select id="solo-target-mode">
+              <option value="50" selected>50 Poin</option>
+              <option value="100">100 Poin</option>
+              <option value="manual">Manual (Input Angka)</option>
             </select>
+            <input type="number" id="solo-target-manual" class="hidden" min="5" max="1000" value="30" placeholder="Masukkan target skor..." style="margin-top:8px;" />
           </div>
           <div class="fg">
             <label>Tingkat Kesulitan</label>
@@ -587,12 +613,13 @@
         <div id="host-unlocked-controls" class="hidden">
           <div class="form-row">
             <div class="fg">
-              <label>Target Soal Finish</label>
-              <select id="host-target">
-                <option value="10" selected>10 Soal</option>
-                <option value="15">15 Soal</option>
-                <option value="20">20 Soal</option>
+              <label>Target Skor Finish</label>
+              <select id="host-target-mode">
+                <option value="50" selected>50 Poin</option>
+                <option value="100">100 Poin</option>
+                <option value="manual">Manual (Input Angka)</option>
               </select>
+              <input type="number" id="host-target-manual" class="hidden" min="5" max="1000" value="30" placeholder="Masukkan target skor..." style="margin-top:8px;" />
             </div>
             <div class="fg">
               <label>Tingkat Kesulitan</label>
@@ -625,7 +652,6 @@
     <div id="view-arena" class="hidden">
       <div id="host-bar" class="pin-box hidden">
         <div class="host-lobby-header">
-          <!-- QR CODE BESAR UNTUK SCAN PESERTA DI LOBBY -->
           <div id="lobby-qr-wrap" class="qr-card">
             <div id="lobby-qr-box"></div>
             <div class="qr-caption">📷 Scan untuk Langsung Masuk Room</div>
@@ -634,8 +660,11 @@
           <div>
             <div style="font-size:0.85rem;color:var(--muted);font-weight:700;">PIN ROOM PESERTA</div>
             <div class="pin-val" id="display-pin">000000</div>
+            <div style="font-size:0.85rem;color:#fde047;font-weight:800;margin-top:4px;" id="lobby-target-badge">
+              Target Finish: 50 Poin
+            </div>
             <div style="font-size:0.82rem;color:#94a3b8;margin-top:4px;max-width:270px;">
-              Peserta dapat langsung memindai QR Code di samping atau memasukkan PIN secara manual.
+              Peserta dapat memindai QR Code di samping atau memasukkan PIN secara manual.
             </div>
           </div>
         </div>
@@ -665,11 +694,13 @@
       <div id="race-area" class="hidden">
         <!-- INPUT KEYPAD (PLAYER & SOLO) -->
         <div class="box" id="solve-box">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:0.86rem;color:var(--muted);">
-            <span>Progres: <strong id="lbl-my-prog" style="color:#34d399;">0 / 10</strong></span>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;font-size:0.86rem;color:var(--muted);flex-wrap:wrap;gap:6px;">
+            <span>Skor: <strong id="lbl-my-prog" style="color:#34d399;">0 / 50 Poin</strong></span>
+            <span>Soal Benar: <strong id="lbl-my-correct" style="color:#93c5fd;">0</strong></span>
             <span>Rata-rata Benar: <strong id="lbl-my-avg" style="color:#fde047;">Tidak ada jawaban benar</strong></span>
           </div>
           <div class="q-box">
+            <div class="q-speed-hint">&lt;2 dtk = +3 poin • 2-4 dtk = +2 poin • &gt;4 dtk = +1 poin • 2× salah beruntun = -1 poin</div>
             <div class="q-text" id="q-text">5 + 7 = ?</div>
             <div class="ans-display" id="ans-display"></div>
           </div>
@@ -695,7 +726,7 @@
           <div class="box" id="track-box">
             <div style="display:flex;justify-content:space-between;align-items:center;">
               <h4>🏁 Lintasan Animasi Berlari</h4>
-              <span style="font-size:0.8rem;color:var(--muted);" id="lbl-target-info">Target: 10 Soal</span>
+              <span style="font-size:0.8rem;color:var(--muted);" id="lbl-target-info">Target Finish: 50 Poin</span>
             </div>
             <div class="track-list" id="track-list"></div>
           </div>
@@ -728,7 +759,7 @@
           </div>
           <div>
             <div class="my-stat-val" id="stat-my-finish">-</div>
-            <div class="my-stat-lbl">Waktu Finish / Skor</div>
+            <div class="my-stat-lbl">Waktu Finish / Skor Akhir</div>
           </div>
         </div>
 
@@ -764,11 +795,13 @@
         pin: '',
         myId: 'p_' + Math.random().toString(36).slice(2, 9),
         myName: 'Anda',
-        target: 10,
+        target: 50,
         diff: 'easy',
         status: 'lobby',
         startedAt: 0,
         endedAt: 0,
+        questionShownAt: 0,
+        wrongStreak: 0,
         currentAns: 0,
         input: '',
         players: {},
@@ -794,9 +827,15 @@
         return `${m}m ${s}d`;
       }
 
+      /*
+       * Rumus Rata-rata Waktu Mengisi Soal Benar:
+       * 1. Tidak pernah menjawab benar (correctCount === 0): "Tidak ada jawaban benar"
+       * 2. Juara / sudah finish (score >= target): waktu saat mengunci status finish/juara dibagi jumlah soal benar
+       * 3. Belum finish (score < target): durasi permainan dibagi jumlah soal benar
+       */
       function getPlayerAvgStat(p) {
-        const correctCount = (p.correctCount !== undefined) ? p.correctCount : (p.score || 0);
-        if (!correctCount || correctCount <= 0) {
+        const correctCount = p.correctCount || 0;
+        if (correctCount <= 0) {
           return {
             hasCorrect: false,
             avgMs: Infinity,
@@ -831,6 +870,15 @@
         };
       }
 
+      function resolveTargetValue(modeSelectId, manualInputId) {
+        const modeVal = document.getElementById(modeSelectId).value;
+        if (modeVal === 'manual') {
+          const raw = parseInt(document.getElementById(manualInputId).value, 10);
+          return (!isNaN(raw) && raw >= 5) ? raw : 30;
+        }
+        return parseInt(modeVal, 10) || 50;
+      }
+
       function buildJoinUrl(pin) {
         const url = new URL(window.location.href);
         url.search = '';
@@ -848,7 +896,6 @@
         qrWrap.classList.remove('hidden');
         qrBox.innerHTML = '';
 
-        // 1. Render langsung di browser menggunakan QRCode.js (instan tanpa internet eksternal)
         if (typeof window.QRCode === 'function') {
           try {
             new window.QRCode(qrBox, {
@@ -863,7 +910,6 @@
           } catch (e) {}
         }
 
-        // 2. Fallback otomatis jika script CDN belum termuat
         const img = document.createElement('img');
         img.alt = 'QR Code Gabung Room';
         img.src = `https://quickchart.io/qr?size=260&margin=1&text=${encodeURIComponent(targetUrl)}`;
@@ -1032,6 +1078,7 @@
         }
         st.currentAns = ans;
         st.input = '';
+        st.questionShownAt = Date.now();
         document.getElementById('q-text').textContent = `${a} ${op} ${b} = ?`;
         document.getElementById('ans-display').textContent = '';
       }
@@ -1089,11 +1136,12 @@
 
         if (me && st.mode !== 'host') {
           const myAvg = getPlayerAvgStat(me);
-          document.getElementById('lbl-my-prog').textContent = `${me.score || 0} / ${st.target}`;
+          document.getElementById('lbl-my-prog').textContent = `${me.score || 0} / ${st.target} Poin`;
+          document.getElementById('lbl-my-correct').textContent = `${me.correctCount || 0} soal`;
           document.getElementById('lbl-my-avg').textContent = myAvg.label;
         }
 
-        document.getElementById('lbl-target-info').textContent = `Target: ${st.target} Soal`;
+        document.getElementById('lbl-target-info').textContent = `Target Finish: ${st.target} Poin`;
         document.getElementById('lbl-player-count').textContent = `${sorted.length} Peserta`;
 
         document.getElementById('rank-list').innerHTML = sorted.map((p, idx) => {
@@ -1101,8 +1149,8 @@
           const done = (p.score || 0) >= st.target;
           const avgStat = getPlayerAvgStat(p);
           const finishTxt = done
-            ? `<span class="stat-pill win">🏁 ${formatDurationSec(p.finishDurationMs)}</span>`
-            : `<span class="stat-pill">${p.score || 0}/${st.target}</span>`;
+            ? `<span class="stat-pill win">🏁 ${p.score} Poin (${formatDurationSec(p.finishDurationMs)})</span>`
+            : `<span class="stat-pill">${p.score || 0}/${st.target} Poin</span>`;
           const avgBadge = avgStat.hasCorrect
             ? `<span class="stat-pill time" title="Rata-rata waktu jawab benar">⚡ ${avgStat.label}</span>`
             : `<span class="stat-pill none">Tidak ada jawaban benar</span>`;
@@ -1128,7 +1176,7 @@
               <div class="lane-head">
                 <span><strong>#${idx + 1}</strong> ${p.name}</span>
                 <span style="color:${done ? '#34d399' : '#94a3b8'};font-weight:700;">
-                  ${done ? `FINISH (${formatDurationSec(p.finishDurationMs)})` : `${p.score || 0}/${st.target}`}
+                  ${done ? `FINISH (${formatDurationSec(p.finishDurationMs)})` : `${p.score || 0}/${st.target} Poin`}
                 </span>
               </div>
               <div class="road">
@@ -1148,7 +1196,19 @@
         if (!me || (me.score || 0) >= st.target) return;
 
         const now = Date.now();
-        me.score = (me.score || 0) + 1;
+        const answerDurationMs = Math.max(100, now - (st.questionShownAt || now));
+
+        // Sistem Poin berdasarkan kecepatan menjawab:
+        // < 2 detik = +3 poin | 2 - 4 detik = +2 poin | > 4 detik = +1 poin
+        let gainedPoints = 1;
+        if (answerDurationMs < 2000) {
+          gainedPoints = 3;
+        } else if (answerDurationMs <= 4000) {
+          gainedPoints = 2;
+        }
+
+        st.wrongStreak = 0;
+        me.score = (me.score || 0) + gainedPoints;
         me.correctCount = (me.correctCount || 0) + 1;
 
         if (!me.startedAt) {
@@ -1173,7 +1233,7 @@
         renderTrackAndRank();
 
         if (me.score >= st.target) {
-          showToast(`🏁 FINISH! Waktu tempuh: ${formatDurationSec(me.finishDurationMs)}`);
+          showToast(`🏁 FINISH! (+${gainedPoints} Poin) Waktu: ${formatDurationSec(me.finishDurationMs)}`);
           if (st.mode === 'solo') {
             await endRace();
           } else {
@@ -1181,20 +1241,42 @@
             document.getElementById('ans-display').textContent = formatDurationSec(me.finishDurationMs);
           }
         } else {
+          showToast(`✅ Benar (${(answerDurationMs / 1000).toFixed(1).replace('.', ',')} dtk) → +${gainedPoints} Poin!`);
           generateQuestion();
         }
       }
 
-      function checkAnswerInput() {
+      async function handleWrongAnswer() {
+        st.wrongStreak += 1;
+        st.input = '';
+        document.getElementById('ans-display').textContent = '';
+
+        if (st.wrongStreak >= 2) {
+          st.wrongStreak = 0;
+          const me = st.players[st.myId];
+          if (me) {
+            me.score = Math.max(0, (me.score || 0) - 1);
+            if (st.mode === 'player') {
+              await fbPatch(`balap_hitung/${st.pin}/players/${st.myId}`, {
+                score: me.score
+              });
+            }
+            renderTrackAndRank();
+          }
+          showToast('❌ Salah 2× berturut-turut! Skor -1 Poin');
+        } else {
+          showToast('⚠️ Jawaban salah! (1× lagi salah berturut-turut: -1 poin)');
+        }
+      }
+
+      async function checkAnswerInput() {
         if (st.status !== 'playing' || st.mode === 'host') return;
         if (!st.input.length) return;
         const val = parseInt(st.input, 10);
         if (val === st.currentAns) {
-          handleCorrectAnswer();
+          await handleCorrectAnswer();
         } else if (st.input.length >= String(st.currentAns).length) {
-          showToast('Jawaban kurang tepat, coba lagi!');
-          st.input = '';
-          document.getElementById('ans-display').textContent = '';
+          await handleWrongAnswer();
         }
       }
 
@@ -1230,8 +1312,8 @@
           document.getElementById('stat-my-rank').textContent = myRankIdx >= 0 ? `#${myRankIdx + 1}` : '-';
           document.getElementById('stat-my-avg').textContent = myAvg.label;
           document.getElementById('stat-my-finish').textContent = myDone
-            ? formatDurationSec(me.finishDurationMs)
-            : `${me.score || 0}/${st.target} Soal`;
+            ? `${formatDurationSec(me.finishDurationMs)} (${me.score} Poin)`
+            : `${me.score || 0}/${st.target} Poin`;
         } else {
           document.getElementById('my-end-stats').classList.add('hidden');
         }
@@ -1249,7 +1331,7 @@
           const done = (p.score || 0) >= st.target;
           const finishTimeTxt = done
             ? `⏱️ Waktu Finish: ${formatDurationSec(p.finishDurationMs)}`
-            : `Skor: ${p.score || 0}/${st.target} soal`;
+            : `Skor: ${p.score || 0}/${st.target} Poin`;
           const avgStat = getPlayerAvgStat(p);
           const avgTimeTxt = avgStat.hasCorrect
             ? `⚡ Rata-rata: ${avgStat.label}`
@@ -1280,8 +1362,8 @@
           const done = (p.score || 0) >= st.target;
           const avgStat = getPlayerAvgStat(p);
           const finishBadge = done
-            ? `<span class="stat-pill win">⏱️ Finish: ${formatDurationSec(p.finishDurationMs)}</span>`
-            : `<span class="stat-pill">Progres: ${p.score || 0}/${st.target}</span>`;
+            ? `<span class="stat-pill win">⏱️ Finish: ${formatDurationSec(p.finishDurationMs)} (${p.score} Poin)</span>`
+            : `<span class="stat-pill">Skor: ${p.score || 0}/${st.target} Poin</span>`;
           const avgBadge = avgStat.hasCorrect
             ? `<span class="stat-pill time">⚡ Rata-rata Benar: ${avgStat.label}</span>`
             : `<span class="stat-pill none">Tidak ada jawaban benar</span>`;
@@ -1308,6 +1390,7 @@
         st.status = 'lobby';
         st.startedAt = 0;
         st.endedAt = 0;
+        st.wrongStreak = 0;
         st.input = '';
         st.celebrated = false;
 
@@ -1324,7 +1407,7 @@
             startedAt: 0,
             finishedAt: null,
             finishDurationMs: null,
-            ...(p.isBot ? { isBot: true, botDelayMs: p.botDelayMs || 3200 } : {})
+            ...(p.isBot ? { isBot: true, botDelayMs: p.botDelayMs || 3000 } : {})
           };
         });
         st.players = resetPlayers;
@@ -1380,12 +1463,19 @@
             if (!p.isBot || (p.score || 0) >= st.target) continue;
 
             if (!p._nextBotMoveAt) {
-              p._nextBotMoveAt = now + (p.botDelayMs || 3000) + Math.floor(Math.random() * 1400);
+              const delay = (p.botDelayMs || 2800) + Math.floor(Math.random() * 1800);
+              p._lastBotDelay = delay;
+              p._nextBotMoveAt = now + delay;
             }
             if (now >= p._nextBotMoveAt) {
-              p._nextBotMoveAt = now + (p.botDelayMs || 3000) + Math.floor(Math.random() * 1400);
+              const usedDelay = p._lastBotDelay || 3000;
+              const gained = usedDelay < 2000 ? 3 : (usedDelay <= 4000 ? 2 : 1);
 
-              p.score = (p.score || 0) + 1;
+              const nextDelay = (p.botDelayMs || 2800) + Math.floor(Math.random() * 1800);
+              p._lastBotDelay = nextDelay;
+              p._nextBotMoveAt = now + nextDelay;
+
+              p.score = (p.score || 0) + gained;
               p.correctCount = (p.correctCount || 0) + 1;
               if (!p.startedAt) p.startedAt = st.startedAt || now;
 
@@ -1448,7 +1538,7 @@
                 const localMe = st.players[st.myId];
                 st.players = room.players;
                 if (localMe && st.players[st.myId] && room.status === 'playing') {
-                  if ((localMe.score || 0) > (st.players[st.myId].score || 0)) {
+                  if ((localMe.correctCount || 0) > (st.players[st.myId].correctCount || 0)) {
                     st.players[st.myId] = { ...st.players[st.myId], ...localMe };
                   }
                 }
@@ -1458,6 +1548,7 @@
                 if (st.status !== 'lobby') {
                   st.status = 'lobby';
                   st.endedAt = 0;
+                  st.wrongStreak = 0;
                   st.input = '';
                   st.celebrated = false;
                   document.getElementById('end-box').classList.add('hidden');
@@ -1471,6 +1562,7 @@
                 if (st.status === 'lobby') {
                   st.status = 'playing';
                   st.startedAt = room.startedAt || Date.now();
+                  st.wrongStreak = 0;
                   if (st.players[st.myId]) {
                     st.players[st.myId].startedAt = st.startedAt;
                   }
@@ -1502,6 +1594,17 @@
         });
       }
 
+      function bindTargetModeToggle(selectId, inputId) {
+        const sel = document.getElementById(selectId);
+        const inp = document.getElementById(inputId);
+        if (!sel || !inp) return;
+        sel.addEventListener('change', () => {
+          const isManual = sel.value === 'manual';
+          inp.classList.toggle('hidden', !isManual);
+          if (isManual) inp.focus();
+        });
+      }
+
       document.addEventListener('DOMContentLoaded', () => {
         const isHostAllowed = sessionStorage.getItem("arena_host_verified") === "true";
         const lockedEl = document.getElementById("host-locked-notice");
@@ -1510,6 +1613,9 @@
           lockedEl.classList.toggle("hidden", isHostAllowed);
           unlockedEl.classList.toggle("hidden", !isHostAllowed);
         }
+
+        bindTargetModeToggle('solo-target-mode', 'solo-target-manual');
+        bindTargetModeToggle('host-target-mode', 'host-target-manual');
 
         const urlParams = new URLSearchParams(window.location.search);
         const scannedPin = (urlParams.get('pin') || '').replace(/\D/g, '').slice(0, 6);
@@ -1530,10 +1636,11 @@
         document.getElementById('btn-start-solo').addEventListener('click', () => {
           st.mode = 'solo';
           st.status = 'playing';
-          st.target = parseInt(document.getElementById('solo-target').value, 10);
+          st.target = resolveTargetValue('solo-target-mode', 'solo-target-manual');
           st.diff = document.getElementById('solo-diff').value;
           st.startedAt = Date.now();
           st.endedAt = 0;
+          st.wrongStreak = 0;
           st.celebrated = false;
 
           st.players = {};
@@ -1548,9 +1655,9 @@
           };
 
           const bots = [
-            { name: 'Raka [BOT]', delay: 2600 },
-            { name: 'Nadia [BOT]', delay: 3300 },
-            { name: 'Fajar [BOT]', delay: 4000 }
+            { name: 'Raka [BOT]', delay: 1700 },
+            { name: 'Nadia [BOT]', delay: 2500 },
+            { name: 'Fajar [BOT]', delay: 3400 }
           ];
           bots.forEach((b, i) => {
             const bid = 'bot_' + i;
@@ -1584,7 +1691,7 @@
           if (sessionStorage.getItem("arena_host_verified") !== "true") return showToast("Akses Host terkunci!");
           st.mode = 'host';
           st.pin = String(Math.floor(100000 + Math.random() * 900000));
-          st.target = parseInt(document.getElementById('host-target').value, 10);
+          st.target = resolveTargetValue('host-target-mode', 'host-target-manual');
           st.diff = document.getElementById('host-diff').value;
           st.status = 'lobby';
           st.endedAt = 0;
@@ -1592,6 +1699,7 @@
           st.celebrated = false;
 
           document.getElementById('display-pin').textContent = st.pin;
+          document.getElementById('lobby-target-badge').textContent = `Target Finish: ${st.target} Poin`;
           document.getElementById('view-home').classList.add('hidden');
           document.getElementById('view-arena').classList.remove('hidden');
           document.getElementById('host-bar').classList.remove('hidden');
@@ -1623,7 +1731,7 @@
             color: RUNNER_COLORS[count % RUNNER_COLORS.length],
             joinedAt: Date.now(),
             isBot: true,
-            botDelayMs: 2800 + Math.floor(Math.random() * 1400),
+            botDelayMs: 1800 + Math.floor(Math.random() * 1800),
             score: 0,
             correctCount: 0
           };
@@ -1686,11 +1794,12 @@
           st.mode = 'player';
           st.pin = pin;
           st.myName = name;
-          st.target = room.target || 10;
+          st.target = room.target || 50;
           st.diff = room.diff || 'easy';
           st.status = room.status || 'lobby';
           st.startedAt = room.startedAt || Date.now();
           st.endedAt = 0;
+          st.wrongStreak = 0;
           st.celebrated = false;
 
           const existingCount = Object.keys(room.players || {}).length;
