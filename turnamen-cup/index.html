@@ -437,7 +437,7 @@
         <strong>Aturan Pertarungan Arena:</strong><br>
         • Peserta diundi <strong>1 vs 1 secara acak</strong> ke dalam bagan sistem gugur (jika jumlah peserta ganjil/bukan kelipatan 2, sebagian peserta acak mendapat tiket <strong>BYE</strong> langsung lolos ke putaran berikutnya).<br>
         • Kedua lawan mendapat <strong>urutan soal yang sama</strong>. Jawab benar <strong>&lt; 2 dtk = +3 poin</strong>, <strong>2–4 dtk = +2 poin</strong>, <strong>&gt; 4 dtk = +1 poin</strong>. Salah 2× berturut-turut = <strong>-1 poin</strong>.<br>
-        • Pemenang tiap duel adalah yang mencapai <strong>50 Poin</strong> lebih dulu atau unggul skor saat <strong>60 Detik</strong> habis, disertai <strong>jeda 10 detik</strong> sebelum pertandingan babak berikutnya dimulai!
+        • Pemenang tiap duel adalah yang mencapai <strong>50 Poin</strong> lebih dulu atau unggul skor saat batas waktu habis (<strong>Mudah: 60 dtk</strong> | <strong>Sedang: 75 dtk</strong> | <strong>Sulit: 90 dtk</strong>), disertai <strong>jeda 20 detik</strong> sebelum pertandingan babak berikutnya dimulai!
       </div>
 
       <div class="tabs">
@@ -473,11 +473,11 @@
 
         <div id="host-unlocked-controls" class="hidden">
           <div class="fg">
-            <label>Tingkat Kesulitan Soal (+, -, ×, ÷)</label>
+            <label>Tingkat Kesulitan Soal &amp; Durasi Maksimal Duel</label>
             <select id="host-diff">
-              <option value="easy">Mudah (Penjumlahan &amp; Pengurangan 1 – 20)</option>
-              <option value="medium" selected>Sedang (+, -, × Bilangan -20 s/d 20)</option>
-              <option value="hard">Sulit (Campuran +, -, ×, ÷ Bilangan Negatif &amp; Besar)</option>
+              <option value="easy">Mudah (Penjumlahan &amp; Pengurangan 1 – 20 • Maks 60 Detik)</option>
+              <option value="medium" selected>Sedang (+, -, × Bilangan -20 s/d 20 • Maks 75 Detik)</option>
+              <option value="hard">Sulit (Campuran +, -, ×, ÷ Bilangan Negatif &amp; Besar • Maks 90 Detik)</option>
             </select>
           </div>
           <button id="btn-create-room" class="btn btn-green">Buat Room Turnamen</button>
@@ -524,14 +524,14 @@
           <div style="font-size:0.84rem;color:var(--muted);" id="host-round-sub">Klik salah satu pasangan duel di bagan untuk menonton pertarungan live!</div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;">
-          <div style="font-size:1.35rem;font-weight:900;color:var(--amber);" id="host-timer">⏱️ 60 dtk</div>
+          <div style="font-size:1.35rem;font-weight:900;color:var(--amber);" id="host-timer">⏱️ 75 dtk</div>
           <button id="btn-force-next" class="btn btn-amber" style="width:auto;padding:8px 14px;font-size:0.84rem;">Selesaikan Babak Ini</button>
         </div>
       </div>
 
-      <!-- 10-SECOND BREAK BANNER ON HOST -->
+      <!-- 20-SECOND BREAK BANNER ON HOST -->
       <div id="host-break-banner" class="break-banner hidden">
-        ⏳ Babak Selesai! Pertandingan putaran selanjutnya dimulai dalam <span id="host-break-sec" style="font-size:1.3rem;">10</span> detik...
+        ⏳ Babak Selesai! Pertandingan putaran selanjutnya dimulai dalam <span id="host-break-sec" style="font-size:1.3rem;">20</span> detik...
       </div>
 
       <!-- HOST LIVE SPECTATOR ARENA (WHEN HOST CLICKS A MATCH) -->
@@ -578,7 +578,7 @@
               <div class="hp-label" style="color:#0f172a;">⚫ <span id="duel-me-name">Kamu</span> (<strong id="duel-me-score">0</strong>/50)</div>
               <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-me-hp" style="width:100%;background:#0f172a;"></div></div>
             </div>
-            <div style="text-align:center;font-weight:900;color:#b45309;font-size:0.9rem;" id="player-timer">⏱️ 60 dtk</div>
+            <div style="text-align:center;font-weight:900;color:#b45309;font-size:0.9rem;" id="player-timer">⏱️ 75 dtk</div>
             <div class="hp-wrap right">
               <div class="hp-label" style="color:#dc2626;"><span id="duel-opp-name">Lawan</span> (<strong id="duel-opp-score">0</strong>/50) 🔴</div>
               <div class="hp-bar-bg"><div class="hp-bar-fill" id="bar-opp-hp" style="width:100%;background:#ef4444;margin-left:auto;"></div></div>
@@ -621,7 +621,7 @@
           Stickman-mu bersorak mengangkat senjata! Bersiap melaju ke babak berikutnya...
         </p>
         <div id="player-break-countdown" class="hidden" style="margin-top:12px;padding:10px;background:rgba(15,23,42,0.7);border-radius:12px;border:1px solid #fbbf24;font-weight:800;color:#fde047;">
-          ⏳ Pertandingan babak selanjutnya dimulai dalam <span id="player-break-sec">10</span> detik...
+          ⏳ Pertandingan babak selanjutnya dimulai dalam <span id="player-break-sec">20</span> detik...
         </div>
       </div>
 
@@ -641,7 +641,13 @@
   <script>
     (function () {
       const DB_URL = "https://game-math-7361f-default-rtdb.asia-southeast1.firebasedatabase.app";
-      const BREAK_DURATION_SEC = 10;
+      const BREAK_DURATION_SEC = 20;
+
+      function getMatchDurationSec(diff) {
+        if (diff === 'easy') return 60;
+        if (diff === 'hard') return 90;
+        return 75; // medium
+      }
 
       let st = {
         mode: 'join',
@@ -980,14 +986,12 @@
           const dt = Math.min(0.05, (now - arena.lastTime) / 1000);
           arena.lastTime = now;
 
-          // Render di canvas pemain jika sedang duel aktif
           const pCanvas = document.getElementById('stick-arena-canvas');
           const pActive = document.getElementById('player-duel-active');
           if (pCanvas && pActive && !pActive.classList.contains('hidden')) {
             renderCanvasFrame(pCanvas, dt);
           }
 
-          // Render di canvas spectator Host jika Host sedang menonton salah satu duel
           const hCanvas = document.getElementById('host-arena-canvas');
           const hSpec = document.getElementById('host-spectator-box');
           if (hCanvas && hSpec && !hSpec.classList.contains('hidden')) {
@@ -1000,7 +1004,7 @@
       }
 
       /* =========================================================
-         TOURNAMENT & FIREBASE SYNC LOGIC (NO BOTS + 10s BREAK)
+         TOURNAMENT & FIREBASE SYNC LOGIC
          ========================================================= */
       function showToast(msg) {
         const t = document.getElementById('toast');
@@ -1192,7 +1196,6 @@
         const byeCount = bracketSize - shuffledPlayers.length;
         const matchCountR0 = bracketSize / 2;
 
-        // Sebar BYE secara acak di antara pasangan Babak 1 (maksimal 1 BYE per match agar tidak ada BYE vs BYE)
         const byeMatchIndices = new Set();
         while (byeMatchIndices.size < byeCount) {
           byeMatchIndices.add(Math.floor(Math.random() * matchCountR0));
@@ -1248,7 +1251,6 @@
           rounds.push(emptyMatches);
         }
 
-        // Pilih otomatis match aktif pertama untuk ditonton Host jika ada
         const firstActive = r0Matches.find(m => !m.winnerId);
         st.watchedMatchId = firstActive ? firstActive.id : null;
         st.watchedS1 = 0;
@@ -1267,14 +1269,14 @@
         });
       }
 
-      /* Host: Evaluate Round & Handle 10-Second Break Before Next Round */
+      /* Host: Evaluate Round & Handle 20-Second Break Before Next Round */
       async function advanceHostRoundIfReady(forceEnd) {
         if (st.mode !== 'host' || !st.room) return;
         const rIdx = st.room.currentRound || 0;
         const rounds = st.room.rounds;
         if (!rounds) return;
 
-        // FASE JEDA 10 DETIK ANTAR PERTANDINGAN
+        // FASE JEDA 20 DETIK ANTAR PERTANDINGAN
         if (st.room.status === 'break') {
           const breakElapsed = (Date.now() - (st.room.breakStartedAt || Date.now())) / 1000;
           if (breakElapsed >= BREAK_DURATION_SEC || forceEnd) {
@@ -1312,8 +1314,9 @@
         const currentMatches = rounds[rIdx];
         if (!currentMatches) return;
 
+        const maxDur = getMatchDurationSec(st.room.diff || st.diff);
         const elapsed = (Date.now() - (st.room.roundStartedAt || Date.now())) / 1000;
-        const timeUp = elapsed >= 60 || forceEnd;
+        const timeUp = elapsed >= maxDur || forceEnd;
 
         let changed = false;
         currentMatches.forEach(m => {
@@ -1337,14 +1340,12 @@
         if (allDone) {
           const winners = currentMatches.map(m => (m.winnerId === m.p1.id ? m.p1 : m.p2));
           if (rIdx + 1 >= rounds.length) {
-            // Turnamen Selesai -> 1 Juara Utama
             await fbPatch(`turnamen_cup/${st.pin}`, {
               status: 'ended',
               rounds,
               champion: winners[0]
             });
           } else {
-            // Masuk Jeda 10 Detik sebelum pertandingan putaran selanjutnya!
             await fbPatch(`turnamen_cup/${st.pin}`, {
               status: 'break',
               breakStartedAt: Date.now(),
@@ -1379,7 +1380,9 @@
         document.getElementById('host-round-title').textContent =
           r.status === 'ended' ? '🏆 TURNAMEN SELESAI' : `${getRoundLabel(totalRounds, rIdx)}`;
 
-        // Banner Jeda 10 Detik di Host
+        const maxDur = getMatchDurationSec(r.diff || st.diff);
+
+        // Banner Jeda 20 Detik di Host
         const breakBanner = document.getElementById('host-break-banner');
         if (r.status === 'break') {
           const remBreak = Math.max(0, BREAK_DURATION_SEC - Math.floor((Date.now() - (r.breakStartedAt || Date.now())) / 1000));
@@ -1390,7 +1393,7 @@
           document.getElementById('btn-force-next').classList.remove('hidden');
         } else {
           breakBanner.classList.add('hidden');
-          const rem = Math.max(0, 60 - Math.floor((Date.now() - (r.roundStartedAt || Date.now())) / 1000));
+          const rem = Math.max(0, maxDur - Math.floor((Date.now() - (r.roundStartedAt || Date.now())) / 1000));
           document.getElementById('host-timer').textContent = r.status === 'ended' ? 'SELESAI' : `⏱️ ${rem} dtk`;
           document.getElementById('btn-force-next').textContent = 'Selesaikan Babak Ini';
           document.getElementById('btn-force-next').classList.toggle('hidden', r.status === 'ended');
@@ -1432,7 +1435,7 @@
           specBox.classList.add('hidden');
         }
 
-        // Render Bagan Sistem Gugur (Setiap duel bisa diklik Host untuk ditonton!)
+        // Render Bagan Sistem Gugur
         const board = document.getElementById('bracket-board');
         board.innerHTML = (r.rounds || []).map((matches, colIdx) => {
           const title = getRoundLabel(totalRounds, colIdx);
@@ -1461,7 +1464,6 @@
           return `<div class="bracket-col"><div class="bracket-col-title">${title}</div>${cardsHtml}</div>`;
         }).join('');
 
-        // Pasang event klik pada kartu pertandingan untuk menonton di layar Host
         board.querySelectorAll('.match-card[data-watch-id]').forEach(cardEl => {
           const mid = cardEl.getAttribute('data-watch-id');
           if (!mid) return;
@@ -1607,7 +1609,8 @@
         document.getElementById('bar-me-hp').style.width = Math.max(0, 100 - (oppScore / 50) * 100) + '%';
         document.getElementById('bar-opp-hp').style.width = Math.max(0, 100 - (meScore / 50) * 100) + '%';
 
-        const rem = Math.max(0, 60 - Math.floor((Date.now() - (r.roundStartedAt || Date.now())) / 1000));
+        const maxDur = getMatchDurationSec(r.diff || 'medium');
+        const rem = Math.max(0, maxDur - Math.floor((Date.now() - (r.roundStartedAt || Date.now())) / 1000));
         document.getElementById('player-timer').textContent = `⏱️ ${rem} dtk`;
       }
 
