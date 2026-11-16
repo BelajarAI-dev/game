@@ -78,7 +78,7 @@
       border-radius: 14px;
       padding: 11px 14px;
       font-size: 0.84rem;
-      line-height: 1.5;
+      line-height: 1.55;
       margin-bottom: 14px;
     }
     .tabs {
@@ -166,7 +166,7 @@
       font-weight: 700;
     }
 
-    /* Host Knockout Bracket */
+    /* Host Knockout Bracket & Spectator Arena */
     .round-banner {
       background: linear-gradient(90deg, rgba(245,158,11,0.2), rgba(59,130,246,0.2));
       border: 1px solid rgba(245,158,11,0.45);
@@ -179,6 +179,16 @@
       gap: 10px;
       margin-bottom: 12px;
     }
+    .break-banner {
+      background: linear-gradient(90deg, rgba(16,185,129,0.25), rgba(245,158,11,0.25));
+      border: 2px solid #fbbf24;
+      border-radius: 14px;
+      padding: 12px 16px;
+      text-align: center;
+      margin-bottom: 12px;
+      font-weight: 800;
+      color: #fde047;
+    }
     .bracket-scroll { overflow-x: auto; padding-bottom: 10px; }
     .bracket-board {
       display: flex;
@@ -190,7 +200,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-around;
-      min-width: 220px;
+      min-width: 230px;
       gap: 12px;
     }
     .bracket-col-title {
@@ -210,10 +220,20 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       padding: 8px;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .match-card.clickable { cursor: pointer; }
+    .match-card.clickable:hover {
+      transform: translateY(-2px);
+      border-color: #60a5fa;
     }
     .match-card.active-match {
       border-color: var(--amber);
       box-shadow: 0 0 15px rgba(245,158,11,0.22);
+    }
+    .match-card.selected-watch {
+      border-color: #34d399;
+      box-shadow: 0 0 18px rgba(16,185,129,0.35);
     }
     .match-slot {
       display: flex;
@@ -236,14 +256,21 @@
       opacity: 0.48;
       text-decoration: line-through;
     }
+    .match-watch-hint {
+      font-size: 0.72rem;
+      color: #60a5fa;
+      text-align: center;
+      margin-top: 4px;
+      font-weight: 700;
+    }
 
-    /* STICK FIGHT ARENA WRAPPER */
+    /* STICK FIGHT ARENA WRAPPER (SHARED BY PLAYER & HOST SPECTATOR) */
     .arena-wrapper {
       background: #e2e8f0;
       border: 3px solid #334155;
       border-radius: 14px;
-      padding: 6px 8px 8px;
-      margin-bottom: 10px;
+      padding: 8px 10px 10px;
+      margin-bottom: 12px;
       color: #0f172a;
       box-shadow: inset 0 0 20px rgba(0,0,0,0.12);
     }
@@ -252,27 +279,30 @@
       grid-template-columns: 1fr auto 1fr;
       gap: 8px;
       align-items: center;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
     }
     .hp-wrap { display: flex; flex-direction: column; gap: 2px; }
     .hp-wrap.right { align-items: flex-end; }
-    .hp-label { font-size: 0.8rem; font-weight: 900; }
+    .hp-label { font-size: 0.84rem; font-weight: 900; }
     .hp-bar-bg {
       width: 100%;
-      height: 8px;
+      height: 9px;
       background: #cbd5e1;
       border: 1px solid #64748b;
       border-radius: 999px;
       overflow: hidden;
     }
     .hp-bar-fill { height: 100%; transition: width 0.25s ease; }
-    #stick-arena-canvas {
+    .arena-canvas {
       width: 100%;
-      height: 175px;
+      height: 185px;
       display: block;
       background: #f1f5f9;
       border: 2px solid #1e293b;
       border-radius: 8px;
+    }
+    #host-arena-canvas {
+      height: 230px;
     }
 
     /* Question Panel */
@@ -405,9 +435,9 @@
 
       <div class="rules">
         <strong>Aturan Pertarungan Arena:</strong><br>
-        • Peserta diundi <strong>1 vs 1 secara acak</strong> ke dalam bagan sistem gugur (otomatis ditambah <strong>Bot</strong> jika peserta bukan kelipatan 2, 4, 8, 16, dst).<br>
+        • Peserta diundi <strong>1 vs 1 secara acak</strong> ke dalam bagan sistem gugur (jika jumlah peserta ganjil/bukan kelipatan 2, sebagian peserta acak mendapat tiket <strong>BYE</strong> langsung lolos ke putaran berikutnya).<br>
         • Kedua lawan mendapat <strong>urutan soal yang sama</strong>. Jawab benar <strong>&lt; 2 dtk = +3 poin</strong>, <strong>2–4 dtk = +2 poin</strong>, <strong>&gt; 4 dtk = +1 poin</strong>. Salah 2× berturut-turut = <strong>-1 poin</strong>.<br>
-        • Di arena, kedua Stickman bertarung terus-menerus (melompat, terbang, menghindar). Saat belum ada yang menjawab serangan akan <strong>MELESET</strong>, dan begitu menjawab benar jurus langsung <strong>MENGENAI LAWAN</strong>! Target <strong>50 Poin</strong> atau unggul skor saat <strong>60 Detik</strong> habis.
+        • Pemenang tiap duel adalah yang mencapai <strong>50 Poin</strong> lebih dulu atau unggul skor saat <strong>60 Detik</strong> habis, disertai <strong>jeda 10 detik</strong> sebelum pertandingan babak berikutnya dimulai!
       </div>
 
       <div class="tabs">
@@ -467,7 +497,7 @@
             <div style="font-size:0.82rem;color:var(--muted);">PIN TURNAMEN</div>
             <div class="pin-val" id="display-pin">000000</div>
             <p style="font-size:0.86rem;color:var(--muted);margin:6px 0 12px;">
-              Sistem akan otomatis mengundi pasangan 1 vs 1 &amp; menambahkan <strong>Bot</strong> secara acak agar bagan genap (2, 4, 8, 16, dst).
+              Minimal <strong>2 peserta</strong> bergabung untuk memulai pengundian bagan sistem gugur.
             </p>
             <button id="btn-start-cup" class="btn btn-green">🏆 Mulai Turnamen &amp; Undi Bagan</button>
           </div>
@@ -486,17 +516,42 @@
       </div>
     </div>
 
-    <!-- HOST TOURNAMENT BRACKET VIEW -->
+    <!-- HOST TOURNAMENT BRACKET & LIVE SPECTATOR ARENA -->
     <div id="view-host-cup" class="hidden">
       <div class="round-banner">
         <div>
           <strong style="font-size:1.1rem;color:#fde047;" id="host-round-title">BABAK 1</strong>
-          <div style="font-size:0.84rem;color:var(--muted);" id="host-round-sub">Target 50 Poin atau Waktu 60 Detik</div>
+          <div style="font-size:0.84rem;color:var(--muted);" id="host-round-sub">Klik salah satu pasangan duel di bagan untuk menonton pertarungan live!</div>
         </div>
         <div style="display:flex;align-items:center;gap:12px;">
           <div style="font-size:1.35rem;font-weight:900;color:var(--amber);" id="host-timer">⏱️ 60 dtk</div>
           <button id="btn-force-next" class="btn btn-amber" style="width:auto;padding:8px 14px;font-size:0.84rem;">Selesaikan Babak Ini</button>
         </div>
+      </div>
+
+      <!-- 10-SECOND BREAK BANNER ON HOST -->
+      <div id="host-break-banner" class="break-banner hidden">
+        ⏳ Babak Selesai! Pertandingan putaran selanjutnya dimulai dalam <span id="host-break-sec" style="font-size:1.3rem;">10</span> detik...
+      </div>
+
+      <!-- HOST LIVE SPECTATOR ARENA (WHEN HOST CLICKS A MATCH) -->
+      <div id="host-spectator-box" class="arena-wrapper hidden">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;border-bottom:1px solid #cbd5e1;padding-bottom:4px;">
+          <strong style="font-size:0.86rem;color:#1e293b;" id="host-watch-title">📺 SIARAN LANGSUNG PERTARUNGAN 1 VS 1</strong>
+          <button id="btn-close-watch" style="background:#ef4444;color:#fff;border:none;border-radius:6px;padding:3px 10px;font-size:0.78rem;font-weight:800;cursor:pointer;">✕ Tutup Arena</button>
+        </div>
+        <div class="arena-hud">
+          <div class="hp-wrap">
+            <div class="hp-label" style="color:#0f172a;">⚫ <span id="host-p1-name">Pemain 1</span> (<strong id="host-p1-score">0</strong>/50)</div>
+            <div class="hp-bar-bg"><div class="hp-bar-fill" id="host-p1-hp" style="width:100%;background:#0f172a;"></div></div>
+          </div>
+          <div style="text-align:center;font-weight:900;color:#b45309;font-size:0.95rem;">VS</div>
+          <div class="hp-wrap right">
+            <div class="hp-label" style="color:#dc2626;"><span id="host-p2-name">Pemain 2</span> (<strong id="host-p2-score">0</strong>/50) 🔴</div>
+            <div class="hp-bar-bg"><div class="hp-bar-fill" id="host-p2-hp" style="width:100%;background:#ef4444;margin-left:auto;"></div></div>
+          </div>
+        </div>
+        <canvas id="host-arena-canvas" class="arena-canvas" width="640" height="220"></canvas>
       </div>
 
       <div class="bracket-scroll">
@@ -530,7 +585,7 @@
             </div>
           </div>
 
-          <canvas id="stick-arena-canvas" width="640" height="220"></canvas>
+          <canvas id="stick-arena-canvas" class="arena-canvas" width="640" height="220"></canvas>
         </div>
 
         <div id="question-panel" class="question-panel">
@@ -563,8 +618,11 @@
         <div class="cheer-anim" id="cheer-stickman"></div>
         <h2 style="color:#fde047;margin:10px 0 4px;" id="win-title">⚔️🎉 KAMU MENANG DUEL ARENA!</h2>
         <p style="color:#e2e8f0;font-size:0.94rem;" id="win-desc">
-          Stickman-mu bersorak mengangkat senjata! Bersiap melaju ke babak berikutnya setelah duel lain selesai...
+          Stickman-mu bersorak mengangkat senjata! Bersiap melaju ke babak berikutnya...
         </p>
+        <div id="player-break-countdown" class="hidden" style="margin-top:12px;padding:10px;background:rgba(15,23,42,0.7);border-radius:12px;border:1px solid #fbbf24;font-weight:800;color:#fde047;">
+          ⏳ Pertandingan babak selanjutnya dimulai dalam <span id="player-break-sec">10</span> detik...
+        </div>
       </div>
 
       <!-- PLAYER LOSE CRY SCREEN -->
@@ -583,11 +641,7 @@
   <script>
     (function () {
       const DB_URL = "https://game-math-7361f-default-rtdb.asia-southeast1.firebasedatabase.app";
-      const BOT_NAMES = [
-        "Ryu [BOT]", "Kenji [BOT]", "Hattori [BOT]", "Sakura [BOT]",
-        "Kaito [BOT]", "Akira [BOT]", "Ren [BOT]", "Yuki [BOT]",
-        "Shinobi [BOT]", "Taro [BOT]", "Haruto [BOT]", "Sora [BOT]"
-      ];
+      const BREAK_DURATION_SEC = 10;
 
       let st = {
         mode: 'join',
@@ -602,6 +656,9 @@
         wrongStreak: 0,
         lastCelebratedKey: '',
         lastOppScore: 0,
+        watchedMatchId: null,
+        watchedS1: 0,
+        watchedS2: 0,
         timers: []
       };
 
@@ -615,12 +672,12 @@
         projectiles: [],
         effects: [],
         platforms: [
-          { x: 0, y: 196, w: 640, h: 24, type: 'ground' },       // Lantai Utama
-          { x: 18, y: 148, w: 115, h: 12, type: 'step' },        // Tangga Kiri
-          { x: 148, y: 108, w: 96, h: 12, type: 'truss' },       // Menara Kiri (tiang X)
-          { x: 270, y: 126, w: 96, h: 12, type: 'frame' },       // Rangka Tengah
-          { x: 385, y: 152, w: 170, h: 10, type: 'deck' },       // Platform Kanan
-          { x: 210, y: 54, w: 220, h: 10, type: 'upper' }        // Platform Terbang Atas
+          { x: 0, y: 196, w: 640, h: 24, type: 'ground' },
+          { x: 18, y: 148, w: 115, h: 12, type: 'step' },
+          { x: 148, y: 108, w: 96, h: 12, type: 'truss' },
+          { x: 270, y: 126, w: 96, h: 12, type: 'frame' },
+          { x: 385, y: 152, w: 170, h: 10, type: 'deck' },
+          { x: 210, y: 54, w: 220, h: 10, type: 'upper' }
         ],
         me: {
           x: 110, y: 140, vx: 95, vy: 0, dir: 1,
@@ -636,47 +693,50 @@
         }
       };
 
-      function triggerGuaranteedHit(attackerIsMe) {
-        const atk = attackerIsMe ? arena.me : arena.opp;
-        const def = attackerIsMe ? arena.opp : arena.me;
+      function resetArenaFighters() {
+        arena.me.x = 110; arena.me.y = 140; arena.me.vx = 95; arena.me.vy = 0; arena.me.dashTarget = null; arena.me.hitStun = 0;
+        arena.opp.x = 510; arena.opp.y = 140; arena.opp.vx = -95; arena.opp.vy = 0; arena.opp.dashTarget = null; arena.opp.hitStun = 0;
+        arena.projectiles = [];
+        arena.effects = [];
+      }
 
-        // Jurus terbang melesat langsung ke arah posisi lawan!
-        atk.dashTarget = { x: def.x, y: def.y, isMe: attackerIsMe };
+      function triggerGuaranteedHit(attackerIsLeft) {
+        const atk = attackerIsLeft ? arena.me : arena.opp;
+        const def = attackerIsLeft ? arena.opp : arena.me;
+
+        atk.dashTarget = { x: def.x, y: def.y, isLeft: attackerIsLeft };
         arena.effects.push({
           x: atk.x, y: atk.y - 25,
           text: '⚡ FLYING SLASH!',
-          color: attackerIsMe ? '#059669' : '#dc2626',
+          color: attackerIsLeft ? '#059669' : '#dc2626',
           life: 0.65
         });
       }
 
-      function spawnMissAttack(fighter, isMe) {
-        // Serangan kontinu acak yang meleset / dihindari lawan
+      function spawnMissAttack(fighter, isLeft) {
         const speed = 340 * fighter.dir;
-        const spreadY = (Math.random() - 0.55) * 140; // Sengaja melenceng ke atas/bawah
+        const spreadY = (Math.random() - 0.55) * 140;
         arena.projectiles.push({
           x: fighter.x + fighter.dir * 16,
           y: fighter.y - 22,
           vx: speed,
           vy: spreadY,
           rot: 0,
-          color: isMe ? '#0f172a' : '#ef4444',
+          color: isLeft ? '#0f172a' : '#ef4444',
           life: 1.3
         });
       }
 
-      function updateFighterPhysics(f, other, isMe, dt) {
+      function updateFighterPhysics(f, other, isLeft, dt) {
         f.runCycle += dt * 14;
         if (f.hitStun > 0) f.hitStun -= dt;
 
-        // Jika sedang jurus serangan telak (terbang mengejar lawan)
         if (f.dashTarget) {
           const dx = other.x - f.x;
           const dy = other.y - f.y;
           const dist = Math.hypot(dx, dy);
           f.dir = dx >= 0 ? 1 : -1;
           if (dist < 28) {
-            // HANTAMAN KENA LAWAN!
             f.dashTarget = null;
             f.vx = -f.dir * 130;
             f.vy = -190;
@@ -698,18 +758,15 @@
           }
         }
 
-        // AI Gerakan Kontinu (Lari, Lompat Antar Platform, Terbang)
         f.actionTimer -= dt;
         if (f.actionTimer <= 0 && f.hitStun <= 0) {
           f.actionTimer = 0.55 + Math.random() * 0.65;
           const roll = Math.random();
           if (roll < 0.48 && f.grounded) {
-            // Lompat tinggi ke platform atas
             f.vy = -(310 + Math.random() * 110);
             f.grounded = false;
             f.vx = (Math.random() < 0.5 ? -1 : 1) * (110 + Math.random() * 70);
           } else if (roll < 0.72) {
-            // Lompat ganda / terbang melayang di udara
             f.vy = -240;
             f.vx = (other.x > f.x ? 1 : -1) * 185;
             arena.effects.push({
@@ -719,24 +776,20 @@
               life: 0.35
             });
           } else {
-            // Ubah arah lari & lempar shuriken meleset
             f.dir = other.x >= f.x ? 1 : -1;
             f.vx = f.dir * (95 + Math.random() * 65);
-            spawnMissAttack(f, isMe);
+            spawnMissAttack(f, isLeft);
           }
         }
 
-        // Gravitasi & Integrasi Posisi
         const prevY = f.y;
         f.vy += 680 * dt;
         f.x += f.vx * dt;
         f.y += f.vy * dt;
 
-        // Batas Dinding Kiri & Kanan Arena
         if (f.x < 24) { f.x = 24; f.vx = Math.abs(f.vx); f.dir = 1; }
         if (f.x > 616) { f.x = 616; f.vx = -Math.abs(f.vx); f.dir = -1; }
 
-        // Deteksi Pijakan Platform (One-way drop-through dari bawah, mendarat dari atas)
         f.grounded = false;
         if (f.vy >= 0) {
           for (const p of arena.platforms) {
@@ -755,25 +808,24 @@
       function drawArenaArchitecture(ctx) {
         ctx.clearRect(0, 0, 640, 220);
 
-        // Struktur Arsitektur Garis Hitam-Putih Ala Stick Fight
         ctx.strokeStyle = '#1e293b';
         ctx.fillStyle = '#ffffff';
         ctx.lineWidth = 2.5;
 
-        // Tiang penyangga menara kiri (pola X seperti gambar)
+        // Menara Tiang X kiri
         ctx.strokeRect(156, 120, 80, 76);
         ctx.beginPath();
         ctx.moveTo(156, 120); ctx.lineTo(236, 196);
         ctx.moveTo(236, 120); ctx.lineTo(156, 196);
         ctx.stroke();
 
-        // Tiang portal tengah & balok miring
+        // Portal tengah & balok miring
         ctx.strokeRect(278, 138, 80, 58);
         ctx.beginPath();
         ctx.moveTo(310, 138); ctx.lineTo(368, 196);
         ctx.stroke();
 
-        // Tiang tangga vertikal di kanan atas
+        // Tiang tangga vertikal kanan
         ctx.strokeRect(445, 0, 16, 152);
         for (let ty = 18; ty < 145; ty += 24) {
           ctx.fillRect(461, ty, 8, 6);
@@ -786,7 +838,6 @@
         ctx.lineTo(548, 152);
         ctx.stroke();
 
-        // Gambar seluruh platform pijakan
         for (const p of arena.platforms) {
           ctx.fillStyle = p.type === 'ground' ? '#cbd5e1' : '#ffffff';
           ctx.fillRect(p.x, p.y, p.w, p.h);
@@ -798,7 +849,6 @@
         ctx.save();
         ctx.translate(f.x, f.y);
 
-        // Efek aura terbang jika sedang di udara atau dash
         if (!f.grounded || f.dashTarget) {
           ctx.strokeStyle = f.dashTarget ? '#f59e0b' : 'rgba(100,116,139,0.45)';
           ctx.lineWidth = 2;
@@ -816,14 +866,12 @@
         ctx.lineWidth = 4;
         ctx.lineCap = 'round';
 
-        // Kepala & Ikat Kepala Ninja
         ctx.beginPath();
         ctx.arc(0, -38, 7, 0, Math.PI * 2);
         ctx.fill();
 
         ctx.fillStyle = f.headband;
         ctx.fillRect(-7, -41, 14, 3.5);
-        // Pita ikat kepala berkibar
         ctx.strokeStyle = f.headband;
         ctx.lineWidth = 2.5;
         ctx.beginPath();
@@ -831,7 +879,6 @@
         ctx.lineTo(-17 * f.dir, -36 + Math.sin(f.runCycle) * 3);
         ctx.stroke();
 
-        // Badan
         ctx.strokeStyle = f.color;
         ctx.lineWidth = 4;
         ctx.beginPath();
@@ -839,7 +886,6 @@
         ctx.lineTo(0, -14);
         ctx.stroke();
 
-        // Kaki Berlari / Melompat
         ctx.beginPath();
         ctx.moveTo(0, -14);
         ctx.lineTo(-swing, 0);
@@ -847,7 +893,6 @@
         ctx.lineTo(swing, -2);
         ctx.stroke();
 
-        // Tangan & Pedang Katana
         ctx.beginPath();
         ctx.moveTo(0, -26);
         ctx.lineTo(12 * f.dir, -23);
@@ -855,13 +900,74 @@
         ctx.lineTo(-10 * f.dir, -20);
         ctx.stroke();
 
-        // Bilah Katana Berkilau
         ctx.strokeStyle = '#475569';
         ctx.lineWidth = 2.5;
         ctx.beginPath();
         ctx.moveTo(12 * f.dir, -23);
         ctx.lineTo(28 * f.dir, -36);
         ctx.stroke();
+
+        ctx.restore();
+      }
+
+      function renderCanvasFrame(canvas, dt) {
+        const ctx = canvas.getContext('2d');
+        updateFighterPhysics(arena.me, arena.opp, true, dt);
+        updateFighterPhysics(arena.opp, arena.me, false, dt);
+
+        ctx.save();
+        if (arena.shakeTimer > 0) {
+          arena.shakeTimer -= dt;
+          ctx.translate((Math.random() - 0.5) * 8, (Math.random() - 0.5) * 8);
+        }
+
+        drawArenaArchitecture(ctx);
+        drawStickFighter(ctx, arena.me);
+        drawStickFighter(ctx, arena.opp);
+
+        for (let i = arena.projectiles.length - 1; i >= 0; i--) {
+          const p = arena.projectiles[i];
+          p.x += p.vx * dt;
+          p.y += p.vy * dt;
+          p.rot += 18 * dt;
+          p.life -= dt;
+
+          if (p.x < 10 || p.x > 630 || p.y < 8 || p.y > 194 || p.life <= 0) {
+            if (p.life > 0.2) {
+              arena.effects.push({
+                x: Math.max(30, Math.min(600, p.x)),
+                y: Math.max(24, Math.min(185, p.y)),
+                text: 'MISS!',
+                color: '#64748b',
+                life: 0.45
+              });
+            }
+            arena.projectiles.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.fillStyle = p.color;
+          ctx.fillRect(-7, -2, 14, 4);
+          ctx.fillRect(-2, -7, 4, 14);
+          ctx.restore();
+        }
+
+        ctx.font = '900 13px sans-serif';
+        ctx.textAlign = 'center';
+        for (let i = arena.effects.length - 1; i >= 0; i--) {
+          const ef = arena.effects[i];
+          ef.y -= 28 * dt;
+          ef.life -= dt;
+          if (ef.life <= 0) {
+            arena.effects.splice(i, 1);
+            continue;
+          }
+          ctx.fillStyle = ef.color;
+          ctx.fillText(ef.text, ef.x, ef.y);
+        }
 
         ctx.restore();
       }
@@ -874,71 +980,18 @@
           const dt = Math.min(0.05, (now - arena.lastTime) / 1000);
           arena.lastTime = now;
 
-          const canvas = document.getElementById('stick-arena-canvas');
-          const activeBox = document.getElementById('player-duel-active');
-          if (canvas && activeBox && !activeBox.classList.contains('hidden')) {
-            const ctx = canvas.getContext('2d');
-            updateFighterPhysics(arena.me, arena.opp, true, dt);
-            updateFighterPhysics(arena.opp, arena.me, false, dt);
+          // Render di canvas pemain jika sedang duel aktif
+          const pCanvas = document.getElementById('stick-arena-canvas');
+          const pActive = document.getElementById('player-duel-active');
+          if (pCanvas && pActive && !pActive.classList.contains('hidden')) {
+            renderCanvasFrame(pCanvas, dt);
+          }
 
-            ctx.save();
-            if (arena.shakeTimer > 0) {
-              arena.shakeTimer -= dt;
-              ctx.translate((Math.random() - 0.5) * 8, (Math.random() - 0.5) * 8);
-            }
-
-            drawArenaArchitecture(ctx);
-            drawStickFighter(ctx, arena.me);
-            drawStickFighter(ctx, arena.opp);
-
-            // Update & Gambar Proyektil Serangan Kontinu (Meleset / Terbang)
-            for (let i = arena.projectiles.length - 1; i >= 0; i--) {
-              const p = arena.projectiles[i];
-              p.x += p.vx * dt;
-              p.y += p.vy * dt;
-              p.rot += 18 * dt;
-              p.life -= dt;
-
-              // Jika mengenai dinding atau meleset melewati lawan -> tulis MISS!
-              if (p.x < 10 || p.x > 630 || p.y < 8 || p.y > 194 || p.life <= 0) {
-                if (p.life > 0.2) {
-                  arena.effects.push({
-                    x: Math.max(30, Math.min(600, p.x)),
-                    y: Math.max(24, Math.min(185, p.y)),
-                    text: 'MISS!',
-                    color: '#64748b',
-                    life: 0.45
-                  });
-                }
-                arena.projectiles.splice(i, 1);
-                continue;
-              }
-
-              ctx.save();
-              ctx.translate(p.x, p.y);
-              ctx.rotate(p.rot);
-              ctx.fillStyle = p.color;
-              ctx.fillRect(-7, -2, 14, 4);
-              ctx.fillRect(-2, -7, 4, 14);
-              ctx.restore();
-            }
-
-            // Efek Teks (MISS! / KENA! HIT! / FLYING SLASH!)
-            ctx.font = '900 13px sans-serif';
-            ctx.textAlign = 'center';
-            for (let i = arena.effects.length - 1; i >= 0; i--) {
-              const ef = arena.effects[i];
-              ef.y -= 28 * dt;
-              ef.life -= dt;
-              if (ef.life <= 0) {
-                arena.effects.splice(i, 1);
-                continue;
-              }
-              ctx.fillStyle = ef.color;
-              ctx.fillText(ef.text, ef.x, ef.y);
-            }
-
-            ctx.restore();
+          // Render di canvas spectator Host jika Host sedang menonton salah satu duel
+          const hCanvas = document.getElementById('host-arena-canvas');
+          const hSpec = document.getElementById('host-spectator-box');
+          if (hCanvas && hSpec && !hSpec.classList.contains('hidden')) {
+            renderCanvasFrame(hCanvas, dt);
           }
 
           arena.rafId = requestAnimationFrame(loop);
@@ -947,7 +1000,7 @@
       }
 
       /* =========================================================
-         TOURNAMENT & FIREBASE SYNC LOGIC
+         TOURNAMENT & FIREBASE SYNC LOGIC (NO BOTS + 10s BREAK)
          ========================================================= */
       function showToast(msg) {
         const t = document.getElementById('toast');
@@ -1127,42 +1180,59 @@
         }
       }
 
-      function buildMatchesForRound(contestants, roundIdx) {
-        const matches = [];
-        for (let i = 0; i < contestants.length; i += 2) {
-          matches.push({
-            id: `r${roundIdx}_m${i / 2}`,
-            p1: contestants[i],
-            p2: contestants[i + 1],
-            s1: 0,
-            s2: 0,
-            winnerId: null,
-            seed: Math.floor(Math.random() * 90000) + 1000
-          });
-        }
-        return matches;
-      }
-
+      /* Build Bracket WITHOUT Bots (Using Random BYE Slots if Not Power of 2) */
       async function startTournamentHost() {
-        const rawPlayers = Object.values(st.room.players || {}).filter(p => !p.isBot);
-        if (rawPlayers.length < 1) return showToast("Minimal 1 peserta bergabung!");
+        const rawPlayers = Object.values(st.room.players || {});
+        if (rawPlayers.length < 2) return showToast("Minimal 2 peserta bergabung untuk memulai turnamen!");
 
         let bracketSize = 2;
         while (bracketSize < rawPlayers.length) bracketSize *= 2;
 
-        const allContestants = rawPlayers.map(p => ({ id: p.id, name: p.name, isBot: false }));
-        const neededBots = bracketSize - allContestants.length;
+        const shuffledPlayers = shuffleArray(rawPlayers.map(p => ({ id: p.id, name: p.name })));
+        const byeCount = bracketSize - shuffledPlayers.length;
+        const matchCountR0 = bracketSize / 2;
 
-        for (let i = 0; i < neededBots; i++) {
-          const botId = `bot_${i}_${Date.now()}`;
-          const botName = BOT_NAMES[i % BOT_NAMES.length] + (i >= BOT_NAMES.length ? ` #${i + 1}` : '');
-          allContestants.push({ id: botId, name: botName, isBot: true });
+        // Sebar BYE secara acak di antara pasangan Babak 1 (maksimal 1 BYE per match agar tidak ada BYE vs BYE)
+        const byeMatchIndices = new Set();
+        while (byeMatchIndices.size < byeCount) {
+          byeMatchIndices.add(Math.floor(Math.random() * matchCountR0));
         }
 
-        const shuffled = shuffleArray(allContestants);
         const totalRounds = Math.log2(bracketSize);
         const rounds = [];
-        rounds.push(buildMatchesForRound(shuffled, 0));
+        const r0Matches = [];
+        let pCursor = 0;
+
+        for (let mIdx = 0; mIdx < matchCountR0; mIdx++) {
+          if (byeMatchIndices.has(mIdx)) {
+            const luckyPlayer = shuffledPlayers[pCursor++];
+            r0Matches.push({
+              id: `r0_m${mIdx}`,
+              p1: luckyPlayer,
+              p2: { id: 'BYE', name: 'BYE (Lolos Otomatis)' },
+              s1: 0,
+              s2: 0,
+              winnerId: luckyPlayer.id,
+              isBye: true,
+              seed: Math.floor(Math.random() * 90000) + 1000
+            });
+          } else {
+            const p1 = shuffledPlayers[pCursor++];
+            const p2 = shuffledPlayers[pCursor++];
+            r0Matches.push({
+              id: `r0_m${mIdx}`,
+              p1,
+              p2,
+              s1: 0,
+              s2: 0,
+              winnerId: null,
+              isBye: false,
+              seed: Math.floor(Math.random() * 90000) + 1000
+            });
+          }
+        }
+        rounds.push(r0Matches);
+
         for (let r = 1; r < totalRounds; r++) {
           const count = bracketSize / Math.pow(2, r + 1);
           const emptyMatches = Array.from({ length: count }, (_, idx) => ({
@@ -1172,10 +1242,18 @@
             s1: 0,
             s2: 0,
             winnerId: null,
+            isBye: false,
             seed: Math.floor(Math.random() * 90000) + 1000
           }));
           rounds.push(emptyMatches);
         }
+
+        // Pilih otomatis match aktif pertama untuk ditonton Host jika ada
+        const firstActive = r0Matches.find(m => !m.winnerId);
+        st.watchedMatchId = firstActive ? firstActive.id : null;
+        st.watchedS1 = 0;
+        st.watchedS2 = 0;
+        resetArenaFighters();
 
         await fbPatch(`turnamen_cup/${st.pin}`, {
           status: 'playing',
@@ -1183,15 +1261,54 @@
           totalRounds,
           currentRound: 0,
           roundStartedAt: Date.now(),
+          breakStartedAt: null,
           rounds,
           champion: null
         });
       }
 
+      /* Host: Evaluate Round & Handle 10-Second Break Before Next Round */
       async function advanceHostRoundIfReady(forceEnd) {
-        if (st.mode !== 'host' || !st.room || st.room.status !== 'playing') return;
+        if (st.mode !== 'host' || !st.room) return;
         const rIdx = st.room.currentRound || 0;
         const rounds = st.room.rounds;
+        if (!rounds) return;
+
+        // FASE JEDA 10 DETIK ANTAR PERTANDINGAN
+        if (st.room.status === 'break') {
+          const breakElapsed = (Date.now() - (st.room.breakStartedAt || Date.now())) / 1000;
+          if (breakElapsed >= BREAK_DURATION_SEC || forceEnd) {
+            const currentMatches = rounds[rIdx];
+            const winners = currentMatches.map(m => (m.winnerId === m.p1.id ? m.p1 : m.p2));
+            const nextIdx = rIdx + 1;
+            const nextMatches = rounds[nextIdx];
+
+            for (let i = 0; i < nextMatches.length; i++) {
+              nextMatches[i].p1 = winners[i * 2];
+              nextMatches[i].p2 = winners[i * 2 + 1];
+              nextMatches[i].s1 = 0;
+              nextMatches[i].s2 = 0;
+              nextMatches[i].winnerId = null;
+            }
+
+            st.watchedMatchId = nextMatches[0] ? nextMatches[0].id : null;
+            st.watchedS1 = 0;
+            st.watchedS2 = 0;
+            resetArenaFighters();
+
+            await fbPatch(`turnamen_cup/${st.pin}`, {
+              status: 'playing',
+              currentRound: nextIdx,
+              roundStartedAt: Date.now(),
+              breakStartedAt: null,
+              rounds
+            });
+          }
+          return;
+        }
+
+        if (st.room.status !== 'playing') return;
+
         const currentMatches = rounds[rIdx];
         if (!currentMatches) return;
 
@@ -1220,23 +1337,17 @@
         if (allDone) {
           const winners = currentMatches.map(m => (m.winnerId === m.p1.id ? m.p1 : m.p2));
           if (rIdx + 1 >= rounds.length) {
+            // Turnamen Selesai -> 1 Juara Utama
             await fbPatch(`turnamen_cup/${st.pin}`, {
               status: 'ended',
               rounds,
               champion: winners[0]
             });
           } else {
-            const nextMatches = rounds[rIdx + 1];
-            for (let i = 0; i < nextMatches.length; i++) {
-              nextMatches[i].p1 = winners[i * 2];
-              nextMatches[i].p2 = winners[i * 2 + 1];
-              nextMatches[i].s1 = 0;
-              nextMatches[i].s2 = 0;
-              nextMatches[i].winnerId = null;
-            }
+            // Masuk Jeda 10 Detik sebelum pertandingan putaran selanjutnya!
             await fbPatch(`turnamen_cup/${st.pin}`, {
-              currentRound: rIdx + 1,
-              roundStartedAt: Date.now(),
+              status: 'break',
+              breakStartedAt: Date.now(),
               rounds
             });
           }
@@ -1245,31 +1356,7 @@
         }
       }
 
-      async function tickBotsOnHost() {
-        if (st.mode !== 'host' || !st.room || st.room.status !== 'playing') return;
-        const rIdx = st.room.currentRound || 0;
-        const matches = st.room.rounds?.[rIdx];
-        if (!matches) return;
-
-        let updated = false;
-        for (let idx = 0; idx < matches.length; idx++) {
-          const m = matches[idx];
-          if (m.winnerId) continue;
-
-          if (m.p1 && m.p1.isBot && Math.random() < 0.65) {
-            m.s1 = Math.min(50, (m.s1 || 0) + (Math.random() < 0.35 ? 2 : 1));
-            await fbPut(`turnamen_cup/${st.pin}/rounds/${rIdx}/${idx}/s1`, m.s1);
-            updated = true;
-          }
-          if (m.p2 && m.p2.isBot && Math.random() < 0.65) {
-            m.s2 = Math.min(50, (m.s2 || 0) + (Math.random() < 0.35 ? 2 : 1));
-            await fbPut(`turnamen_cup/${st.pin}/rounds/${rIdx}/${idx}/s2`, m.s2);
-            updated = true;
-          }
-        }
-        if (updated) await advanceHostRoundIfReady(false);
-      }
-
+      /* Render Host Bracket & Live Spectator Arena */
       function renderHostView() {
         const r = st.room;
         if (!r) return;
@@ -1290,12 +1377,62 @@
         const rIdx = r.currentRound || 0;
         const totalRounds = r.totalRounds || 1;
         document.getElementById('host-round-title').textContent =
-          r.status === 'ended' ? '🏆 TURNAMEN SELESAI' : `${getRoundLabel(totalRounds, rIdx)} (${r.bracketSize} Fighter)`;
+          r.status === 'ended' ? '🏆 TURNAMEN SELESAI' : `${getRoundLabel(totalRounds, rIdx)}`;
 
-        const rem = Math.max(0, 60 - Math.floor((Date.now() - (r.roundStartedAt || Date.now())) / 1000));
-        document.getElementById('host-timer').textContent = r.status === 'ended' ? 'SELESAI' : `⏱️ ${rem} dtk`;
-        document.getElementById('btn-force-next').classList.toggle('hidden', r.status === 'ended');
+        // Banner Jeda 10 Detik di Host
+        const breakBanner = document.getElementById('host-break-banner');
+        if (r.status === 'break') {
+          const remBreak = Math.max(0, BREAK_DURATION_SEC - Math.floor((Date.now() - (r.breakStartedAt || Date.now())) / 1000));
+          breakBanner.classList.remove('hidden');
+          document.getElementById('host-break-sec').textContent = remBreak;
+          document.getElementById('host-timer').textContent = `⏸️ JEDA ${remBreak} dtk`;
+          document.getElementById('btn-force-next').textContent = 'Mulai Putaran Berikutnya Sekarang';
+          document.getElementById('btn-force-next').classList.remove('hidden');
+        } else {
+          breakBanner.classList.add('hidden');
+          const rem = Math.max(0, 60 - Math.floor((Date.now() - (r.roundStartedAt || Date.now())) / 1000));
+          document.getElementById('host-timer').textContent = r.status === 'ended' ? 'SELESAI' : `⏱️ ${rem} dtk`;
+          document.getElementById('btn-force-next').textContent = 'Selesaikan Babak Ini';
+          document.getElementById('btn-force-next').classList.toggle('hidden', r.status === 'ended');
+        }
 
+        // Update Live Spectator Arena pada layar Host jika Host memilih duel
+        const specBox = document.getElementById('host-spectator-box');
+        let watchedMatch = null;
+        if (st.watchedMatchId && r.rounds) {
+          for (const roundMatches of r.rounds) {
+            const found = roundMatches.find(m => m.id === st.watchedMatchId);
+            if (found && !found.isBye && found.p1 && found.p2) {
+              watchedMatch = found;
+              break;
+            }
+          }
+        }
+
+        if (watchedMatch && r.status !== 'ended') {
+          specBox.classList.remove('hidden');
+          startArenaLoop();
+          const s1 = watchedMatch.s1 || 0;
+          const s2 = watchedMatch.s2 || 0;
+
+          if (s1 > st.watchedS1) triggerGuaranteedHit(true);
+          if (s2 > st.watchedS2) triggerGuaranteedHit(false);
+          st.watchedS1 = s1;
+          st.watchedS2 = s2;
+
+          document.getElementById('host-watch-title').textContent =
+            `📺 ARENA LIVE: ${watchedMatch.p1.name} VS ${watchedMatch.p2.name}` + (watchedMatch.winnerId ? ' (SELESAI)' : '');
+          document.getElementById('host-p1-name').textContent = watchedMatch.p1.name;
+          document.getElementById('host-p1-score').textContent = s1;
+          document.getElementById('host-p2-name').textContent = watchedMatch.p2.name;
+          document.getElementById('host-p2-score').textContent = s2;
+          document.getElementById('host-p1-hp').style.width = Math.max(0, 100 - (s2 / 50) * 100) + '%';
+          document.getElementById('host-p2-hp').style.width = Math.max(0, 100 - (s1 / 50) * 100) + '%';
+        } else {
+          specBox.classList.add('hidden');
+        }
+
+        // Render Bagan Sistem Gugur (Setiap duel bisa diklik Host untuk ditonton!)
         const board = document.getElementById('bracket-board');
         board.innerHTML = (r.rounds || []).map((matches, colIdx) => {
           const title = getRoundLabel(totalRounds, colIdx);
@@ -1304,22 +1441,44 @@
             const p2Name = m.p2 ? m.p2.name : 'Menunggu...';
             const p1Cls = m.winnerId ? (m.winnerId === m.p1?.id ? 'win' : 'lose') : '';
             const p2Cls = m.winnerId ? (m.winnerId === m.p2?.id ? 'win' : 'lose') : '';
+            const canWatch = !m.isBye && m.p1 && m.p2 && m.p2.id !== 'BYE';
             const activeCls = (colIdx === rIdx && !m.winnerId && r.status === 'playing') ? 'active-match' : '';
+            const watchCls = (st.watchedMatchId === m.id) ? 'selected-watch' : '';
             return `
-              <div class="match-card ${activeCls}">
+              <div class="match-card ${canWatch ? 'clickable' : ''} ${activeCls} ${watchCls}" data-watch-id="${canWatch ? m.id : ''}">
                 <div class="match-slot ${p1Cls}">
                   <span>${p1Name}</span>
-                  <span>${m.p1 ? (m.s1 || 0) : '-'}</span>
+                  <span>${m.isBye ? 'BYE' : (m.p1 ? (m.s1 || 0) : '-')}</span>
                 </div>
                 <div class="match-slot ${p2Cls}">
                   <span>${p2Name}</span>
-                  <span>${m.p2 ? (m.s2 || 0) : '-'}</span>
+                  <span>${m.isBye ? '-' : (m.p2 ? (m.s2 || 0) : '-')}</span>
                 </div>
+                ${canWatch ? `<div class="match-watch-hint">${st.watchedMatchId === m.id ? '👁️ Sedang Ditonton' : '👆 Klik untuk Tonton Arena'}</div>` : ''}
               </div>
             `;
           }).join('');
           return `<div class="bracket-col"><div class="bracket-col-title">${title}</div>${cardsHtml}</div>`;
         }).join('');
+
+        // Pasang event klik pada kartu pertandingan untuk menonton di layar Host
+        board.querySelectorAll('.match-card[data-watch-id]').forEach(cardEl => {
+          const mid = cardEl.getAttribute('data-watch-id');
+          if (!mid) return;
+          cardEl.addEventListener('click', () => {
+            st.watchedMatchId = mid;
+            for (const roundMatches of (st.room?.rounds || [])) {
+              const found = roundMatches.find(x => x.id === mid);
+              if (found) {
+                st.watchedS1 = found.s1 || 0;
+                st.watchedS2 = found.s2 || 0;
+                break;
+              }
+            }
+            resetArenaFighters();
+            renderHostView();
+          });
+        });
 
         if (r.status === 'ended' && r.champion) {
           document.getElementById('host-champion-box').classList.remove('hidden');
@@ -1333,6 +1492,7 @@
         }
       }
 
+      /* Render Player Continuous Stick Fight View */
       function renderPlayerView() {
         const r = st.room;
         if (!r) return;
@@ -1394,9 +1554,21 @@
             launchConfetti(4500);
           }
 
+          const breakBox = document.getElementById('player-break-countdown');
+          if (r.status === 'break') {
+            const remBreak = Math.max(0, BREAK_DURATION_SEC - Math.floor((Date.now() - (r.breakStartedAt || Date.now())) / 1000));
+            breakBox.classList.remove('hidden');
+            document.getElementById('player-break-sec').textContent = remBreak;
+          } else {
+            breakBox.classList.add('hidden');
+          }
+
           if (r.status === 'ended' && r.champion?.id === st.myId) {
             document.getElementById('win-title').textContent = '👑⚔️🏆 SELAMAT! KAMU JUARA ARENA TURNAMEN!';
             document.getElementById('win-desc').textContent = 'Kamu mengalahkan semua lawan dan menjadi pemenang utama kejuaraan ini!';
+          } else if (myMatch.isBye) {
+            document.getElementById('win-title').textContent = '🎟️🎉 KAMU MENDAPAT TIKET BYE (LOLOS OTOMATIS)!';
+            document.getElementById('win-desc').textContent = 'Kamu otomatis melaju ke babak berikutnya setelah duel putaran ini selesai.';
           } else {
             document.getElementById('win-title').textContent = `⚔️🎉 MENANG DUEL (${meScore} - ${oppScore})! STICKMAN BERSORAK!`;
             document.getElementById('win-desc').textContent = 'Kamu lolos ke putaran berikutnya! Menunggu duel lainnya selesai...';
@@ -1417,14 +1589,10 @@
           st.wrongStreak = 0;
           st.input = '';
           st.lastOppScore = 0;
-          arena.me.x = 110; arena.me.y = 140; arena.me.dashTarget = null;
-          arena.opp.x = 510; arena.opp.y = 140; arena.opp.dashTarget = null;
-          arena.projectiles = [];
-          arena.effects = [];
+          resetArenaFighters();
           loadCurrentPlayerQuestion(myMatch.seed);
         }
 
-        // Jika lawan mencetak poin, picu jurus terbang lawan menghantam stickman pemain!
         if (oppScore > st.lastOppScore) {
           triggerGuaranteedHit(false);
         }
@@ -1436,7 +1604,6 @@
         document.getElementById('duel-opp-score').textContent = oppScore;
         document.getElementById('player-round-badge').textContent = `${getRoundLabel(r.totalRounds, myRoundIdx)} • Target 50 Poin`;
 
-        // HP Bar berkurang sesuai poin yang dicetak lawan
         document.getElementById('bar-me-hp').style.width = Math.max(0, 100 - (oppScore / 50) * 100) + '%';
         document.getElementById('bar-opp-hp').style.width = Math.max(0, 100 - (meScore / 50) * 100) + '%';
 
@@ -1476,7 +1643,6 @@
           curScore = Math.min(50, curScore + pts);
           m[scoreField] = curScore;
 
-          // Picu jurus serangan terbang langsung mengenai lawan di arena!
           triggerGuaranteedHit(true);
 
           await fbPut(`turnamen_cup/${st.pin}/rounds/${rIdx}/${mIdx}/${scoreField}`, curScore);
@@ -1534,11 +1700,6 @@
           }
         }, 250);
         st.timers.push(uiId);
-
-        if (st.mode === 'host') {
-          const botId = setInterval(tickBotsOnHost, 2200);
-          st.timers.push(botId);
-        }
       }
 
       document.addEventListener('DOMContentLoaded', () => {
@@ -1584,10 +1745,15 @@
 
         document.getElementById('btn-start-cup').addEventListener('click', startTournamentHost);
         document.getElementById('btn-force-next').addEventListener('click', () => advanceHostRoundIfReady(true));
+        document.getElementById('btn-close-watch').addEventListener('click', () => {
+          st.watchedMatchId = null;
+          renderHostView();
+        });
 
         document.getElementById('btn-play-again').addEventListener('click', async () => {
           if (st.mode !== 'host' || !st.pin) return;
           st.lastCelebratedKey = '';
+          st.watchedMatchId = null;
           const keptPlayers = st.room?.players || {};
           await fbPut(`turnamen_cup/${st.pin}`, {
             pin: st.pin,
